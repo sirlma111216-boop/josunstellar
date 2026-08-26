@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko" class="fs-2">
+<head>
+<meta charset="utf-8">
+<!-- 학생이 손가락으로 지도를 확대해 볼 수 있어야 하므로 user-scalable 제한을 두지 않는다 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="천상열차분야지도로 배우는 중3 별과 우주 학습 도구">
+<title>별지기 1395</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- ===== 상단 ===== -->
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">✦</span>
+    <h1 class="brand-name" id="appName">별지기 1395</h1>
+  </div>
+
+  <div class="header-tools">
+    <!-- 글자 크기 조절 (가 / 가 / 가) -->
+    <div class="fs-group" role="group" aria-label="글자 크기 조절">
+      <button type="button" class="fs-btn fs-s" data-fs="1" aria-pressed="false" title="작게">가</button>
+      <button type="button" class="fs-btn fs-m" data-fs="2" aria-pressed="true"  title="보통">가</button>
+      <button type="button" class="fs-btn fs-l" data-fs="3" aria-pressed="false" title="크게">가</button>
+    </div>
+    <button type="button" class="btn-round" id="btnHelp" aria-label="도움말 열기">?</button>
+  </div>
+</header>
+
+<!-- ===== 탭 ===== -->
+<nav class="tabs" role="tablist" aria-label="학습 활동 선택">
+  <button class="tab is-active" id="tabBtn-overlay" role="tab" aria-selected="true"
+          aria-controls="panel-overlay" data-panel="overlay">
+    <span class="tab-badge">1차시</span><span class="tab-label">겹쳐보기</span>
+  </button>
+  <button class="tab" id="tabBtn-measure" role="tab" aria-selected="false"
+          aria-controls="panel-measure" data-panel="measure">
+    <span class="tab-badge">2차시</span><span class="tab-label">측정 탐구대</span>
+  </button>
+</nav>
+
+<!-- ===== 본문 ===== -->
+<main class="app-main">
+
+  <!-- --- 탭 1: 겹쳐보기 --- -->
+  <section class="panel is-active" id="panel-overlay" role="tabpanel" aria-labelledby="tabBtn-overlay">
+    <p class="panel-lead">
+      600년 전 조선의 하늘과 오늘의 하늘을 겹쳐 봅니다.
+      아래 슬라이더를 움직여 <b>현대 성도</b>를 진하게/연하게 해 보세요.
+    </p>
+
+    <div class="map-host" id="mapHost-overlay"></div>
+
+    <div class="control-bar">
+      <label class="ctl-label" for="opacityRange">현대 성도 진하기</label>
+      <input type="range" id="opacityRange" min="0" max="100" step="1" value="60"
+             aria-describedby="opacityValue">
+      <output class="ctl-value" id="opacityValue">60%</output>
+    </div>
+
+    <div class="todo-note">
+      <b>2단계 예정</b> — 매칭 미션 3개(허리띠 세 별 · 베텔게우스 · 리겔)와 완료 질문 카드가 여기에 들어갑니다.
+    </div>
+  </section>
+
+  <!-- --- 탭 2: 측정 탐구대 --- -->
+  <section class="panel" id="panel-measure" role="tabpanel" aria-labelledby="tabBtn-measure" hidden>
+    <p class="panel-lead">
+      지도 위 번호 핀은 측정할 별 12개입니다. 핀을 눌러 별 점의 <b>지름</b>을 재고,
+      현대 등급과 비교해 규칙을 찾아봅니다.
+    </p>
+
+    <div class="map-host" id="mapHost-measure"></div>
+
+    <div class="todo-note">
+      <b>3~4단계 예정</b> — 확대 측정 뷰(드래그 핸들), 기록 표, 산점도, 결과 저장(PNG/CSV), 비교 카드.
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== 푸터 ===== -->
+<footer class="app-footer">
+  <span id="footCredit">이미지 출처</span>
+  <span class="dot" aria-hidden="true">·</span>
+  <span id="footNote">교사 제작 학습 도구</span>
+</footer>
+
+<!-- ===== 도움말 모달 ===== -->
+<div class="modal-back" id="helpModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal-head">
+      <h2 id="helpTitle">이 도구를 활용하면!</h2>
+      <button type="button" class="btn-round" id="btnHelpClose" aria-label="도움말 닫기">✕</button>
+    </div>
+    <div class="modal-body">
+      <ol class="howto">
+        <li>
+          <span class="howto-num">1</span>
+          <div>
+            <b>겹쳐보고</b>
+            <p>조선의 천문도 위에 오늘날 별자리 그림을 겹칩니다. 슬라이더로 진하기를 바꾸며
+               전통 별자리 <b>삼수(參宿)</b>가 <b>오리온자리</b>와 같은 별들임을 확인합니다.</p>
+          </div>
+        </li>
+        <li>
+          <span class="howto-num">2</span>
+          <div>
+            <b>측정하고</b>
+            <p>지도에 새겨진 별 점을 확대해 두 핸들로 <b>지름</b>을 잽니다.
+               같은 별을 두 번 재서 평균을 내면 측정 오차도 함께 배웁니다.</p>
+          </div>
+        </li>
+        <li>
+          <span class="howto-num">3</span>
+          <div>
+            <b>그래프에서 규칙 찾기</b>
+            <p>내가 잰 지름과 현대 <b>겉보기 등급</b>을 산점도로 그려,
+               "밝은 별일수록 크게 새겼다"는 규칙을 스스로 발견합니다.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="modal-sub">
+        <h3>알아두기</h3>
+        <ul class="plain-list">
+          <li>측정 기록은 <b>이 태블릿 안에만</b> 저장됩니다. 밖으로 전송되지 않습니다.</li>
+          <li>겉보기 등급은 <b>근사값(≈)</b>이며, 베텔게우스는 변광성이라 대표값입니다.</li>
+        </ul>
+      </div>
+
+      <div class="modal-danger">
+        <div>
+          <b>전체 초기화</b>
+          <p class="hint">이 기기에 저장된 측정 기록·발견 문장·진행 상태를 모두 지웁니다.</p>
+        </div>
+        <button type="button" class="btn btn-danger" id="btnResetAll">전체 초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 캘리브레이션 패널이 붙는 자리 (?admin=1 일 때만 생성) ===== -->
+<div id="adminRoot"></div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="assets/js/constants.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/mapview.js"></script>
+<script src="assets/js/admin.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
