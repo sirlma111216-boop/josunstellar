@@ -1,6 +1,6 @@
 /* ==========================================================================
    별지기 1395 — 교사 캘리브레이션 (주소 뒤에 ?admin=1)
-     · 측정 핀 12개를 별 자국 한가운데로 옮긴다 (확대 미리보기 창 제공)
+     · 측정 핀을 별 자국 한가운데로 옮긴다 (확대 미리보기 창 제공)
      · 단계 3에서 확대해 들어갈 영역을 지정한다
      · 단계 4에서 나란히 확대할 별 3개를 고른다
      · 결과를 config.json 으로 내보내 배포한다
@@ -86,14 +86,14 @@
     el('p', 'ahint', s0,
       IMAGES.orion.src + ' · ' + IMAGES.orion.w + ' × ' + IMAGES.orion.h + ' px (각석본, 측정용)');
     el('p', 'ahint', s0,
-      IMAGES.color.src + ' · 같은 영역·같은 축척의 채색본 — 좌표가 그대로 통합니다');
+      IMAGES.color.src + ' · 채색본 — colorTransform 으로 좌표를 옮겨 씁니다');
     el('p', 'ahint', s0, '별 자국 지름 약 ' + MARK_PX.min + '~' + MARK_PX.max + ' px');
     if (Config.migrated) {
       el('p', 'ahint warn', s0, '⚠ 예전 버전 설정이 있어 측정 핀을 기본값으로 되돌렸습니다.');
     }
 
     /* --- ① 측정 핀 --- */
-    var s1 = section(panel, '① 측정 핀 12개 배치');
+    var s1 = section(panel, '① 측정 핀 배치');
     var editWrap = el('div', null, s1);
     var editChk = document.createElement('input');
     var editLab = el('label', 'achk', editWrap);
@@ -128,7 +128,7 @@
     mkNudge(nud, '', null);      mkNudge(nud, '↓', [0, 1]);  mkNudge(nud, '', null);
     el('p', 'ahint', s1, '화살표 한 번 = 원본 이미지 4px 이동');
 
-    /* --- 별 찍기: 12개를 차례로 눌러 확정한다 --- */
+    /* --- 별 찍기: 별을 차례로 눌러 확정한다 --- */
     var pick = el('div', 'pick-box', s1);
     Admin.pickLabel = el('div', 'pick-label', pick, '별 찍기를 시작하세요');
     el('p', 'ahint', pick,
@@ -162,9 +162,9 @@
 
     var b1 = el('div', 'abtns', s1);
     button(b1, '예상 위치로 초기화', 'btn-primary', function () {
-      if (!confirm('측정 핀 12개를 처음 예상 좌표로 되돌릴까요?\n지금까지 옮긴 위치는 사라집니다.')) return;
+      if (!confirm('측정 핀을 처음 좌표로 되돌릴까요?\n지금까지 옮긴 위치는 사라집니다.')) return;
       Config.resetPins();
-      Admin.ui.toast('핀 12개를 예상 위치로 되돌렸습니다');
+      Admin.ui.toast('핀을 처음 좌표로 되돌렸습니다');
       Admin.refreshPreview();
     });
 
@@ -410,7 +410,7 @@
     if (i < 0) i = 0;
     if (i >= STARS.length) {
       Admin.pickAt = -1;
-      Admin.pickLabel.textContent = '12개 모두 찍었습니다. [이 기기에 저장] 하세요.';
+      Admin.pickLabel.textContent = '모두 찍었습니다. [이 기기에 저장] 하세요.';
       Admin.pickLabel.classList.remove('is-on');
       return;
     }
@@ -418,7 +418,7 @@
     var st = STARS[i];
     Admin.pickLabel.classList.add('is-on');
     Admin.pickLabel.innerHTML =
-      '<b>' + (i + 1) + '/12 · ' + st.kor + '</b> <span>' + st.trad + '</span>' +
+      '<b>' + (i + 1) + '/' + STARS.length + ' · ' + st.kor + '</b> <span>' + st.trad + '</span>' +
       '<span class="pick-hint">' + magText(st.mag) + ' · 자국 어림 ' +
       Math.round(expectedMarkPx(st.mag)) + 'px — 지도에서 이 별을 누르세요</span>';
     if (Admin.editChk && !Admin.editChk.checked) {

@@ -302,7 +302,7 @@
     var list = State.addMeasure(Measure.starId, d);
     Measure.renderRecords();
     App.toast(starById(Measure.starId).kor + ' ' + d.toFixed(1) + 'px 기록  ·  ' +
-              State.measuredCount() + '/12개 완료');
+              State.measuredCount() + '/' + STARS.length + '개 완료');
     if (list.length >= 2) App.toast('두 번 잰 평균이 표에 들어갑니다', 2600);
   };
 

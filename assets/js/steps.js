@@ -503,7 +503,7 @@
     var done = State.measuredCount();
     var fill = $('measProgFill'), txt = $('measProgText');
     if (fill) fill.style.width = (done / STARS.length * 100) + '%';
-    if (txt) txt.textContent = '12개 중 ' + done + '개 측정 완료';
+    if (txt) txt.textContent = STARS.length + '개 중 ' + done + '개 측정 완료';
 
     var host = $('measTableHost');
     if (!host) return;
