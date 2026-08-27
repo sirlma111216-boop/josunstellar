@@ -326,7 +326,9 @@
   }
 
   function renderTrio(host, im) {
-    var ids = Config.get('trioIds', [1, 7, 12]);
+    // 별 목록이 바뀌어 없는 번호가 남아 있을 수 있으므로 유효한 별만 쓴다
+    var ids = (Config.get('trioIds', [1, 7, 12]) || []).filter(function (id) { return !!starById(id); });
+    if (!ids.length) ids = STARS.slice(0, 3).map(function (s) { return s.id; });
     var size = trioSize();
     host.innerHTML = '';
     ids.forEach(function (id) {
