@@ -102,11 +102,20 @@
     this.opts.img = im;
     this.img.src = im.src;
     this.missing.hidden = true;
+    this.alignImage();
+  };
+
+  /** 채색본을 띄울 때는 각석본 좌표계에 겹치도록 변환해 그린다 */
+  MapView.prototype.alignImage = function () {
+    var isColor = this.opts.img && this.opts.img.src === IMAGES.color.src;
+    if (!isColor) { this.img.style.transform = ''; this.img.style.transformOrigin = ''; return; }
+    this.img.style.transformOrigin = '0 0';
+    this.img.style.transform = colorAlignMatrix(this.frame.clientWidth || 1);
   };
 
   MapView.prototype.observeSize = function () {
     var self = this;
-    var redraw = function () { self.renderPins(); };
+    var redraw = function () { self.renderPins(); self.alignImage(); };
     if (global.ResizeObserver) {
       this._ro = new ResizeObserver(redraw);
       this._ro.observe(this.frame);
@@ -294,6 +303,7 @@
     var a = document.createElement('img');
     a.className = 'cmp-img cmp-a'; a.src = o.left.src; a.alt = o.leftName; a.draggable = false;
     box.appendChild(a);
+    this.imgA = a;
 
     var wrap = el('div', 'cmp-bwrap', box);
     var b = document.createElement('img');
@@ -339,6 +349,16 @@
     ctl.appendChild(range);
     range.addEventListener('input', function () { self.setPos(Number(range.value) / 100, true); });
     this.range = range;
+
+    // 두 지도는 크롭이 달라, 채색본을 각석본 좌표계에 맞춰 겹친다
+    var self3 = this;
+    this.align = function () {
+      if (o.left.src !== IMAGES.color.src) return;
+      a.style.transformOrigin = '0 0';
+      a.style.transform = colorAlignMatrix(box.clientWidth || 1);
+    };
+    this.align();
+    if (global.ResizeObserver) new ResizeObserver(function () { self3.align(); }).observe(box);
 
     this.setPos(0.5);
   }

@@ -336,8 +336,10 @@
       if (!st) return;
       var pin = Config.get('pins.' + id, null) ||
                 { x: st.px.x / IMAGES.orion.w, y: st.px.y / IMAGES.orion.h };
+      // 채색본은 크롭이 달라 좌표를 옮겨야 같은 별이 나온다
+      var q = (im.src === IMAGES.color.src) ? orionToColor(pin.x, pin.y) : { x: pin.x, y: pin.y };
       new StarZoom(host, {
-        img: im, u: pin.x, v: pin.y,
+        img: im, u: q.x, v: q.y,
         zoom: TRIO_ZOOM, size: size, label: st.kor
       });
     });

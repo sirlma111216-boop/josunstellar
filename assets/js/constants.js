@@ -116,6 +116,34 @@
     return Math.max(3, Math.min(14, z));
   }
 
+  /* ---------- 각석본 ↔ 채색본 좌표 변환 ----------
+     두 지도는 크롭이 달라 좌표가 그대로 통하지 않는다. 설정의 colorTransform 으로 옮긴다. */
+
+  /** 각석본 정규화 좌표(0~1) → 채색본 정규화 좌표(0~1) */
+  function orionToColor(u, v) {
+    var T = (typeof Config !== 'undefined')
+      ? Config.get('colorTransform', { a: 1, b: 0, tx: 0, ty: 0 })
+      : { a: 1, b: 0, tx: 0, ty: 0 };
+    var x = u * IMAGES.orion.w, y = v * IMAGES.orion.h;
+    return {
+      x: (T.a * x - T.b * y + T.tx) / IMAGES.color.w,
+      y: (T.b * x + T.a * y + T.ty) / IMAGES.color.h
+    };
+  }
+
+  /** 채색본 그림을 각석본 좌표계에 겹쳐 그릴 때 쓰는 CSS 변환(역변환) */
+  function colorAlignMatrix(frameW) {
+    var T = Config.get('colorTransform', { a: 1, b: 0, tx: 0, ty: 0 });
+    var s2 = T.a * T.a + T.b * T.b;
+    var A = T.a / s2, B = -T.b / s2;
+    var tx = (-T.a * T.tx - T.b * T.ty) / s2;
+    var ty = (T.b * T.tx - T.a * T.ty) / s2;
+    var k = frameW / IMAGES.color.w;
+    return 'matrix(' + A + ',' + B + ',' + (-B) + ',' + A + ',' + (tx * k) + ',' + (ty * k) + ')';
+  }
+
+  global.orionToColor = orionToColor;
+  global.colorAlignMatrix = colorAlignMatrix;
   global.APP = APP;
   global.IMAGES = IMAGES;
   global.MARK_PX = MARK_PX;
