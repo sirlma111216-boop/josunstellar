@@ -190,7 +190,9 @@ b{ color:#fff; font-weight:700; }
   background:#0b1233dd; color:var(--accent);
   border:2px solid var(--accent); font-weight:800; font-size:.85rem;
 }
+.pin.is-selected{ z-index:3; }   /* 허리띠 세 별처럼 겹칠 때 고른 핀이 위로 */
 .pin.is-selected::before{ background:var(--accent); color:#1a1200; }
+.pin[hidden]{ display:none; }
 .map-view.pin-edit .pin{ touch-action:none; }  /* 드래그 중 스크롤 방지 */
 .map-view.pin-edit .pin::before{ box-shadow:0 0 0 3px #ffffff66; }
 
@@ -218,6 +220,31 @@ input[type="range"]::-webkit-slider-thumb{
 input[type="range"]::-moz-range-thumb{
   width:28px; height:28px; border-radius:50%;
   background:var(--accent); border:2px solid #1a1200; cursor:pointer;
+}
+
+/* ---------- 측정 기준 카드 (고리 모양 도식) ---------- */
+.rule-card{
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:.75rem .8rem; margin-bottom:.8rem;
+}
+.rule-title{
+  font-size:.95rem; color:var(--accent); margin-bottom:.35rem;
+}
+.rule-text{ margin:0 0 .6rem; font-size:.9rem; }
+.rule-why{ margin:.5rem 0 0; font-size:.82rem; color:var(--ink-dim); }
+.mark-diagram{
+  display:block; width:100%; max-width:420px; margin:0 auto; height:auto;
+}
+.mark-diagram .md-ok{ fill:#b3371f; font-size:11px; font-weight:700; }
+.mark-diagram .md-no{ fill:#6f6f6f; font-size:13px; font-weight:700; }
+.mark-diagram .md-cap{ fill:var(--ink-dim); font-size:11px; }
+.mark-diagram .md-rule{ fill:var(--accent); font-size:11.5px; font-weight:700; }
+
+/* 도움말 모달 안의 측정 기준 한 줄 */
+.howto-rule{
+  margin:.4rem 0 0 !important; padding:.4rem .55rem;
+  border-left:3px solid var(--accent); background:#ffffff0d;
+  border-radius:0 8px 8px 0; font-size:.86rem !important; color:var(--ink) !important;
 }
 
 /* 개발 단계 안내 쪽지 */
@@ -356,6 +383,58 @@ input[type="range"]::-moz-range-thumb{
   font-size:1rem; cursor:pointer;
 }
 .nudge .sp{ visibility:hidden; }
+.ahint.warn{ color:var(--warn); }
+.admin-json{
+  width:100%; margin-top:.5rem; background:#050a1e; color:#dbe6ff;
+  border:1px solid var(--line); border-radius:8px; padding:.5rem; font-size:.75rem;
+}
+
+/* ---------- 핀 확대 미리보기 창 ---------- */
+.pin-preview{
+  position:absolute; top:8px; right:8px; z-index:6;
+  width:170px;
+  background:#070d24f2; border:1px solid var(--accent); border-radius:10px;
+  box-shadow:0 6px 22px #000000aa; overflow:hidden;
+}
+.pin-preview[hidden]{ display:none; }
+/* 고른 핀을 가리지 않도록 반대쪽 모서리로 비켜 선다 */
+.pin-preview.pp-left{ right:auto; left:8px; }
+.pin-preview.pp-bottom{ top:auto; bottom:8px; }
+/* 지도에서 핀을 끄는 동안에는 비쳐 보이게 */
+.pin-preview{ transition:opacity .12s linear; }
+.pin-preview.pp-ghost{ opacity:.16; pointer-events:none; }
+.pp-head{
+  display:flex; align-items:center; gap:.25rem;
+  padding:.25rem .35rem; border-bottom:1px solid var(--line);
+}
+.pp-title{
+  flex:1 1 auto; min-width:0; font-size:.72rem; font-weight:700; color:var(--accent);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pp-btn{
+  width:30px; height:30px; flex:0 0 auto;
+  border:1px solid var(--line); border-radius:6px;
+  background:#16224e; color:var(--ink); font-size:1rem; line-height:1; cursor:pointer;
+}
+.pp-stage{
+  position:relative; width:170px; height:170px;
+  background-repeat:no-repeat; background-color:#fff;
+  touch-action:none; cursor:grab;
+}
+.pp-stage:active{ cursor:grabbing; }
+/* 십자선 — 핀이 가리키는 지점 */
+.pp-cross{ position:absolute; inset:0; pointer-events:none; }
+.pp-cross::before,
+.pp-cross::after{
+  content:''; position:absolute; background:#d2452f;
+}
+.pp-cross::before{ left:0; right:0; top:50%; height:1px; margin-top:-.5px; }
+.pp-cross::after{ top:0; bottom:0; left:50%; width:1px; margin-left:-.5px; }
+.pp-foot{
+  padding:.25rem .4rem; font-size:.68rem; color:var(--ink-dim);
+  border-top:1px solid var(--line); text-align:center;
+  font-variant-numeric:tabular-nums;
+}
 
 /* 캘리브레이션 패널이 열리면 본문이 가려지지 않도록 여백 */
 body.admin-open{ padding-bottom:58dvh; }

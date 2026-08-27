@@ -2,7 +2,12 @@
    별지기 1395 — 지도 뷰 공용 컴포넌트
    천문도 이미지(자르기·회전·반전) 위에
    ① 현대 성도 SVG 레이어  ② 측정 핀 레이어 를 같은 좌표계로 얹는다.
-   두 탭이 이 컴포넌트를 함께 쓴다.
+
+   ★ 좌표 기준
+     핀과 성도는 모두 "원본 이미지 좌표"로 저장하고, 화면에 그릴 때만
+     자르기 → 확대 → 좌우반전 → 회전 순서로 프레임 픽셀로 옮긴다.
+     (CSS 의 transform: rotate() scaleX() scale() 과 같은 순서)
+     덕분에 교사가 자르기·회전을 나중에 고쳐도 확정한 핀이 따라 움직인다.
    ========================================================================== */
 (function (global) {
   'use strict';
@@ -25,23 +30,25 @@
   /**
    * @param {HTMLElement} host  컴포넌트를 붙일 자리
    * @param {Object} opts
-   *   src        : 이미지 경로
-   *   showSky    : 현대 성도 레이어 표시
-   *   showPins   : 측정 핀 표시
+   *   src          : 이미지 경로
+   *   showSky      : 현대 성도 레이어 표시
+   *   showPins     : 측정 핀 표시
    *   starTappable : 성도의 별을 터치할 수 있게(미션용)
-   *   onStarTap  : function(starId, ev)
-   *   onPinTap   : function(starId, ev)
-   *   onPinMove  : function(starId, x, y)  핀 편집 중 이동
+   *   onStarTap    : function(starId, ev)
+   *   onPinTap     : function(starId, ev)
+   *   onPinMove    : function(starId, u, v)   핀 편집 중 이동(이미지 정규화 좌표)
+   *   onPinSelect  : function(starId)
    */
   function MapView(host, opts) {
     this.opts = Object.assign({
-      src: IMAGES.orion,
+      src: IMAGES.orion.src,
       showSky: true,
       showPins: false,
       starTappable: false,
       onStarTap: null,
       onPinTap: null,
-      onPinMove: null
+      onPinMove: null,
+      onPinSelect: null
     }, opts || {});
 
     this.host = host;
@@ -73,9 +80,8 @@
 
     this.img = document.createElement('img');
     this.img.className = 'map-img';
-    this.img.alt = '천상열차분야지도 삼수 영역';
+    this.img.alt = '천상열차분야지도 각석의 삼수(오리온) 영역';
     this.img.decoding = 'async';
-    this.img.loading = 'lazy';       // 저사양 태블릿 첫 로드 부담을 줄인다
     this.img.draggable = false;
     this.rot.appendChild(this.img);
 
@@ -111,9 +117,7 @@
       self.naturalH = self.img.naturalHeight || 1;
       self.missing.hidden = true;
       self.img.style.visibility = 'visible';
-      self.applyImage();
-      self.renderSky();
-      self.renderPins();
+      self.applyAll();
     });
     this.img.addEventListener('error', function () {
       self.imageReady = false;
@@ -132,10 +136,90 @@
       this._ro = new ResizeObserver(redraw);
       this._ro.observe(this.frame);
     } else {
-      this._onResize = redraw;
       global.addEventListener('resize', redraw);
       global.addEventListener('orientationchange', redraw);
     }
+  };
+
+  /* ==========================================================================
+     좌표 변환
+     ========================================================================== */
+
+  /** 원본 이미지 크기 — 아직 안 불러왔으면 설정에 적힌 규격을 쓴다 */
+  MapView.prototype.imgSize = function () {
+    if (this.imageReady) return { w: this.naturalW, h: this.naturalH };
+    return {
+      w: Config.get('image.width', IMAGES.orion.w),
+      h: Config.get('image.height', IMAGES.orion.h)
+    };
+  };
+
+  MapView.prototype.frameSize = function () {
+    return { w: this.frame.clientWidth, h: this.frame.clientHeight };
+  };
+
+  /** 현재 변환에 쓰이는 값들을 한 번에 계산 */
+  MapView.prototype.xform = function () {
+    var c = Config.get('image', {});
+    var crop = c.crop || { x: 0, y: 0, w: 1, h: 1 };
+    var cw = Math.max(0.02, crop.w), ch = Math.max(0.02, crop.h);
+    var z = c.zoom || 1;
+    var rad = (c.rotate || 0) * Math.PI / 180;
+    var img = this.imgSize();
+    var fr = this.frameSize();
+    return {
+      cx: crop.x, cy: crop.y, cw: cw, ch: ch,
+      z: z, flip: c.flipX ? -1 : 1,
+      co: Math.cos(rad), si: Math.sin(rad),
+      W: fr.w, H: fr.h, iw: img.w, ih: img.h,
+      // 이미지 1px 이 프레임에서 차지하는 픽셀 수 (가로·세로 동일)
+      s: (fr.w / (cw * img.w)) * z
+    };
+  };
+
+  /** 이미지 정규화 좌표(0~1) → 프레임 픽셀 */
+  MapView.prototype.imageToFrame = function (u, v, t) {
+    t = t || this.xform();
+    var a = (u - t.cx) / t.cw;
+    var b = (v - t.cy) / t.ch;
+    var dx = (a - 0.5) * t.W * t.z;
+    var dy = (b - 0.5) * t.H * t.z;
+    dx *= t.flip;
+    return {
+      x: t.W / 2 + (dx * t.co - dy * t.si),
+      y: t.H / 2 + (dx * t.si + dy * t.co)
+    };
+  };
+
+  /** 프레임 픽셀 → 이미지 정규화 좌표(0~1) */
+  MapView.prototype.frameToImage = function (fx, fy, t) {
+    t = t || this.xform();
+    var X = fx - t.W / 2, Y = fy - t.H / 2;
+    var rx = X * t.co + Y * t.si;      // 회전 되돌리기
+    var ry = -X * t.si + Y * t.co;
+    rx *= t.flip;                      // 반전 되돌리기
+    var a = rx / (t.W * t.z) + 0.5;
+    var b = ry / (t.H * t.z) + 0.5;
+    return { x: a * t.cw + t.cx, y: b * t.ch + t.cy };
+  };
+
+  /** 이미지 픽셀 좌표 → 프레임 픽셀 */
+  MapView.prototype.imagePxToFrame = function (px, py, t) {
+    t = t || this.xform();
+    return this.imageToFrame(px / t.iw, py / t.ih, t);
+  };
+
+  /** 성도 좌표(sky) → 원본 이미지 픽셀 */
+  MapView.prototype.skyToImagePx = function (p) {
+    var s = Config.get('sky', {});
+    var rad = (s.rot || 0) * Math.PI / 180;
+    var co = Math.cos(rad), si = Math.sin(rad);
+    var k = s.k || 15;
+    var dx = p.x - SKY_SPACE.cx, dy = p.y - SKY_SPACE.cy;
+    return {
+      x: (s.cx || 0) + k * (co * dx - si * dy),
+      y: (s.cy || 0) + k * (si * dx + co * dy)
+    };
   };
 
   /* ---------- 설정 반영 ---------- */
@@ -147,79 +231,46 @@
 
   /** 자르기 · 회전 · 반전 · 확대 */
   MapView.prototype.applyImage = function () {
+    var t = this.xform();
+
+    // 프레임 비율은 잘라낸 영역의 비율과 같아야 사진이 찌그러지지 않는다.
+    // 이미지를 아직 못 불러왔어도 설정에 적힌 규격으로 미리 맞춰 둔다.
+    var ar = (t.iw * t.cw) / (t.ih * t.ch);
+    this.frame.style.aspectRatio = (t.iw * t.cw) + ' / ' + (t.ih * t.ch);
+    this.root.style.setProperty('--frame-ar', ar.toFixed(4));
+
+    this.img.style.width = (100 / t.cw) + '%';
+    this.img.style.height = (100 / t.ch) + '%';
+    this.img.style.left = (-t.cx / t.cw * 100) + '%';
+    this.img.style.top = (-t.cy / t.ch * 100) + '%';
+
     var c = Config.get('image', {});
-    var crop = c.crop || { x: 0, y: 0, w: 1, h: 1 };
-    var cw = Math.max(0.02, crop.w), ch = Math.max(0.02, crop.h);
-
-    // 프레임 비율을 잘라낸 영역의 비율에 맞춰야 사진이 찌그러지지 않는다
-    if (this.imageReady) {
-      var ar = (this.naturalW * cw) / (this.naturalH * ch);
-      this.frame.style.aspectRatio = (this.naturalW * cw) + ' / ' + (this.naturalH * ch);
-      this.root.style.setProperty('--frame-ar', ar.toFixed(4));
-    }
-
-    this.img.style.width = (100 / cw) + '%';
-    this.img.style.height = (100 / ch) + '%';
-    this.img.style.left = (-crop.x / cw * 100) + '%';
-    this.img.style.top = (-crop.y / ch * 100) + '%';
-
     this.rot.style.transform =
       'rotate(' + (c.rotate || 0) + 'deg)' +
       ' scaleX(' + (c.flipX ? -1 : 1) + ')' +
       ' scale(' + (c.zoom || 1) + ')';
   };
 
-  /* ---------- 성도 좌표 → 화면 픽셀 ---------- */
-  MapView.prototype.frameSize = function () {
-    return { w: this.frame.clientWidth, h: this.frame.clientHeight };
-  };
-
-  /** 성도 좌표계(sky) 한 점을 프레임 픽셀 좌표로 옮긴다 */
-  MapView.prototype.projector = function () {
-    var size = this.frameSize();
-    var s = Config.get('sky', {});
-    var unit = Math.min(size.w, size.h) / SKY_SPACE.h * (s.scale || 1);
-    var cx = (0.5 + (s.ox || 0)) * size.w;
-    var cy = (0.5 + (s.oy || 0)) * size.h;
-    var rad = (s.rot || 0) * Math.PI / 180;
-    var co = Math.cos(rad), si = Math.sin(rad);
-
-    return {
-      unit: unit,
-      size: size,
-      at: function (p) {
-        var dx = (p.x - SKY_SPACE.cx) * unit;
-        var dy = (p.y - SKY_SPACE.cy) * unit;
-        return { x: cx + dx * co - dy * si, y: cy + dx * si + dy * co };
-      }
-    };
-  };
-
-  /** 별 id → 프레임 기준 0~1 좌표 (핀 기본 위치, 미션 판정에 사용) */
-  MapView.prototype.starNorm = function (id) {
-    var st = starById(id);
-    if (!st) return { x: 0.5, y: 0.5 };
-    var pr = this.projector();
-    if (!pr.size.w || !pr.size.h) return { x: 0.5, y: 0.5 };
-    var p = pr.at(st.sky);
-    return { x: p.x / pr.size.w, y: p.y / pr.size.h };
-  };
-
   /* ---------- 현대 성도 그리기 ---------- */
   MapView.prototype.renderSky = function () {
     if (!this.opts.showSky) return;
-    var size = this.frameSize();
-    if (!size.w || !size.h) return;
+    var t = this.xform();
+    if (!t.W || !t.H) return;
 
-    this.svg.setAttribute('viewBox', '0 0 ' + size.w + ' ' + size.h);
+    this.svg.setAttribute('viewBox', '0 0 ' + t.W + ' ' + t.H);
     var sky = Config.get('sky', {});
     this.svg.style.opacity = (this.opacityOverride !== null)
       ? this.opacityOverride
       : (sky.opacity === undefined ? 0.6 : sky.opacity);
 
-    var pr = this.projector();
-    var pos = {};
-    for (var i = 0; i < STARS.length; i++) pos[STARS[i].id] = pr.at(STARS[i].sky);
+    // 성도 → 이미지 픽셀 → 프레임 픽셀
+    var pos = {}, i;
+    for (i = 0; i < STARS.length; i++) {
+      var ip = this.skyToImagePx(STARS[i].sky);
+      pos[STARS[i].id] = this.imagePxToFrame(ip.x, ip.y, t);
+    }
+    // 성도 1단위가 화면에서 차지하는 픽셀
+    var unit = (sky.k || 15) * t.s;
 
     // 다시 그리기 (별 12개 + 선 10개라 통째로 그려도 충분히 가볍다)
     while (this.skyG.firstChild) this.skyG.removeChild(this.skyG.firstChild);
@@ -239,7 +290,7 @@
     for (var k = 0; k < STARS.length; k++) {
       var st = STARS[k];
       var p = pos[st.id];
-      var r = Math.max(1.5, magToRadius(st.mag) * pr.unit);
+      var r = Math.max(1.5, magToRadius(st.mag) * unit);
 
       var c = svgEl('circle', this.skyG);
       c.setAttribute('class', 'sky-star');
@@ -263,11 +314,11 @@
       }
 
       if (sky.showLabel) {
-        var t = svgEl('text', this.skyG);
-        t.setAttribute('class', 'sky-label');
-        t.setAttribute('x', p.x + r + 3);
-        t.setAttribute('y', p.y + 3);
-        t.textContent = st.kor;
+        var tx = svgEl('text', this.skyG);
+        tx.setAttribute('class', 'sky-label');
+        tx.setAttribute('x', p.x + r + 3);
+        tx.setAttribute('y', p.y + 3);
+        tx.textContent = st.kor;
       }
     }
   };
@@ -279,16 +330,30 @@
   };
 
   /* ---------- 측정 핀 ---------- */
+
+  /** 핀의 이미지 정규화 좌표 */
   MapView.prototype.pinNorm = function (id) {
     var saved = Config.get('pins.' + id, null);
     if (saved && typeof saved.x === 'number') return saved;
-    return this.starNorm(id);   // 아직 배치 전이면 성도 위치를 기본값으로
+    var st = starById(id);
+    return st ? { x: st.px.x / IMAGES.orion.w, y: st.px.y / IMAGES.orion.h }
+              : { x: 0.5, y: 0.5 };
+  };
+
+  /** 핀 위치를 이미지 정규화 좌표로 지정 */
+  MapView.prototype.setPin = function (id, u, v) {
+    Config.data.pins[id] = {
+      x: Number(clamp(u, 0, 1).toFixed(5)),
+      y: Number(clamp(v, 0, 1).toFixed(5))
+    };
+    this.renderPins();
+    if (this.opts.onPinMove) this.opts.onPinMove(id, u, v);
   };
 
   MapView.prototype.renderPins = function () {
     if (!this.opts.showPins) return;
-    var size = this.frameSize();
-    if (!size.w || !size.h) return;
+    var t = this.xform();
+    if (!t.W || !t.H) return;
 
     for (var i = 0; i < STARS.length; i++) {
       var st = STARS[i];
@@ -304,10 +369,36 @@
         this.pinEls[st.id] = pin;
         this.bindPin(pin, st.id);
       }
-      var p = this.pinNorm(st.id);
-      pin.style.left = (p.x * 100) + '%';
-      pin.style.top = (p.y * 100) + '%';
+      var n = this.pinNorm(st.id);
+      var p = this.imageToFrame(n.x, n.y, t);
+      pin.style.left = (p.x / t.W * 100) + '%';
+      pin.style.top = (p.y / t.H * 100) + '%';
+      // 잘라낸 영역 밖으로 나간 핀은 숨긴다(교사가 자르기를 좁혔을 때)
+      var out = p.x < -20 || p.y < -20 || p.x > t.W + 20 || p.y > t.H + 20;
+      pin.hidden = out;
     }
+  };
+
+  /** 프레임 위에서 서로 겹쳐 보이는 핀들(허리띠 세 별 등)을 모은다.
+      두 조건을 모두 만족해야 한 군집이다.
+        ① 화면에서 44px(터치 타깃) 안 — 지금 손가락으로 구분이 안 되는가
+        ② 원본에서 120px 안 — 실제로 붙어 있는 별인가
+      ②가 없으면 지도를 작게 줄였을 때 멀쩡히 떨어진 별까지 묶여 버린다. */
+  MapView.prototype.clusterOf = function (id, radiusPx) {
+    var t = this.xform();
+    var here = this.pinNorm(id);
+    var hp = this.imageToFrame(here.x, here.y, t);
+    var r = radiusPx || 44;
+    var rImg = MARK_PX.max * 2;                 // 원본 120px
+    var out = [];
+    for (var i = 0; i < STARS.length; i++) {
+      var n = this.pinNorm(STARS[i].id);
+      var p = this.imageToFrame(n.x, n.y, t);
+      var dImg = Math.hypot((n.x - here.x) * t.iw, (n.y - here.y) * t.ih);
+      if (Math.hypot(p.x - hp.x, p.y - hp.y) <= r && dImg <= rImg) out.push(STARS[i].id);
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out;
   };
 
   MapView.prototype.bindPin = function (pin, id) {
@@ -321,18 +412,15 @@
       try { pin.setPointerCapture(ev.pointerId); } catch (e) { /* 무시 */ }
       ev.preventDefault();
       self.selectPin(id);
+      if (self.opts.onPinDragState) self.opts.onPinDragState(id, true);
     });
 
     pin.addEventListener('pointermove', function (ev) {
       if (!dragging) return;
       moved = true;
       var r = self.frame.getBoundingClientRect();
-      var x = clamp((ev.clientX - r.left) / r.width, 0, 1);
-      var y = clamp((ev.clientY - r.top) / r.height, 0, 1);
-      pin.style.left = (x * 100) + '%';
-      pin.style.top = (y * 100) + '%';
-      Config.data.pins[id] = { x: Number(x.toFixed(4)), y: Number(y.toFixed(4)) };
-      if (self.opts.onPinMove) self.opts.onPinMove(id, x, y);
+      var n = self.frameToImage(ev.clientX - r.left, ev.clientY - r.top);
+      self.setPin(id, n.x, n.y);
       ev.preventDefault();
     });
 
@@ -340,23 +428,36 @@
       if (!dragging) return;
       dragging = false;
       try { pin.releasePointerCapture(ev.pointerId); } catch (e) { /* 무시 */ }
+      if (self.opts.onPinDragState) self.opts.onPinDragState(id, false);
     };
     pin.addEventListener('pointerup', end);
     pin.addEventListener('pointercancel', end);
 
     pin.addEventListener('click', function (ev) {
-      if (self.pinEdit) { self.selectPin(id); return; }   // 편집 중엔 선택만
+      if (self.pinEdit) {
+        if (moved) return;
+        // 겹쳐 있는 핀은 반복해서 누르면 차례로 선택된다
+        var cl = self.clusterOf(id);
+        var next = id;
+        if (cl.length > 1) {
+          var at = cl.indexOf(self.selectedPin);
+          next = (at >= 0) ? cl[(at + 1) % cl.length] : cl[0];
+        }
+        self.selectPin(next);
+        return;
+      }
       if (moved) return;
       if (self.opts.onPinTap) self.opts.onPinTap(id, ev);
     });
   };
 
   MapView.prototype.selectPin = function (id) {
-    this.selectedPin = id;
+    this.selectedPin = id === null ? null : Number(id);
     for (var k in this.pinEls) {
       if (!Object.prototype.hasOwnProperty.call(this.pinEls, k)) continue;
-      this.pinEls[k].classList.toggle('is-selected', Number(k) === Number(id));
+      this.pinEls[k].classList.toggle('is-selected', Number(k) === this.selectedPin);
     }
+    if (this.opts.onPinSelect) this.opts.onPinSelect(this.selectedPin);
   };
 
   MapView.prototype.setPinEdit = function (on) {
@@ -365,11 +466,15 @@
     if (!on) this.selectPin(null);
   };
 
-  /** 핀 12개를 현재 성도 위치로 한 번에 배치 */
+  /** 핀 12개를 현재 성도 위치(이미지 좌표)로 한 번에 배치 */
   MapView.prototype.autoPlacePins = function () {
+    var t = this.xform();
     for (var i = 0; i < STARS.length; i++) {
-      var p = this.starNorm(STARS[i].id);
-      Config.data.pins[STARS[i].id] = { x: Number(p.x.toFixed(4)), y: Number(p.y.toFixed(4)) };
+      var ip = this.skyToImagePx(STARS[i].sky);
+      Config.data.pins[STARS[i].id] = {
+        x: Number(clamp(ip.x / t.iw, 0, 1).toFixed(5)),
+        y: Number(clamp(ip.y / t.ih, 0, 1).toFixed(5))
+      };
     }
     this.renderPins();
   };

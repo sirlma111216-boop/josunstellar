@@ -68,9 +68,12 @@
   <!-- --- 탭 2: 측정 탐구대 --- -->
   <section class="panel" id="panel-measure" role="tabpanel" aria-labelledby="tabBtn-measure" hidden>
     <p class="panel-lead">
-      지도 위 번호 핀은 측정할 별 12개입니다. 핀을 눌러 별 점의 <b>지름</b>을 재고,
+      지도 위 번호 핀은 측정할 별 12개입니다. 핀을 눌러 별 자국의 <b>지름</b>을 재고,
       현대 등급과 비교해 규칙을 찾아봅니다.
     </p>
+
+    <!-- 측정 기준 카드 — guide.js 가 SVG 도식과 함께 그려 넣는다 -->
+    <div id="ruleCardHost"></div>
 
     <div class="map-host" id="mapHost-measure"></div>
 
@@ -109,8 +112,11 @@
           <span class="howto-num">2</span>
           <div>
             <b>측정하고</b>
-            <p>지도에 새겨진 별 점을 확대해 두 핸들로 <b>지름</b>을 잽니다.
+            <p>지도에 새겨진 별 자국을 확대해 두 핸들로 <b>지름</b>을 잽니다.
                같은 별을 두 번 재서 평균을 내면 측정 오차도 함께 배웁니다.</p>
+            <p class="howto-rule">잴 때는 자국의 <b>바깥 테두리 끝에서 끝까지</b>를 잽니다.
+               밝은 별은 크고 깊게 파여 가운데가 비어 보이는데,
+               안쪽 구멍이 아니라 바깥쪽 끝이 기준입니다.</p>
           </div>
         </li>
         <li>
@@ -149,6 +155,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="assets/js/constants.js"></script>
+<script src="assets/js/guide.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/mapview.js"></script>
 <script src="assets/js/admin.js"></script>

@@ -70,24 +70,43 @@
     }
     if (name === 'overlay') {
       views.overlay = new MapView(document.getElementById('mapHost-overlay'), {
-        src: IMAGES.orion,
+        src: IMAGES.orion.src,
         showSky: true,
         showPins: false
       });
       initOpacitySlider(views.overlay);
     } else {
+      initRuleCard();
       views.measure = new MapView(document.getElementById('mapHost-measure'), {
-        src: IMAGES.orion,
+        src: IMAGES.orion.src,
         showSky: false,       // 측정할 때는 성도가 방해되지 않도록 끈다
         showPins: true,
         onPinTap: function (id) {
           var st = starById(id);
           // 3단계에서 확대 측정 뷰를 연다
-          toast(st.id + '번 ' + st.kor + ' — 측정 뷰는 3단계에서 열립니다');
+          var z = measureZoom(st.mag, 320);
+          toast(st.id + '번 ' + st.kor + ' — 측정 뷰(약 ' + z.toFixed(1) + '배 확대)는 3단계에서 열립니다', 2600);
+        },
+        onPinSelect: function (id) {
+          if (global.Admin && Admin.enabled) Admin.onPinSelected(id);
+        },
+        onPinMove: function () {
+          if (global.Admin && Admin.enabled) Admin.refreshPreview();
+        },
+        // 지도에서 핀을 끄는 동안에는 확대 창이 비쳐 보이게 한다
+        onPinDragState: function (id, dragging) {
+          if (global.Admin && Admin.enabled) Admin.setPreviewGhost(dragging);
         }
       });
     }
     return views[name];
+  }
+
+  /** 측정 기준 카드(고리 모양 도식 + 문구) — 코드로 그린 SVG */
+  function initRuleCard() {
+    var host = document.getElementById('ruleCardHost');
+    if (!host || host.childNodes.length) return;
+    host.appendChild(Guide.buildRuleCard());
   }
 
   function initTabs() {
@@ -176,7 +195,7 @@
     autoPlacePins: function () { ensureView('measure').autoPlacePins(); },
     selectPin: function (id) { ensureView('measure').selectPin(id); },
     selectedPin: function () { return views.measure ? views.measure.selectedPin : null; },
-    starNorm: function (id) { return ensureView('measure').starNorm(id); }
+    pinNorm: function (id) { return ensureView('measure').pinNorm(id); }
   };
 
   /* ---------- 시작 ---------- */
