@@ -181,7 +181,7 @@
         var d = el('span', 'dot', dots);
         d.dataset.sub = i;
       }
-      $('billArt').appendChild(buildBillArt());
+      buildBill($('billArt'));
     }
     var ds = $('s2Dots').querySelectorAll('.dot');
     for (var j = 0; j < ds.length; j++) {
@@ -189,7 +189,21 @@
     }
   }
 
-  /** 만원권 뒷면을 코드로 간단히 그린 그림 (사진 대신) */
+  /** 만원권 뒷면 — 사진(assets/bill.png)이 있으면 사진, 없으면 코드로 그린 그림 */
+  function buildBill(host) {
+    var img = document.createElement('img');
+    img.className = 'bill-photo';
+    img.alt = '만원권 지폐 뒷면 — 혼천의와 천상열차분야지도';
+    img.decoding = 'async';
+    img.addEventListener('error', function () {
+      img.remove();
+      host.appendChild(buildBillArt());
+    });
+    img.src = IMAGES.bill.src;
+    host.appendChild(img);
+  }
+
+  /** 사진이 없을 때 쓰는 대체 그림 */
   function buildBillArt() {
     var s = svg('svg', null, { viewBox: '0 0 300 130', class: 'bill-svg', role: 'img',
       'aria-label': '만원권 지폐 뒷면에 천상열차분야지도가 그려져 있습니다' });

@@ -169,6 +169,7 @@ code{ background:#00000066; padding:.1em .4em; border-radius:6px; color:var(--ac
 .fig figcaption{ font-size:.8rem; color:var(--ink-dim); text-align:center; margin-top:.3rem; }
 
 .bill-art{ margin:.6rem 0; }
+.bill-photo{ width:100%; max-width:360px; height:auto; display:block; margin:0 auto; border-radius:10px; border:1px solid var(--line); }
 .bill-svg{ width:100%; max-width:340px; height:auto; display:block; margin:0 auto; }
 .bill-num{ fill:#bff0d4; font-size:15px; font-weight:800; font-family:inherit; }
 .bill-cap{ fill:#8fc7a8; font-size:9px; font-family:inherit; }

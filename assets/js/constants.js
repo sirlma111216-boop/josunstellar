@@ -20,7 +20,8 @@
   var IMAGES = {
     orion: { src: 'assets/chart_orion.jpg', w: 2280, h: 2480 },  // 각석본(흑백) — 측정용
     color: { src: 'assets/chart_color.jpg', w: 2280, h: 2480 },  // 채색본(컬러)
-    full:  { src: 'assets/chart_full.jpg',  w: 540,  h: 622 }    // 전체 지도
+    full:  { src: 'assets/chart_full.jpg',  w: 540,  h: 622 },   // 전체 지도
+    bill:  { src: 'assets/bill.png' }                             // 만원권 뒷면 사진(선택)
   };
 
   /* ---------- 별 자국 크기 ----------
