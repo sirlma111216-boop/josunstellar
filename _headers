@@ -18,6 +18,9 @@
 /assets/chart_full.jpg
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
+/assets/chart_stone.jpg
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
 /assets/bill.png
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 

@@ -6,7 +6,7 @@
   'use strict';
 
   var APP = {
-    NAME: '별지기 1395',
+    NAME: '조선스텔라 : 천상열차분야지도',
     CREDIT:
       '천상열차분야지도 각석 이미지: 국가유산 디지털 서비스 / ' +
       '별자리 이름 대조: 국립중앙박물관 소장 채색본(공공누리 제1유형) / ' +
@@ -21,6 +21,7 @@
     orion: { src: 'assets/chart_orion.jpg', w: 2280, h: 2480 },  // 각석본(흑백) — 측정용
     color: { src: 'assets/chart_color.jpg', w: 2280, h: 2480 },  // 채색본(컬러)
     full:  { src: 'assets/chart_full.jpg',  w: 540,  h: 622 },   // 전체 지도
+    stone: { src: 'assets/chart_stone.jpg', w: 1600, h: 1048 }, // 각석 실물 사진
     bill:  { src: 'assets/bill.png' }                             // 만원권 뒷면 사진(선택)
   };
 

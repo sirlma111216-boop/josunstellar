@@ -185,6 +185,22 @@
     for (var j = 0; j < ds.length; j++) {
       ds[j].classList.toggle('is-on', Number(ds[j].dataset.sub) === sub);
     }
+
+    // 카드에 맞춰 왼쪽 그림을 바꾼다
+    // ① 돌에 새긴 지도라는 말이 나오므로 각석 실물 사진
+    // ②③ 별 1,467개 이야기이므로 별이 다 보이는 전체 지도
+    var img = $('s2Img'), cap = $('s2Cap');
+    var want = (sub === 1)
+      ? { src: IMAGES.stone.src, cap: '돌에 새겨진 실물 — 천상열차분야지도 각석',
+          alt: '천상열차분야지도 각석 — 돌에 새겨진 실물' }
+      : { src: IMAGES.full.src, cap: '천상열차분야지도 전체 모습',
+          alt: '천상열차분야지도 전체' };
+    if (img && img.getAttribute('data-src') !== want.src && img.src.indexOf(want.src) < 0) {
+      img.removeAttribute('data-src');
+      img.src = want.src;
+      img.alt = want.alt;
+      cap.textContent = want.cap;
+    }
   }
 
   /** 만원권 뒷면 — 사진(assets/bill.png)이 있으면 사진, 없으면 코드로 그린 그림 */

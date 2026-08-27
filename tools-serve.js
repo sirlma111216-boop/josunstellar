@@ -6,6 +6,25 @@ const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf
   '.jpg':'image/jpeg', '.png':'image/png', '.svg':'image/svg+xml', '.webp':'image/webp', '.md':'text/markdown; charset=utf-8' };
 http.createServer((req, res) => {
   // 개발 편의: 브라우저에서 캘리브레이션 결과를 바로 파일로 저장
+  // 개발 편의: 브라우저에서 줄인 이미지를 assets/ 에 저장
+  if (req.method === 'POST' && req.url.indexOf('/save-asset') === 0) {
+    const name = decodeURIComponent((req.url.split('name=')[1] || '').split('&')[0]);
+    if (!/^[\w.-]+\.(jpg|png|webp)$/.test(name)) {
+      res.writeHead(400).end('bad name'); return;
+    }
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try {
+        const b64 = body.split(',').pop();
+        fs.writeFileSync(path.join(root, 'assets', name), Buffer.from(b64, 'base64'));
+        res.writeHead(200, {'Content-Type':'text/plain; charset=utf-8'}).end('saved');
+        console.log('assets/' + name + ' 저장됨');
+      } catch (e) { res.writeHead(500).end('fail'); }
+    });
+    return;
+  }
+
   if (req.method === 'POST' && req.url === '/save-config') {
     let body = '';
     req.on('data', c => body += c);
