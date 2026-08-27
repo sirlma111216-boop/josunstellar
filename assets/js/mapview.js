@@ -430,7 +430,7 @@
       this.tagL.textContent = o.bName;
       this.tagR.textContent = o.cName;
     }
-    this.bar.style.left = (100 - edge) + '%';
+    this.bar.style.left = edge + '%';   // 손잡이는 잘린 경계와 같은 자리에
     var onlyLeft = edge >= 99.5;    // 왼쪽 층이 화면을 다 덮음
     var onlyRight = edge <= 0.5;    // 오른쪽 층이 다 덮음
     this.bar.hidden = onlyLeft || onlyRight;
