@@ -96,6 +96,30 @@ config.json            ← (선택) 캘리브레이션 결과를 내보내 여�
 설정 우선순위는 **`config.json` → localStorage → 기본값**.
 "config.json 보다 이 기기 설정을 우선 사용"을 켜면 그 기기에서는 localStorage가 이긴다.
 
+## 배포
+
+정적 파일이라 빌드가 필요 없다.
+
+**Cloudflare Pages** — Workers & Pages → Create → Pages → Connect to Git 에서
+이 저장소를 고르고 이렇게 둔다.
+
+| 항목 | 값 |
+|---|---|
+| Framework preset | None |
+| Build command | (비워 둠) |
+| Build output directory |  |
+| Production branch |  |
+
+ 파일이 캐시를 잡아 준다 — 지도 이미지 7일, 코드 10분.
+이미지가 3MB 남짓이라 한 번 받은 태블릿은 다시 받지 않는다.
+이미지를 교체했는데 옛 그림이 보이면 파일 이름을 바꿔 올리면 바로 반영된다.
+
+**GitHub Pages** — Settings → Pages → Deploy from a branch →  / .
+ 는 무시되지만 앱은 그대로 동작한다.
+
+푸시하면 자동으로 다시 배포된다. 캘리브레이션을 고치고  을 커밋하면
+학생 태블릿에 반영된다.
+
 ## 개발용 서버
 
 ```bash

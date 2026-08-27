@@ -1,0 +1,39 @@
+# ==========================================================================
+# Cloudflare Pages 캐시 설정
+# 지도 이미지가 3MB 남짓이라, 한 번 받은 태블릿은 다시 받지 않게 한다.
+# (GitHub Pages 등 다른 곳에서는 이 파일이 무시되므로 같이 두어도 무해하다)
+#
+# 이미지는 7일, 코드는 10분.
+# 코드를 짧게 잡아 두어야 고친 내용이 학생 태블릿에 곧 반영된다.
+# 이미지를 교체했는데 옛 그림이 계속 보이면 최대 7일까지 기다리거나
+# 파일 이름을 바꿔서 올리면 된다.
+# ==========================================================================
+
+/assets/chart_orion.jpg
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/chart_color.jpg
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/chart_full.jpg
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/bill.png
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# 코드는 짧게 — 고치면 곧 반영되도록
+/assets/js/*
+  Cache-Control: public, max-age=600
+
+/assets/style.css
+  Cache-Control: public, max-age=600
+
+# 교사 설정과 첫 화면은 항상 최신으로
+/config.json
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/
+  Cache-Control: no-cache
