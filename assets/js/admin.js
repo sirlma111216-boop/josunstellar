@@ -86,7 +86,7 @@
     el('p', 'ahint', s0,
       IMAGES.orion.src + ' · ' + IMAGES.orion.w + ' × ' + IMAGES.orion.h + ' px (각석본, 측정용)');
     el('p', 'ahint', s0,
-      IMAGES.color.src + ' · 같은 영역·같은 축척의 채색본 — 좌표가 그대로 통한다');
+      IMAGES.color.src + ' · 같은 영역·같은 축척의 채색본 — 좌표가 그대로 통합니다');
     el('p', 'ahint', s0, '별 자국 지름 약 ' + MARK_PX.min + '~' + MARK_PX.max + ' px');
     if (Config.migrated) {
       el('p', 'ahint warn', s0, '⚠ 예전 버전 설정이 있어 측정 핀을 기본값으로 되돌렸습니다.');
@@ -108,9 +108,9 @@
     Admin.editChk = editChk;
 
     el('p', 'ahint', s1,
-      '핀을 고르면 확대 창이 열린다. 창 안을 끌면 원본 픽셀 단위로 미세 조정되니 ' +
-      '별 자국 한가운데에 십자를 맞추자. 허리띠 세 별(8·9·11)처럼 겹친 핀은 ' +
-      '같은 자리를 반복해 누르면 차례로 선택된다.');
+      '핀을 고르면 확대 창이 열립니다. 창 안을 끌면 원본 픽셀 단위로 미세 조정되니 ' +
+      '별 자국 한가운데에 십자를 맞추세요. 허리띠 세 별(8·9·11)처럼 겹친 핀은 ' +
+      '같은 자리를 반복해 누르면 차례로 선택됩니다.');
 
     var picker = el('div', 'pin-picker', s1);
     for (var i = 0; i < STARS.length; i++) {
@@ -151,7 +151,7 @@
 
     /* --- ③ 단계 4 별 3개 --- */
     var s3 = section(panel, '③ 단계 4에서 나란히 확대할 별 3개');
-    el('p', 'ahint', s3, '크기 차이가 잘 드러나도록 밝은 별·중간 별·어두운 별을 고르면 좋다.');
+    el('p', 'ahint', s3, '크기 차이가 잘 드러나도록 밝은 별·중간 별·어두운 별을 고르면 좋습니다.');
     Admin.trioPicker = el('div', 'pin-picker', s3);
     for (var t = 0; t < STARS.length; t++) {
       (function (st) {

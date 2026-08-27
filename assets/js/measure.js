@@ -313,7 +313,7 @@
     box.innerHTML = '';
 
     if (!list.length) {
-      el('span', 'mr-empty', box, '아직 기록이 없다. 손잡이를 맞추고 [기록하기]를 누르자.');
+      el('span', 'mr-empty', box, '아직 기록이 없습니다. 손잡이를 맞추고 [기록하기]를 누르세요.');
       Measure.btnUndo.hidden = true;
       return;
     }

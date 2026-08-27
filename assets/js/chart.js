@@ -39,7 +39,7 @@
     if (!rows.length) {
       var empty = document.createElement('p');
       empty.className = 'chart-empty';
-      empty.textContent = '아직 잰 별이 없다. 단계 6에서 먼저 재보자.';
+      empty.textContent = '아직 잰 별이 없습니다. 단계 6에서 먼저 재 봅시다.';
       this.host.appendChild(empty);
       return;
     }

@@ -87,6 +87,10 @@
       items[j].classList.toggle('is-now', k === n);
       items[j].classList.toggle('is-done', k < n);
       items[j].setAttribute('aria-current', k === n ? 'step' : 'false');
+      // 표시줄이 가로로 넘칠 때 지금 단계가 보이도록 끌어온다
+      if (k === n && items[j].scrollIntoView) {
+        items[j].scrollIntoView({ block: 'nearest', inline: 'center' });
+      }
     }
 
     // 이동 버튼
@@ -114,7 +118,9 @@
   Steps.showSub = function (n, sub) {
     var host = section(n);
     if (!host) return;
-    var subs = host.querySelectorAll(':scope > .sub');
+    // 소단계 블록이 단계 2처럼 두 단 레이아웃 안에 들어가 있을 수도 있으므로
+    // 직계 자식만 보지 말고 단계 안의 .sub 를 모두 찾는다.
+    var subs = host.querySelectorAll('.sub');
     for (var i = 0; i < subs.length; i++) {
       subs[i].hidden = Number(subs[i].dataset.sub) !== sub;
     }
@@ -186,7 +192,7 @@
   /** 만원권 뒷면을 코드로 간단히 그린 그림 (사진 대신) */
   function buildBillArt() {
     var s = svg('svg', null, { viewBox: '0 0 300 130', class: 'bill-svg', role: 'img',
-      'aria-label': '만원권 지폐 뒷면에 천상열차분야지도가 그려져 있다' });
+      'aria-label': '만원권 지폐 뒷면에 천상열차분야지도가 그려져 있습니다' });
     svg('rect', s, { x: 4, y: 4, width: 292, height: 122, rx: 8, fill: '#1f3b2e', stroke: '#7fd6a8', 'stroke-width': 1.5 });
     // 배경의 별지도 원
     svg('circle', s, { cx: 150, cy: 65, r: 46, fill: 'none', stroke: '#7fd6a8', 'stroke-width': 1, opacity: 0.55 });
@@ -376,8 +382,8 @@
     if (!Steps.built[5]) {
       Steps.built[5] = true;
       $('brightDemo').appendChild(buildBrightDemo());
-      $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝다', '어둡다'));
-      $('magNegative').appendChild(buildMagScale([-1.5, 0, 1, 2, 3], '더 밝다', '어둡다', true));
+      $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝음', '어두움'));
+      $('magNegative').appendChild(buildMagScale([-1.5, 0, 1, 2, 3], '더 밝음', '어두움', true));
       buildQuiz();
     }
   }
@@ -405,7 +411,7 @@
   /** 등급 눈금 */
   function buildMagScale(list, leftWord, rightWord, negative) {
     var s = svg('svg', null, { viewBox: '0 0 560 132', class: 'sky-demo', role: 'img',
-      'aria-label': '등급이 작을수록 밝다' });
+      'aria-label': '등급이 작을수록 밝습니다' });
     svg('rect', s, { x: 0, y: 0, width: 560, height: 132, fill: '#050a20', rx: 12 });
     var step = 520 / list.length;
     list.forEach(function (m, i) {
@@ -423,10 +429,10 @@
 
   var QUIZ = [
     { q: '0등급과 3등급 중 더 밝은 별은?', a: '0등급', opts: ['0등급', '3등급'],
-      why: '숫자가 작을수록 밝다. 0이 3보다 작으니 0등급이 더 밝다.' },
+      why: '숫자가 작을수록 밝습니다. 0이 3보다 작으니 0등급이 더 밝습니다.' },
     { q: '−1.5등급인 시리우스와 1등급인 별 중 더 밝은 별은?', a: '시리우스(−1.5등급)',
       opts: ['시리우스(−1.5등급)', '1등급인 별'],
-      why: '마이너스까지 내려가면 더 밝다. −1.5는 1보다 작으니 시리우스가 더 밝다.' }
+      why: '마이너스까지 내려가면 더 밝습니다. −1.5는 1보다 작으니 시리우스가 더 밝습니다.' }
   ];
 
   function buildQuiz() {
@@ -444,7 +450,7 @@
           var right = (o === item.a);
           fb.hidden = false;
           fb.className = 'quiz-fb ' + (right ? 'is-right' : 'is-wrong');
-          fb.textContent = (right ? '✓ 맞다! ' : '✗ 다시 보자. ') + item.why;
+          fb.textContent = (right ? '✓ 맞았습니다! ' : '✗ 다시 볼까요? ') + item.why;
           b.classList.toggle('is-right', right);
           b.classList.toggle('is-wrong', !right);
           State.data.quiz[qi] = right;
@@ -533,7 +539,7 @@
       host.innerHTML = '';
       host.appendChild(buildMeasureTable(true));
       if (!State.measuredCount()) {
-        var p = el('p', 'chart-empty', host, '아직 잰 별이 없다. 단계 6에서 먼저 재보자.');
+        var p = el('p', 'chart-empty', host, '아직 잰 별이 없습니다. 단계 6에서 먼저 재 봅시다.');
         host.insertBefore(p, host.firstChild);
       }
     }
@@ -597,16 +603,16 @@
 
     var b = el('div', 'lb-row lb-answer', host);
     el('span', 'lb-key', b, '오늘 확인한 것');
-    el('span', 'lb-val', b, '밝은 별일수록 크게 새겼다');
+    el('span', 'lb-val', b, '밝은 별일수록 크게 새겼습니다');
 
     var judge = el('p', 'lb-judge', host);
     if (!mine) {
-      judge.textContent = '단계 4로 돌아가 예상을 골라 보자.';
+      judge.textContent = '단계 4로 돌아가 예상을 골라 보세요.';
     } else if (State.data.prediction === 'bright') {
-      judge.innerHTML = '✓ 예상이 <b>맞았다.</b> 자국의 크기는 별의 밝기와 이어져 있었다.';
+      judge.innerHTML = '✓ 예상이 <b>맞았습니다.</b> 자국의 크기는 별의 밝기와 이어져 있었습니다.';
     } else {
-      judge.innerHTML = '이번엔 <b>밝기</b>가 답이었다. 예상과 달랐어도 괜찮다 — ' +
-                        '직접 재서 확인한 것이 오늘의 수확이다.';
+      judge.innerHTML = '이번엔 <b>밝기</b>가 답이었습니다. 예상과 달랐어도 괜찮습니다 — ' +
+                        '직접 재서 확인한 것이 오늘의 수확입니다.';
     }
   }
 

@@ -14,8 +14,8 @@
   var TEXT = {
     RULE: '별 자국의 바깥 테두리 양 끝에 두 점을 맞추세요. ' +
           '가운데가 비어 보여도 바깥쪽 끝을 기준으로 잽니다.',
-    WHY: '밝은 별일수록 크고 깊게 파여 가운데가 비고 테두리만 진해 보인다. ' +
-         '어두운 별은 작고 속이 찬 점에 가깝다.'
+    WHY: '밝은 별일수록 크고 깊게 파여 가운데가 비고 테두리만 진해 보입니다. ' +
+         '어두운 별은 작고 속이 찬 점에 가깝습니다.'
   };
 
   function n(tag, parent, attrs) {
@@ -53,7 +53,7 @@
     var svg = n('svg', null, {
       viewBox: '0 0 320 196', class: 'mark-diagram', role: 'img',
       'aria-label': '측정 기준 도식. 밝은 별은 가운데가 빈 고리 모양이며, ' +
-        '바깥 테두리의 바깥쪽 끝에서 끝까지를 지름으로 잰다. 어두운 별은 작고 속이 찬 점이다.'
+        '바깥 테두리의 바깥쪽 끝에서 끝까지를 지름으로 잽니다. 어두운 별은 작고 속이 찬 점입니다.'
     });
 
     /* 왼쪽: 밝은 별 = 고리 */
@@ -78,7 +78,7 @@
     n('text', svg, { x: 81, y: 154, 'text-anchor': 'middle', class: 'md-cap' }).textContent = '밝은 별 — 크게 파여 고리 모양';
     n('text', svg, { x: 239, y: 154, 'text-anchor': 'middle', class: 'md-cap' }).textContent = '어두운 별 — 작고 찬 점';
     n('text', svg, { x: 160, y: 182, 'text-anchor': 'middle', class: 'md-rule' }).textContent =
-      '가운데가 비어 보여도 안쪽 구멍이 아니라 바깥쪽 끝을 잰다';
+      '가운데가 비어 보여도 안쪽 구멍이 아니라 바깥쪽 끝을 잽니다';
 
     return svg;
   }
@@ -87,7 +87,7 @@
   function compactDiagram() {
     var svg = n('svg', null, {
       viewBox: '0 0 132 92', class: 'mark-diagram mark-diagram-sm', role: 'img',
-      'aria-label': '바깥 테두리 끝에서 끝까지를 잰다'
+      'aria-label': '바깥 테두리 끝에서 끝까지를 잽니다'
     });
     n('rect', svg, { x: 2, y: 2, width: 128, height: 62, rx: 8, fill: PAPER });
     var cx = 66, cy = 32, outer = 24, ringW = 8;

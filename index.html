@@ -33,7 +33,9 @@
 <!-- ═══════════════ 본문 ═══════════════ -->
 <main class="app-main" id="appMain">
 
-<!-- ───────── 단계 1. 인트로 ───────── -->
+<!-- ───────── 단계 1. 인트로 ─────────
+     이 화면만은 학생에게 말을 거는 대신 그 시대를 서술하는 문장이라
+     서술체 그대로 둔다. 단계 2부터는 모두 존댓말이다. -->
 <section class="step step-intro" data-step="1" hidden>
   <div class="intro-stage" id="introStage">
     <div class="intro-bg" id="introBg"></div>
@@ -53,7 +55,7 @@
 <!-- ───────── 단계 2. 천상열차분야지도란? ───────── -->
 <section class="step" data-step="2" hidden>
   <button type="button" class="btn-skip" data-skip>건너뛰기 ▸</button>
-  <h2 class="step-title">천상열차분야지도가 뭘까?</h2>
+  <h2 class="step-title">천상열차분야지도가 뭘까요?</h2>
 
   <div class="split">
     <div class="split-left">
@@ -67,21 +69,21 @@
       <!-- 카드 3장을 순서대로 넘긴다 -->
       <div class="card sub" data-sub="1">
         <h3 class="card-title">이게 뭐예요?</h3>
-        <p>하늘의 별자리를 <b>돌에 새긴 지도</b>다. 1395년 조선이 만들었고, 지금은 국보다.</p>
-        <p class="muted">각석(刻石, 돌에 새긴 것)이라고 부른다.</p>
+        <p>하늘의 별자리를 <b>돌에 새긴 지도</b>입니다. 1395년 조선이 만들었고, 지금은 국보입니다.</p>
+        <p class="muted">각석(刻石, 돌에 새긴 것)이라고 부릅니다.</p>
       </div>
 
       <div class="card sub" data-sub="2" hidden>
-        <h3 class="card-title">얼마나 대단한 건데요?</h3>
-        <p>새겨진 별이 <b>1,467개</b>다. 돌에 새긴 별지도로는 <b>세계에서 두 번째로 오래됐다.</b></p>
-        <p class="muted">첫 번째는 중국의 순우천문도(1247년)다.</p>
+        <h3 class="card-title">얼마나 대단한 건가요?</h3>
+        <p>새겨진 별이 <b>1,467개</b>입니다. 돌에 새긴 별지도로는 <b>세계에서 두 번째로 오래됐습니다.</b></p>
+        <p class="muted">첫 번째는 중국의 순우천문도(1247년)입니다.</p>
       </div>
 
       <div class="card sub" data-sub="3" hidden>
-        <h3 class="card-title">어디서 본 적 있을걸?</h3>
-        <p><b>만원권 지폐 뒷면</b>에 이 그림이 있다. 여러분 지갑 속에도 있다.</p>
+        <h3 class="card-title">어디서 본 적 있을 거예요</h3>
+        <p><b>만원권 지폐 뒷면</b>에 이 그림이 있습니다. 여러분 지갑 속에도 있습니다.</p>
         <div id="billArt" class="bill-art"></div>
-        <p class="muted">혼천의(渾天儀, 옛 천체 관측 기구) 뒤에 깔린 별지도가 바로 이것이다.</p>
+        <p class="muted">혼천의(渾天儀, 옛 천체 관측 기구) 뒤에 깔린 별지도가 바로 이것입니다.</p>
       </div>
 
       <div class="card-dots" id="s2Dots"></div>
@@ -92,11 +94,11 @@
 <!-- ───────── 단계 3. 한 곳만 골라 확대 ───────── -->
 <section class="step" data-step="3" hidden>
   <button type="button" class="btn-skip" data-skip>건너뛰기 ▸</button>
-  <h2 class="step-title">한 곳만 골라서 자세히 보자</h2>
+  <h2 class="step-title">한 곳만 골라서 자세히 봅시다</h2>
 
   <p class="step-lead" id="s3Lead">
-    별이 <b>1,467개</b>나 새겨져 있다. 전부 살펴보기는 어렵다.
-    그래서 오늘은 <b>한 곳만 골라 자세히 보자.</b>
+    별이 <b>1,467개</b>나 새겨져 있습니다. 전부 살펴보기는 어렵습니다.
+    그래서 오늘은 <b>한 곳만 골라 자세히 봅시다.</b>
   </p>
 
   <div class="zoomstage" id="zoomStage">
@@ -108,14 +110,14 @@
   </div>
 
   <div class="step-cta">
-    <button type="button" class="btn btn-big btn-primary" id="btnZoomIn">여기를 확대해 보자</button>
+    <button type="button" class="btn btn-big btn-primary" id="btnZoomIn">여기를 확대해 봅시다</button>
   </div>
 
   <div class="reveal" id="s3After" hidden>
-    <p>여기는 <b>삼수(參宿)</b>라는 별자리 근처다.
-       지금 우리가 <b>오리온자리</b>라고 부르는 그 별들이다.
-       겨울 밤하늘에서 가장 찾기 쉬운 별자리다.</p>
-    <p class="accent-line">600년 전 조선 사람들도 같은 별을 보고 있었다.</p>
+    <p>여기는 <b>삼수(參宿)</b>라는 별자리 근처입니다.
+       지금 우리가 <b>오리온자리</b>라고 부르는 그 별들입니다.
+       겨울 밤하늘에서 가장 찾기 쉬운 별자리입니다.</p>
+    <p class="accent-line">600년 전 조선 사람들도 같은 별을 보고 있었습니다.</p>
   </div>
 </section>
 
@@ -129,14 +131,14 @@
     <div class="compare-single">
       <div class="cs-img" id="s4aImg"></div>
       <div class="cs-text">
-        <p>옛 사람들이 <b>종이에 그린</b> 별지도다. 별의 위치는 정확하게 그렸다.
-           색깔은 옛 학자들이 각각 기록한 별을 구분한 것이다.</p>
-        <p class="accent-line">그런데 잘 보자 — <b>별의 크기가 전부 똑같다.</b></p>
-        <p>이 지도만 봐서는 어떤 별이 밝은지 알 수 없다.</p>
+        <p>옛 사람들이 <b>종이에 그린</b> 별지도입니다. 별의 위치는 정확하게 그렸습니다.
+           색깔은 옛 학자들이 각각 기록한 별을 구분한 것입니다.</p>
+        <p class="accent-line">그런데 잘 보세요 — <b>별의 크기가 전부 똑같습니다.</b></p>
+        <p>이 지도만 봐서는 어떤 별이 밝은지 알 수 없습니다.</p>
       </div>
     </div>
     <div class="trio" id="s4aTrio"></div>
-    <p class="trio-cap">별 3개를 확대한 모습 — 크기가 모두 같다</p>
+    <p class="trio-cap">별 3개를 확대한 모습 — 크기가 모두 같습니다</p>
   </div>
 
   <!-- 장면 B -->
@@ -145,34 +147,34 @@
     <div class="compare-single">
       <div class="cs-img" id="s4bImg"></div>
       <div class="cs-text">
-        <p>이번엔 <b>돌에 새긴</b> 지도다. 같은 자리, 같은 별이다.</p>
-        <p class="accent-line" id="s4bQuestion">무엇이 다를까?</p>
+        <p>이번엔 <b>돌에 새긴</b> 지도입니다. 같은 자리, 같은 별입니다.</p>
+        <p class="accent-line" id="s4bQuestion">무엇이 다를까요?</p>
         <button type="button" class="btn btn-primary" id="btnS4Answer">답 보기</button>
         <div id="s4bAnswer" hidden>
-          <p class="answer-line"><b>별마다 크기가 다르다.</b> 큰 것, 작은 것, 아주 작은 것이 섞여 있다.</p>
+          <p class="answer-line"><b>별마다 크기가 다릅니다.</b> 큰 것, 작은 것, 아주 작은 것이 섞여 있습니다.</p>
         </div>
       </div>
     </div>
     <div class="trio" id="s4bTrio"></div>
-    <p class="trio-cap">장면 1에서 봤던 <b>바로 그 별 3개</b> — 크기가 제각각이다</p>
+    <p class="trio-cap">장면 1에서 봤던 <b>바로 그 별 3개</b> — 크기가 제각각입니다</p>
 
     <div class="compare-box">
       <h3 class="card-title">두 지도를 겹쳐 보기</h3>
-      <p class="muted">손잡이를 좌우로 끌면 같은 자리에서 두 지도가 바뀐다.</p>
+      <p class="muted">손잡이를 좌우로 끌면 같은 자리에서 두 지도가 바뀝니다.</p>
       <div id="s4Compare"></div>
     </div>
   </div>
 
   <!-- 장면 C -->
   <div class="sub" data-sub="3" hidden>
-    <h2 class="step-title big-q">왜 크기를 다르게 새겼을까?</h2>
-    <p class="step-lead">정답은 아직 알려주지 않는다. 먼저 예상해 보자.</p>
+    <h2 class="step-title big-q">왜 크기를 다르게 새겼을까요?</h2>
+    <p class="step-lead">정답은 아직 알려드리지 않습니다. 먼저 예상해 보세요.</p>
     <div class="predict" id="predictBtns"></div>
     <div class="predict-after" id="predictAfter" hidden>
-      <p class="accent-line">좋다. 그럼 <b>직접 재서 확인해보자.</b></p>
+      <p class="accent-line">좋습니다. 그럼 <b>직접 재서 확인해 봅시다.</b></p>
       <h3 class="card-title">우리 반 예상 모으기</h3>
       <div class="tally" id="predictTally"></div>
-      <p class="muted">이 태블릿에서 고른 것만 모은 결과다.</p>
+      <p class="muted">이 태블릿에서 고른 것만 모은 결과입니다.</p>
     </div>
   </div>
 </section>
@@ -182,36 +184,36 @@
   <h2 class="step-title">별의 밝기를 나타내는 방법</h2>
 
   <div class="sub" data-sub="1">
-    <h3 class="sub-title">1. 별은 밝기가 다르다</h3>
-    <p class="step-lead">밤하늘을 보면 아주 밝은 별도 있고, 겨우 보이는 별도 있다.</p>
+    <h3 class="sub-title">1. 별은 밝기가 다릅니다</h3>
+    <p class="step-lead">밤하늘을 보면 아주 밝은 별도 있고, 겨우 보이는 별도 있습니다.</p>
     <div id="brightDemo" class="bright-demo"></div>
-    <p class="muted">같은 밤하늘에 있어도 밝기는 이렇게 다르다.</p>
+    <p class="muted">같은 밤하늘에 있어도 밝기는 이렇게 다릅니다.</p>
   </div>
 
   <div class="sub" data-sub="2" hidden>
     <h3 class="sub-title">2. 2천 년 전 그리스 사람들의 방법</h3>
-    <p class="step-lead">그리스 사람들은 별의 밝기에 <b>순서</b>를 매겼다.
-       가장 밝은 별을 <b>1등급</b>, 겨우 보이는 별을 <b>6등급</b>이라고 불렀다.</p>
+    <p class="step-lead">그리스 사람들은 별의 밝기에 <b>순서</b>를 매겼습니다.
+       가장 밝은 별을 <b>1등급</b>, 겨우 보이는 별을 <b>6등급</b>이라고 불렀습니다.</p>
     <div id="magScale" class="mag-scale"></div>
-    <p class="muted">이것을 <b>겉보기 등급</b>이라고 한다. 눈에 보이는 밝기의 등급이라는 뜻이다.</p>
+    <p class="muted">이것을 <b>겉보기 등급</b>이라고 합니다. 눈에 보이는 밝기의 등급이라는 뜻입니다.</p>
   </div>
 
   <div class="sub" data-sub="3" hidden>
-    <h3 class="sub-title">3. 여기가 제일 헷갈린다</h3>
+    <h3 class="sub-title">3. 여기가 제일 헷갈립니다</h3>
     <div class="warn-box">
-      <p class="warn-big">숫자가 <b>작을수록</b> 밝다!</p>
-      <p>1등급이 6등급보다 밝다. <b>등수라고 생각하면 쉽다</b> — 1등이 제일 밝은 것.</p>
+      <p class="warn-big">숫자가 <b>작을수록</b> 밝습니다!</p>
+      <p>1등급이 6등급보다 밝습니다. <b>등수라고 생각하면 쉽습니다</b> — 1등이 제일 밝은 것이죠.</p>
     </div>
     <div id="magQuiz" class="quiz"></div>
   </div>
 
   <div class="sub" data-sub="4" hidden>
     <h3 class="sub-title">4. 0등급, 그리고 마이너스 등급</h3>
-    <p class="step-lead">아주 밝은 별은 <b>0등급</b>, 그보다 더 밝으면 <b>마이너스 등급</b>까지 간다.</p>
+    <p class="step-lead">아주 밝은 별은 <b>0등급</b>, 그보다 더 밝으면 <b>마이너스 등급</b>까지 갑니다.</p>
     <div id="magNegative" class="mag-scale"></div>
-    <p>밤하늘에서 가장 밝은 별 <b>시리우스</b>는 <b>−1.5등급</b>이다.
-       오늘 우리가 잴 12개 별 중 하나다.</p>
-    <p class="muted">이 앱의 등급 값은 모두 <b>근사값(≈)</b>이다.</p>
+    <p>밤하늘에서 가장 밝은 별 <b>시리우스</b>는 <b>−1.5등급</b>입니다.
+       오늘 우리가 잴 12개 별 중 하나입니다.</p>
+    <p class="muted">이 앱의 등급 값은 모두 <b>근사값(≈)</b>입니다.</p>
   </div>
 </section>
 
@@ -219,9 +221,9 @@
 <section class="step" data-step="6" hidden>
   <!-- 6-1 안내 -->
   <div class="sub" data-sub="1">
-    <h2 class="step-title">이제 직접 재보자</h2>
-    <p class="step-lead">별 자국의 크기를 직접 잰다. 12개 별이 표시되어 있다.
-       하나씩 눌러서 자국의 <b>지름</b>을 재고 기록하자.</p>
+    <h2 class="step-title">이제 직접 재봅시다</h2>
+    <p class="step-lead">별 자국의 크기를 직접 잽니다. 12개 별이 표시되어 있습니다.
+       하나씩 눌러서 자국의 <b>지름</b>을 재고 기록해 봅시다.</p>
     <div id="ruleCardHost"></div>
   </div>
 
@@ -235,7 +237,7 @@
       </div>
       <button type="button" class="btn btn-sm" id="btnSheetPrint">기록표 인쇄</button>
     </div>
-    <p class="muted">지도 위 번호를 누르면 그 별이 크게 확대된다.</p>
+    <p class="muted">지도 위 번호를 누르면 그 별이 크게 확대됩니다.</p>
     <div class="map-host" id="mapHost"></div>
     <div id="measTableHost"></div>
   </div>
@@ -247,42 +249,42 @@
 
   <div class="sub" data-sub="1">
     <h2 class="step-title">내가 잰 값과 실제 밝기</h2>
-    <p class="step-lead">내가 잰 자국의 크기 옆에, 오늘날 천문학이 밝혀낸 <b>겉보기 등급</b>을 나란히 놓았다.</p>
+    <p class="step-lead">내가 잰 자국의 크기 옆에, 오늘날 천문학이 밝혀낸 <b>겉보기 등급</b>을 나란히 놓았습니다.</p>
     <div id="resultTableHost"></div>
   </div>
 
   <div class="sub" data-sub="2" hidden>
-    <h2 class="step-title">점으로 나타내 보자</h2>
-    <p class="step-lead">가로로는 별의 <b>밝기(등급)</b>, 세로로는 <b>내가 잰 크기</b>를 놓고 점을 찍어보자.
-       <b>별 하나가 점 하나</b>다.</p>
+    <h2 class="step-title">점으로 나타내 봅시다</h2>
+    <p class="step-lead">가로로는 별의 <b>밝기(등급)</b>, 세로로는 <b>내가 잰 크기</b>를 놓고 점을 찍어 봅시다.
+       <b>별 하나가 점 하나</b>입니다.</p>
     <div id="chartHost"></div>
     <p class="reveal-note" id="scatterName" hidden>
-      이렇게 두 가지를 점으로 나타낸 그래프를 <b>산점도</b>라고 한다.
+      이렇게 두 가지를 점으로 나타낸 그래프를 <b>산점도</b>라고 합니다.
     </p>
   </div>
 
   <div class="sub" data-sub="3" hidden>
-    <h2 class="step-title">점들이 어느 방향으로 모여 있나?</h2>
+    <h2 class="step-title">점들이 어느 방향으로 모여 있나요?</h2>
     <div id="chartHost2"></div>
     <div class="step-cta">
       <button type="button" class="btn btn-primary" id="btnTrend">경향선 보기</button>
     </div>
     <p class="reveal-note" id="trendNote" hidden>
-      점들이 대체로 <b>이 방향</b>으로 모여 있다.
-      왼쪽(밝은 별)일수록 위쪽(크게 새김)에 있다.
+      점들이 대체로 <b>이 방향</b>으로 모여 있습니다.
+      왼쪽(밝은 별)일수록 위쪽(크게 새김)에 있습니다.
     </p>
   </div>
 </section>
 
 <!-- ───────── 단계 8. 결론 ───────── -->
 <section class="step" data-step="8" hidden>
-  <h2 class="step-title">오늘 무엇을 알아냈나</h2>
+  <h2 class="step-title">오늘 무엇을 알아냈나요</h2>
 
   <div class="card">
-    <h3 class="card-title">먼저 내 생각을 써보자</h3>
-    <p class="muted">그래프를 보고 알게 된 것을 한 문장으로 써보자.</p>
+    <h3 class="card-title">먼저 내 생각을 써 봅시다</h3>
+    <p class="muted">그래프를 보고 알게 된 것을 한 문장으로 써 보세요.</p>
     <textarea id="conclusionInput" rows="2"
-      placeholder="예) 밝은 별일수록 자국이 크다."></textarea>
+      placeholder="예) 밝은 별일수록 자국이 큽니다."></textarea>
     <button type="button" class="btn btn-primary" id="btnShowAll">모두의 결론 보기</button>
   </div>
 
@@ -291,24 +293,24 @@
 
     <div class="card meaning">
       <h3 class="card-title">두 지도의 차이가 뜻하는 것</h3>
-      <p><b>종이에 그린 지도</b>는 별이 <b>어디에</b> 있는지를 알려준다.
-         색깔은 옛 학자들이 각각 기록한 별을 구분한 것이다.
-         하지만 별의 크기는 모두 같아서, <b>얼마나 밝은지는 알 수 없다.</b></p>
-      <p><b>돌에 새긴 지도</b>는 다르다. 별마다 크기를 다르게 새겼다.
-         그리고 오늘 우리가 직접 재어 확인했듯이, 그 크기는 실제 밝기와 맞아떨어진다.</p>
+      <p><b>종이에 그린 지도</b>는 별이 <b>어디에</b> 있는지를 알려줍니다.
+         색깔은 옛 학자들이 각각 기록한 별을 구분한 것입니다.
+         하지만 별의 크기는 모두 같아서, <b>얼마나 밝은지는 알 수 없습니다.</b></p>
+      <p><b>돌에 새긴 지도</b>는 다릅니다. 별마다 크기를 다르게 새겼습니다.
+         그리고 오늘 우리가 직접 재어 확인했듯이, 그 크기는 실제 밝기와 맞아떨어집니다.</p>
       <p class="accent-line">즉 조선의 천문학자들은 별의 위치뿐 아니라
-         <b>밝기까지 관측해 기록으로 남긴 것이다.</b> 망원경도 없던 시절에, 오직 눈으로.</p>
+         <b>밝기까지 관측해 기록으로 남긴 것입니다.</b> 망원경도 없던 시절에, 오직 눈으로.</p>
     </div>
 
     <div class="card">
-      <h3 class="card-title">여러분의 예상은 맞았을까?</h3>
+      <h3 class="card-title">여러분의 예상은 맞았을까요?</h3>
       <div class="lookback" id="lookback"></div>
     </div>
 
     <div class="card next-time">
       <h3 class="card-title">다음 시간 예고</h3>
-      <p class="accent-line">그런데, 밝게 보이는 별이 정말로 밝은 별일까?
-         가까이 있어서 밝아 보이는 건 아닐까?</p>
+      <p class="accent-line">그런데, 밝게 보이는 별이 정말로 밝은 별일까요?
+         가까이 있어서 밝아 보이는 건 아닐까요?</p>
     </div>
 
     <div class="finish-btns">
@@ -350,25 +352,25 @@
       <ol class="howto">
         <li><span class="howto-num">1</span>
           <div><b>두 지도를 비교하고</b>
-            <p>종이에 그린 지도와 돌에 새긴 지도를 나란히 본다.
-               돌에 새긴 지도만 별의 크기가 제각각이다.</p></div></li>
+            <p>종이에 그린 지도와 돌에 새긴 지도를 나란히 봅니다.
+               돌에 새긴 지도만 별의 크기가 제각각입니다.</p></div></li>
         <li><span class="howto-num">2</span>
           <div><b>직접 재고</b>
-            <p>별 자국을 확대해 두 손잡이로 지름을 잰다.
-               자국의 <b>바깥 테두리 끝에서 끝까지</b>를 잰다. 가운데가 비어 보여도
-               안쪽 구멍이 아니라 바깥쪽 끝이 기준이다.</p></div></li>
+            <p>별 자국을 확대해 두 손잡이로 지름을 잽니다.
+               자국의 <b>바깥 테두리 끝에서 끝까지</b>를 잽니다. 가운데가 비어 보여도
+               안쪽 구멍이 아니라 바깥쪽 끝이 기준입니다.</p></div></li>
         <li><span class="howto-num">3</span>
-          <div><b>그래프에서 규칙을 찾는다</b>
+          <div><b>그래프에서 규칙을 찾습니다</b>
             <p>내가 잰 크기와 실제 밝기를 점으로 찍어보면
-               "밝은 별일수록 크게 새겼다"가 눈에 보인다.</p></div></li>
+               "밝은 별일수록 크게 새겼다"가 눈에 보입니다.</p></div></li>
       </ol>
 
       <div class="modal-sub">
         <h3>알아두기</h3>
         <ul class="plain-list">
-          <li>측정 기록은 <b>이 태블릿 안에만</b> 저장된다. 밖으로 전송되지 않는다.</li>
-          <li>겉보기 등급은 <b>근사값(≈)</b>이며, 베텔게우스는 변광성이라 대표값이다.</li>
-          <li>단계 표시줄의 번호를 누르면 어느 단계로든 바로 갈 수 있다.</li>
+          <li>측정 기록은 <b>이 태블릿 안에만</b> 저장됩니다. 밖으로 전송되지 않습니다.</li>
+          <li>겉보기 등급은 <b>근사값(≈)</b>이며, 베텔게우스는 변광성이라 대표값입니다.</li>
+          <li>단계 표시줄의 번호를 누르면 어느 단계로든 바로 갈 수 있습니다.</li>
         </ul>
       </div>
 
@@ -378,12 +380,12 @@
           <button type="button" class="btn btn-sm" id="btnSheetPrint2">빈 기록표 인쇄</button>
           <button type="button" class="btn btn-sm" id="btnReport2">탐구 보고서 인쇄</button>
         </div>
-        <p class="muted">태블릿이 없는 학급은 빈 기록표를 인쇄해 같은 활동을 할 수 있다.</p>
+        <p class="muted">태블릿이 없는 학급은 빈 기록표를 인쇄해 같은 활동을 할 수 있습니다.</p>
       </div>
 
       <div class="modal-danger">
         <div><b>전체 초기화</b>
-          <p class="hint">이 기기에 저장된 진행 상태·측정 기록·결론을 모두 지운다.</p></div>
+          <p class="hint">이 기기에 저장된 진행 상태·측정 기록·결론을 모두 지웁니다.</p></div>
         <button type="button" class="btn btn-danger" id="btnResetAll">전체 초기화</button>
       </div>
     </div>
