@@ -291,34 +291,59 @@
   /* ==========================================================================
      CompareView — 두 지도를 손잡이로 밀어 바꿔 보기
      ========================================================================== */
+  /** 채색본이 각석본을 덮지 못하는 위쪽 여백(각석본 픽셀) */
+  function coverTop() {
+    var T = Config.get('colorTransform', { a: 1, b: 0, tx: 0, ty: 0 });
+    var s2 = T.a * T.a + T.b * T.b;
+    // 채색본 y=0 이 각석본에서 몇 픽셀인지
+    var y0 = (T.b * (0 - T.tx) + T.a * (0 - T.ty)) / s2;
+    return Math.max(0, Math.ceil(y0) + 4);
+  }
+
   function CompareView(host, opts) {
-    var o = Object.assign({ left: IMAGES.color, right: IMAGES.orion,
-                            leftName: '종이(채색본)', rightName: '돌(각석본)' }, opts || {});
+    var o = Object.assign({
+      a: IMAGES.color, b: IMAGES.orion,
+      aName: '종이(채색본)', bName: '돌(각석본)', cName: '실제 밤하늘'
+    }, opts || {});
     this.opts = o;
 
     var box = el('div', 'compare', host);
     this.box = box;
-    box.style.aspectRatio = o.left.w + ' / ' + o.left.h;
+    // 두 지도가 함께 덮는 영역만 보여 준다
+    var top = coverTop();
+    this.cropTop = top;
+    this.cropH = o.b.h - top;
+    box.style.aspectRatio = o.b.w + ' / ' + this.cropH;
 
-    var a = document.createElement('img');
-    a.className = 'cmp-img cmp-a'; a.src = o.left.src; a.alt = o.leftName; a.draggable = false;
-    box.appendChild(a);
-    this.imgA = a;
+    // ① 종이(채색본) — 크롭이 달라 각석본 좌표계에 맞춰 그린다
+    var imgA = document.createElement('img');
+    imgA.className = 'cmp-img'; imgA.src = o.a.src; imgA.alt = o.aName; imgA.draggable = false;
+    this.liftLayer(imgA);
+    box.appendChild(imgA);
+    this.imgA = imgA;
 
-    var wrap = el('div', 'cmp-bwrap', box);
-    var b = document.createElement('img');
-    b.className = 'cmp-img cmp-b'; b.src = o.right.src; b.alt = o.rightName; b.draggable = false;
-    wrap.appendChild(b);
-    this.wrap = wrap;
+    // ② 돌(각석본)
+    var wrapB = el('div', 'cmp-layer', box);
+    var imgB = document.createElement('img');
+    imgB.className = 'cmp-img'; imgB.src = o.b.src; imgB.alt = o.bName; imgB.draggable = false;
+    this.liftLayer(imgB);
+    wrapB.appendChild(imgB);
+    this.wrapB = wrapB;
+
+    // ③ 밤하늘 — 각석본의 자국을 밝기로 읽어 코드로 그린다
+    var wrapC = el('div', 'cmp-layer', box);
+    var cvs = document.createElement('canvas');
+    cvs.className = 'cmp-sky';
+    wrapC.appendChild(cvs);
+    this.wrapC = wrapC; this.canvas = cvs;
 
     var bar = el('div', 'cmp-bar', box);
-    el('span', 'cmp-grip', bar).textContent = '↔';
+    var grip = el('span', 'cmp-grip', bar); grip.textContent = '↔';
     this.bar = bar;
 
-    var tagL = el('span', 'cmp-tag cmp-tag-l', box); tagL.textContent = o.leftName;
-    var tagR = el('span', 'cmp-tag cmp-tag-r', box); tagR.textContent = o.rightName;
+    this.tagL = el('span', 'cmp-tag cmp-tag-l', box);
+    this.tagR = el('span', 'cmp-tag cmp-tag-r', box);
 
-    // 손가락·마우스로 밀기
     var self = this, dragging = false;
     function at(ev) {
       var r = box.getBoundingClientRect();
@@ -338,35 +363,79 @@
     box.addEventListener('pointerup', stop);
     box.addEventListener('pointercancel', stop);
 
-    // 슬라이더로도 조작 (터치가 어려운 경우 대비)
+    // 슬라이더 + 세 단계 눈금
     var ctl = el('div', 'cmp-ctl', host);
-    var lab = el('label', 'ctl-label', ctl);
-    lab.textContent = '두 지도 밀어 보기';
-    lab.htmlFor = 'cmpRange';
     var range = document.createElement('input');
-    range.type = 'range'; range.id = 'cmpRange';
-    range.min = 0; range.max = 100; range.value = 50;
+    range.type = 'range'; range.min = 0; range.max = 100; range.value = 0;
+    range.setAttribute('aria-label', '종이에서 돌로, 돌에서 밤하늘로 밀어 보기');
     ctl.appendChild(range);
     range.addEventListener('input', function () { self.setPos(Number(range.value) / 100, true); });
     this.range = range;
 
-    // 두 지도는 크롭이 달라, 채색본을 각석본 좌표계에 맞춰 겹친다
-    var self3 = this;
-    this.align = function () {
-      if (o.left.src !== IMAGES.color.src) return;
-      a.style.transformOrigin = '0 0';
-      a.style.transform = colorAlignMatrix(box.clientWidth || 1);
-    };
-    this.align();
-    if (global.ResizeObserver) new ResizeObserver(function () { self3.align(); }).observe(box);
+    var marks = el('div', 'cmp-marks', host);
+    [[0, o.aName], [0.5, o.bName], [1, o.cName]].forEach(function (mk) {
+      var b = el('button', 'cmp-mark', marks);
+      b.textContent = mk[1];
+      b.type = 'button';
+      b.addEventListener('click', function () { self.setPos(mk[0]); });
+    });
 
-    this.setPos(0.5);
+    this.resize();
+    if (global.ResizeObserver) new ResizeObserver(function () { self.resize(); }).observe(box);
+    this.setPos(0);
   }
 
+  /** 잘라낸 위쪽 여백만큼 층을 끌어올린다 */
+  CompareView.prototype.liftLayer = function (node) {
+    node.style.position = 'absolute';
+    node.style.left = '0';
+    node.style.width = '100%';
+    node.style.height = (this.opts.b.h / this.cropH * 100) + '%';
+    node.style.top = (-this.cropTop / this.cropH * 100) + '%';
+  };
+
+  /** 크기가 바뀌면 채색본 정렬과 밤하늘을 다시 그린다 */
+  CompareView.prototype.resize = function () {
+    var w = this.box.clientWidth, h = this.box.clientHeight;
+    if (!w || !h) return;
+    if (this.opts.a.src === IMAGES.color.src) {
+      this.imgA.style.transformOrigin = '0 0';
+      this.imgA.style.transform = colorAlignMatrix(w);
+    }
+    var dpr = Math.min(2, global.devicePixelRatio || 1);
+    if (this.canvas.width !== Math.round(w * dpr)) {
+      this.canvas.width = Math.round(w * dpr);
+      this.canvas.height = Math.round(h * dpr);
+      drawNightSky(this.canvas, this.cropTop);
+    }
+  };
+
+  /**
+   * 0 → 0.5 : 종이 위로 돌이 오른쪽에서 밀려 들어온다
+   * 0.5 → 1 : 돌 위로 밤하늘이 오른쪽에서 밀려 들어온다
+   */
   CompareView.prototype.setPos = function (p, fromRange) {
     this.pos = p;
-    this.wrap.style.clipPath = 'inset(0 0 0 ' + (p * 100) + '%)';
-    this.bar.style.left = (p * 100) + '%';
+    var o = this.opts, edge;
+    if (p <= 0.5) {
+      edge = 100 - (p / 0.5) * 100;
+      this.wrapB.style.clipPath = 'inset(0 0 0 ' + edge + '%)';
+      this.wrapC.style.clipPath = 'inset(0 0 0 100%)';
+      this.tagL.textContent = o.aName;
+      this.tagR.textContent = o.bName;
+    } else {
+      edge = 100 - ((p - 0.5) / 0.5) * 100;
+      this.wrapB.style.clipPath = 'inset(0 0 0 0%)';
+      this.wrapC.style.clipPath = 'inset(0 0 0 ' + edge + '%)';
+      this.tagL.textContent = o.bName;
+      this.tagR.textContent = o.cName;
+    }
+    this.bar.style.left = (100 - edge) + '%';
+    var onlyLeft = edge >= 99.5;    // 왼쪽 층이 화면을 다 덮음
+    var onlyRight = edge <= 0.5;    // 오른쪽 층이 다 덮음
+    this.bar.hidden = onlyLeft || onlyRight;
+    this.tagL.hidden = onlyRight;
+    this.tagR.hidden = onlyLeft;
     if (!fromRange && this.range) this.range.value = Math.round(p * 100);
   };
 

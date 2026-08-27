@@ -101,8 +101,6 @@
     $('navWhere').textContent =
       n + '/' + LAST + ' · ' + label.long + (SUBS[n] > 1 ? ' (' + sub + '/' + SUBS[n] + ')' : '');
 
-    // 미니맵은 단계 3부터
-    $('minimap').hidden = (n < 3);
 
     // 단계별 준비
     Steps.enter(n, sub);
@@ -299,8 +297,8 @@
 
       // 두 지도 겹쳐 보기
       new CompareView($('s4Compare'), {
-        left: IMAGES.color, right: IMAGES.orion,
-        leftName: '종이(채색본)', rightName: '돌(각석본)'
+        a: IMAGES.color, b: IMAGES.orion,
+        aName: '종이(채색본)', bName: '돌(각석본)', cName: '실제 밤하늘'
       });
 
       // 예상 고르기

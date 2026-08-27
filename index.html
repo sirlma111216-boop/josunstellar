@@ -159,8 +159,9 @@
     <p class="trio-cap">장면 1에서 봤던 <b>바로 그 별 3개</b> — 크기가 제각각입니다</p>
 
     <div class="compare-box">
-      <h3 class="card-title">두 지도를 겹쳐 보기</h3>
-      <p class="muted">손잡이를 좌우로 끌면 같은 자리에서 두 지도가 바뀝니다.</p>
+      <h3 class="card-title">종이 → 돌 → 밤하늘</h3>
+      <p class="muted">손잡이를 오른쪽으로 밀어 보세요. 종이 지도 위로 돌 지도가, 그 위로 실제 밤하늘이 차례로 나타납니다.</p>
+      <p class="muted">밤하늘은 사진이 아니라, <b>돌에 새겨진 자국의 크기를 밝기로 바꿔</b> 그린 것입니다.</p>
       <div id="s4Compare"></div>
     </div>
   </div>
@@ -329,14 +330,6 @@
   <button type="button" class="btn nav-btn btn-primary" id="btnNext">다음 ▸</button>
 </nav>
 
-<!-- ═══════════════ 미니맵 (단계 3부터) ═══════════════ -->
-<aside class="minimap" id="minimap" hidden>
-  <div class="mm-inner">
-    <img class="mm-img lazy-img" data-src="assets/chart_full.jpg" alt="">
-    <div class="mm-rect" id="mmRect"></div>
-  </div>
-  <span class="mm-cap">전체 지도에서 <b>여기</b></span>
-</aside>
 
 <!-- ═══════════════ 푸터 ═══════════════ -->
 <footer class="app-footer" id="appFooter"></footer>
@@ -405,6 +398,7 @@
 <script src="assets/js/guide.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/state.js"></script>
+<script src="assets/js/skydata.js"></script>
 <script src="assets/js/detect.js"></script>
 <script src="assets/js/mapview.js"></script>
 <script src="assets/js/measure.js"></script>

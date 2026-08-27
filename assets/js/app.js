@@ -1,6 +1,6 @@
 /* ==========================================================================
    별지기 1395 — 부팅 / 공통 기능
-   글자 크기, 도움말, 토스트, 이미지 지연 로드, 미니맵, 전체 초기화
+   글자 크기, 도움말, 토스트, 이미지 지연 로드, 전체 초기화
    ========================================================================== */
 (function (global) {
   'use strict';
@@ -45,13 +45,13 @@
     var imgs = document.querySelectorAll('img.lazy-img[data-src]');
     for (var i = 0; i < imgs.length; i++) {
       var im = imgs[i];
-      // 지금 보이는 화면 안에 있거나 미니맵이면 바로 불러온다
-      if (im.offsetParent === null && !im.closest('.minimap')) continue;
+      // 지금 보이는 화면 안에 있는 것만 불러온다
+      if (im.offsetParent === null) continue;
       im.src = im.dataset.src;
       im.removeAttribute('data-src');
       (function (node) {
         node.addEventListener('error', function () {
-          var box = node.closest('.fig, .zoomstage, .mm-inner');
+          var box = node.closest('.fig, .zoomstage');
           if (box && !box.querySelector('.map-missing')) {
             var m = missingBox(box, node.src.split('/').slice(-2).join('/'));
             m.classList.add('mm-overlay');
@@ -61,17 +61,6 @@
       })(im);
     }
   };
-
-  /* ---------- 미니맵 ---------- */
-  function refreshMinimap() {
-    var r = Config.get('zoomRegion', { x: 0.4, y: 0.5, w: 0.2, h: 0.2 });
-    var box = $('mmRect');
-    if (!box) return;
-    box.style.left = (r.x * 100) + '%';
-    box.style.top = (r.y * 100) + '%';
-    box.style.width = (r.w * 100) + '%';
-    box.style.height = (r.h * 100) + '%';
-  }
 
   /* ---------- 도움말 ---------- */
   function initHelp() {
@@ -124,15 +113,13 @@
     State.load();
 
     Config.load(function () {
-      refreshMinimap();
       Steps.init();
       Admin.init(UI);
       App.lazyLoadVisible();
     });
 
-    // 설정이 바뀌면 단계 3 사각형과 미니맵을 함께 갱신
+    // 설정이 바뀌면 단계 3 사각형을 갱신
     Config.onChange(function () {
-      refreshMinimap();
       if (Steps.refreshZoomRect) Steps.refreshZoomRect();
     });
 
