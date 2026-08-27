@@ -128,6 +128,38 @@
     mkNudge(nud, '', null);      mkNudge(nud, '↓', [0, 1]);  mkNudge(nud, '', null);
     el('p', 'ahint', s1, '화살표 한 번 = 원본 이미지 4px 이동');
 
+    /* --- 별 찍기: 12개를 차례로 눌러 확정한다 --- */
+    var pick = el('div', 'pick-box', s1);
+    Admin.pickLabel = el('div', 'pick-label', pick, '별 찍기를 시작하세요');
+    el('p', 'ahint', pick,
+      '핀 편집 모드를 켠 뒤 [별 찍기 시작]을 누르고, 지도에서 그 별을 누르면 됩니다. ' +
+      '누를 때마다 다음 별로 넘어갑니다. 확대 창으로 자국 한가운데인지 확인하세요.');
+    var pb = el('div', 'abtns', pick);
+    button(pb, '별 찍기 시작', 'btn-primary', function () { Admin.startPick(0); });
+    button(pb, '◂ 이전 별', '', function () { Admin.startPick(Admin.pickAt - 1); });
+    button(pb, '다음 별 ▸', '', function () { Admin.startPick(Admin.pickAt + 1); });
+    Admin.btnColor = button(pb, '채색본으로 보기', '', function () {
+      var v = Admin.ui.map(); if (!v) return;
+      Admin.colorMode = !Admin.colorMode;
+      v.setImage(Admin.colorMode ? IMAGES.color : IMAGES.orion);
+      Admin.btnColor.textContent = Admin.colorMode ? '각석본으로 보기' : '채색본으로 보기';
+    });
+    button(pb, '좌표 목록', '', function () {
+      Admin.coordBox.hidden = !Admin.coordBox.hidden;
+      if (!Admin.coordBox.hidden) {
+        Admin.coordBox.value = STARS.map(function (st) {
+          var p = Config.get('pins.' + st.id, null) ||
+                  { x: st.px.x / IMAGES.orion.w, y: st.px.y / IMAGES.orion.h };
+          return st.id + '\t' + st.kor + '\t' + st.trad + '\t' +
+                 Math.round(p.x * IMAGES.orion.w) + '\t' + Math.round(p.y * IMAGES.orion.h);
+        }).join('\n');
+        Admin.coordBox.focus(); Admin.coordBox.select();
+      }
+    });
+    Admin.coordBox = document.createElement('textarea');
+    Admin.coordBox.hidden = true; Admin.coordBox.rows = 8; Admin.coordBox.className = 'admin-json';
+    pick.appendChild(Admin.coordBox);
+
     var b1 = el('div', 'abtns', s1);
     button(b1, '예상 위치로 초기화', 'btn-primary', function () {
       if (!confirm('측정 핀 12개를 처음 예상 좌표로 되돌릴까요?\n지금까지 옮긴 위치는 사라집니다.')) return;
@@ -359,6 +391,39 @@
       Admin.refreshPreview();
     });
   }
+
+  /* ---------- 별 찍기 순서 ---------- */
+  Admin.pickAt = -1;
+  Admin.colorMode = false;
+
+  Admin.startPick = function (i) {
+    if (i < 0) i = 0;
+    if (i >= STARS.length) {
+      Admin.pickAt = -1;
+      Admin.pickLabel.textContent = '12개 모두 찍었습니다. [이 기기에 저장] 하세요.';
+      Admin.pickLabel.classList.remove('is-on');
+      return;
+    }
+    Admin.pickAt = i;
+    var st = STARS[i];
+    Admin.pickLabel.classList.add('is-on');
+    Admin.pickLabel.innerHTML =
+      '<b>' + (i + 1) + '/12 · ' + st.kor + '</b> <span>' + st.trad + '</span>' +
+      '<span class="pick-hint">' + magText(st.mag) + ' · 자국 어림 ' +
+      Math.round(expectedMarkPx(st.mag)) + 'px — 지도에서 이 별을 누르세요</span>';
+    if (Admin.editChk && !Admin.editChk.checked) {
+      Admin.editChk.checked = true;
+      Admin.ui.setPinEdit(true);
+      Admin.showPreview(true);
+    }
+    Admin.ui.selectPin(st.id);
+  };
+
+  /** 지도를 눌러 핀을 놓으면 다음 별로 넘어간다 */
+  Admin.onPinPlaced = function () {
+    if (Admin.pickAt < 0) return;
+    setTimeout(function () { Admin.startPick(Admin.pickAt + 1); }, 180);
+  };
 
   Admin.selectPin = function (id) {
     Admin.ui.gotoMeasure();

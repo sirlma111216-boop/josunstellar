@@ -486,7 +486,8 @@
         onPinTap: function (id) { Measure.open(id); },
         onPinSelect: function (id) { if (global.Admin && Admin.enabled) Admin.onPinSelected(id); },
         onPinMove: function () { if (global.Admin && Admin.enabled) Admin.refreshPreview(); },
-        onPinDragState: function (id, on) { if (global.Admin && Admin.enabled) Admin.setPreviewGhost(on); }
+        onPinDragState: function (id, on) { if (global.Admin && Admin.enabled) Admin.setPreviewGhost(on); },
+        onPinPlaced: function () { if (global.Admin && Admin.enabled) Admin.onPinPlaced(); }
       });
 
       Measure.onClose = function () { renderMeasureProgress(); };

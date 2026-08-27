@@ -82,7 +82,26 @@
 
     this.pinLayer = el('div', 'pin-layer', this.frame);
     if (!this.opts.showPins) this.pinLayer.hidden = true;
+
+    // 핀 편집 중에는 지도를 눌러 고른 핀을 그 자리로 옮긴다(끌기보다 훨씬 빠르다)
+    var self2 = this;
+    this.frame.addEventListener('click', function (ev) {
+      if (!self2.pinEdit || !self2.selectedPin) return;
+      if (ev.target.closest && ev.target.closest('.pin')) return;
+      if (ev.target.closest && ev.target.closest('.pin-preview')) return;
+      var r = self2.frame.getBoundingClientRect();
+      self2.setPin(self2.selectedPin, (ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height);
+      if (self2.opts.onPinPlaced) self2.opts.onPinPlaced(self2.selectedPin);
+    });
+
     this.renderPins();
+  };
+
+  /** 배경 이미지를 바꾼다(각석본 ↔ 채색본) — 좌표계가 같아 핀은 그대로 쓴다 */
+  MapView.prototype.setImage = function (im) {
+    this.opts.img = im;
+    this.img.src = im.src;
+    this.missing.hidden = true;
   };
 
   MapView.prototype.observeSize = function () {

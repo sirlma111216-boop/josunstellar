@@ -680,6 +680,12 @@ input[type="range"]::-moz-range-thumb{
   font-size:1rem; cursor:pointer;
 }
 .nudge .sp{ visibility:hidden; }
+.pick-box{ border:1px solid var(--accent); border-radius:10px; padding:.5rem .6rem; margin:.5rem 0; }
+.pick-label{ font-size:.9rem; color:var(--ink-dim); }
+.pick-label.is-on{ color:#fff; background:#2a3a1f; border-left:4px solid var(--ok); padding:.4rem .6rem; border-radius:0 8px 8px 0; }
+.pick-label b{ font-size:1.05rem; color:var(--accent); }
+.pick-label span{ display:block; font-size:.8rem; }
+.pick-hint{ color:var(--ok) !important; margin-top:.2rem; }
 .admin-json{
   width:100%; margin-top:.5rem; background:#050a1e; color:#dbe6ff;
   border:1px solid var(--line); border-radius:8px; padding:.5rem; font-size:.75rem;
