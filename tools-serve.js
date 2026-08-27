@@ -5,6 +5,22 @@ const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf
   '.js':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8',
   '.jpg':'image/jpeg', '.png':'image/png', '.svg':'image/svg+xml', '.webp':'image/webp', '.md':'text/markdown; charset=utf-8' };
 http.createServer((req, res) => {
+  // 개발 편의: 브라우저에서 캘리브레이션 결과를 바로 파일로 저장
+  if (req.method === 'POST' && req.url === '/save-config') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try {
+        JSON.parse(body);
+        fs.writeFileSync(path.join(root, 'config.json'), body);
+        res.writeHead(200, {'Content-Type':'text/plain; charset=utf-8'}).end('saved');
+        console.log('config.json 저장됨 (' + body.length + ' bytes)');
+      } catch (e) {
+        res.writeHead(400, {'Content-Type':'text/plain; charset=utf-8'}).end('bad json');
+      }
+    });
+    return;
+  }
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
   const f = path.join(root, p);

@@ -135,6 +135,8 @@
       y: Number(clamp(v, 0, 1).toFixed(5))
     };
     this.renderPins();
+    // 핀을 옮길 때마다 바로 저장한다 — 새로고침해도 작업이 날아가지 않게
+    try { Config.data.savedAt = new Date().toISOString(); Store.set('config', Config.data); } catch (e) { /* 무시 */ }
     if (this.opts.onPinMove) this.opts.onPinMove(id, u, v);
   };
 

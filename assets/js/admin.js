@@ -205,6 +205,16 @@
       var ok = Config.save();
       Admin.ui.toast(ok ? '이 기기에 저장했습니다' : '저장 실패(브라우저 저장소 사용 불가)');
     });
+    button(b4, '서버에 저장', 'btn-primary', function () {
+      // 개발 서버에서 실행 중이면 config.json 을 바로 파일로 써 준다
+      fetch('save-config', { method: 'POST', body: Config.toJSON() })
+        .then(function (r) {
+          Admin.ui.toast(r.ok ? 'config.json 으로 저장했습니다' : '서버가 저장을 거부했습니다');
+        })
+        .catch(function () {
+          Admin.ui.toast('개발 서버가 아닙니다 — [config.json 내보내기]를 쓰세요');
+        });
+    });
     button(b4, 'config.json 내보내기', '', Admin.exportJSON);
     button(b4, 'JSON 불러오기', '', function () { fileInput.click(); });
     button(b4, 'JSON 보기', '', function () {
