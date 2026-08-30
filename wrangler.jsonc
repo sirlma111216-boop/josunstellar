@@ -3,9 +3,6 @@
   "name": "josunstellar",
   "main": "worker/index.js",
   "compatibility_date": "2025-09-01",
-  // qrcode 패키지가 Buffer 등 Node 내장 몇 가지를 쓴다
-  "compatibility_flags": ["nodejs_compat"],
-
   // 화면·이미지는 Workers Assets 가 그대로 내보낸다 (별도 서버가 필요 없다)
   "assets": {
     "directory": "public",

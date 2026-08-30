@@ -8,7 +8,6 @@
 // 학급 투표 상태는 전부 Durable Object 안에 있다. 외부 데이터베이스가 없다.
 
 import { makeCode, normalizeCode } from './protocol.js';
-import { qrDataUrl } from './qr.js';
 
 export { ClassSession } from './session-do.js';
 
@@ -34,11 +33,10 @@ export default {
       return doFor(env, code).fetch(request);
     }
 
-    // ---- 새 수업 코드 발급 + 학생이 들어올 주소·QR
+    // ---- 새 수업 코드 발급 (학생은 앱 첫 화면에서 이 코드를 넣는다)
     if (pathname === '/api/new-code') {
       const code = makeCode();
-      const joinUrl = `${url.origin}/?code=${code}`;
-      return json({ code, joinUrl, qr: qrDataUrl(joinUrl) });
+      return json({ code });
     }
 
     // ---- 지금 집계 (화면 없이 확인할 때)

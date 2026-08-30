@@ -15,7 +15,13 @@
     role: null,        // 'host'(교사) | 'guest'(학생)
     ws: null,
     ready: false,
+    nick: null,        // 내가 쓴 닉네임(이 기기에만 저장된다)
+    members: [],       // [{ nick, on, voted }] — 닉네임 말고는 아무것도 오지 않는다
+    joined: 0,         // 한 번이라도 들어온 사람 수
+    online: 0,         // 지금 붙어 있는 사람 수
     tally: null,       // { counts, total }
+    stage: null,       // 교사가 보고 있는 단계 { step, sub }
+    following: true,   // 학생이 교사 화면을 따라가는가
     mine: null,        // 내가 고른 것(서버 기준)
     listeners: [],
     seq: 1,
@@ -31,6 +37,13 @@
       Store.set('liveToken', t);
     }
     return t;
+  }
+
+  /** 서버가 내려준 집계·명단을 그대로 받아 넣는다 */
+  function take(d) {
+    if (!d) return;
+    if (d.counts) Live.tally = { counts: d.counts, total: d.total };
+    if (d.members) { Live.members = d.members; Live.joined = d.joined; Live.online = d.online; }
   }
 
   Live.onChange = function (fn) { Live.listeners.push(fn); };
@@ -66,8 +79,13 @@
 
     ws.onopen = function () {
       Live.retry = 0;
-      Live.send('join', { token: token() }, function (err, d) {
-        if (!err && d) { Live.tally = { counts: d.counts, total: d.total }; Live.mine = d.mine; }
+      Live.send('join', { token: token(), nick: Live.nick }, function (err, d) {
+        if (!err && d) {
+          take(d);
+          Live.mine = d.mine;
+          if (d.nick) Live.nick = d.nick;          // 서버가 다듬은 형태로 맞춘다
+          if (d.stage) { Live.stage = d.stage; if (Live.onStage) Live.onStage(d.stage); }
+        }
         Live.ready = true;
         notify();
       });
@@ -82,8 +100,14 @@
         if (cb) cb(msg.err || null, msg.d);
         return;
       }
+      if (msg.t === 'stage' && msg.d) {
+        Live.stage = msg.d;
+        if (Live.onStage) Live.onStage(msg.d);
+        notify();
+        return;
+      }
       if (msg.t === 'tally' && msg.d) {
-        Live.tally = { counts: msg.d.counts, total: msg.d.total };
+        take(msg.d);
         notify();
       }
     };
@@ -111,6 +135,7 @@
 
   Live.leave = function () {
     Live.code = null; Live.role = null; Live.tally = null; Live.mine = null;
+    Live.members = []; Live.joined = 0; Live.online = 0;
     Store.remove('liveCode'); Store.remove('liveRole');
     Live.disconnect();
     notify();
@@ -130,7 +155,8 @@
     fetch('api/new-code', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('no worker'); return r.json(); })
       .then(function (d) {
-        Live.joinInfo = d;                 // { code, joinUrl, qr }
+        Live.nick = null;                  // 선생님 기기는 명단에 올리지 않는다
+        Store.remove('liveNick');
         Live.connect(d.code, 'host');
         done(null, d);
       })
@@ -140,9 +166,13 @@
   };
 
   /** 학생: 코드로 들어간다 */
-  Live.joinClass = function (raw, done) {
+  Live.joinClass = function (raw, rawNick, done) {
     var code = String(raw || '').trim().toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 6);
     if (code.length !== 6) { done('코드 6자리를 넣어 주세요.'); return; }
+    var nick = String(rawNick || '').trim().slice(0, 12);
+    if (!nick) { done('닉네임을 넣어 주세요.'); return; }
+    Live.nick = nick;
+    Store.set('liveNick', nick);
     Live.connect(code, 'guest');
     var t = setTimeout(function () { done('연결하지 못했습니다. 코드를 확인해 주세요.'); }, 6000);
     var once = function () {
@@ -158,8 +188,24 @@
   Live.vote = function (key) {
     Live.mine = key;
     Live.send('vote', { token: token(), key: key }, function (err, d) {
-      if (!err && d) { Live.tally = { counts: d.counts, total: d.total }; notify(); }
+      if (!err && d) { take(d); notify(); }
     });
+  };
+
+  /** 교사: 지금 보고 있는 단계를 학생들에게 알린다 */
+  Live.setStage = function (step, sub) {
+    if (Live.role !== 'host' || !Live.ready) return;
+    var s = Live.stage;
+    if (s && s.step === step && s.sub === sub) return;   // 같은 곳이면 보내지 않는다
+    Live.stage = { step: step, sub: sub };
+    Live.send('stage', { step: step, sub: sub });
+  };
+
+  /** 학생: 따라가기를 켜고 끈다 */
+  Live.setFollowing = function (on) {
+    Live.following = !!on;
+    Store.set('liveFollow', Live.following);
+    notify();
   };
 
   /** 교사: 다음 반을 위해 표를 비운다 */
@@ -176,7 +222,13 @@
     if (!code) return;
     code = String(code).toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 6);
     if (code.length !== 6) return;
-    Live.connect(code, fromUrl ? 'guest' : (Store.get('liveRole', 'guest')));
+    Live.following = Store.get('liveFollow', true);
+    Live.nick = Store.get('liveNick', null);
+    var role = fromUrl ? 'guest' : Store.get('liveRole', 'guest');
+    // 닉네임 없이 들어오면 선생님 명단에 이름이 안 뜬다.
+    // 그럴 땐 붙이지 말고 참여 칸에 코드만 채워 준다.
+    if (role === 'guest' && !Live.nick) { Live.pendingCode = code; return; }
+    Live.connect(code, role);
   };
 
   global.Live = Live;

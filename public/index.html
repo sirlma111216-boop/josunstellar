@@ -27,6 +27,14 @@
   </div>
 </header>
 
+<!-- ═══════════════ 학급 연결 상태 띠 ═══════════════
+     수업에 붙어 있는 동안 늘 보인다. 학생은 여기서 따라가기를 끄고 켤 수 있다. -->
+<div class="live-strip" id="liveStrip" hidden>
+  <span class="ls-dot" id="lsDot" aria-hidden="true"></span>
+  <span class="ls-text" id="lsText"></span>
+  <button type="button" class="btn btn-sm ls-follow" id="btnFollow" hidden aria-pressed="true">따라가는 중</button>
+</div>
+
 <!-- ═══════════════ 단계 표시줄 ═══════════════ -->
 <nav class="stepbar" id="stepbar" aria-label="수업 단계"></nav>
 
@@ -49,6 +57,58 @@
   </div>
   <div class="step-cta">
     <button type="button" class="btn btn-big btn-primary" id="btnStart">시작하기</button>
+  </div>
+
+  <!-- 학급 연결. 수업을 시작할 때 다 같이 붙는다. -->
+  <div class="live-box" id="liveBox">
+    <div class="live-off" id="liveOff">
+      <h3 class="card-title">우리 반 같이 하기</h3>
+      <p class="muted">선생님이 화면을 넘기면 학생 화면도 함께 넘어갑니다. 예상 투표도 각자 기기에서 할 수 있습니다.</p>
+      <div class="abtns">
+        <button type="button" class="btn btn-primary" id="btnOpenClass">수업 열기 (선생님)</button>
+        <button type="button" class="btn" id="btnJoinToggle">코드로 참여하기 (학생)</button>
+      </div>
+      <div class="join-row" id="joinRow" hidden>
+        <div class="jf">
+          <label for="joinCode">수업 코드</label>
+          <input type="text" id="joinCode" maxlength="6" inputmode="latin"
+                 autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+        </div>
+        <div class="jf">
+          <label for="joinNick">닉네임</label>
+          <input type="text" id="joinNick" maxlength="12"
+                 autocomplete="off" placeholder="예: 북극성">
+        </div>
+        <button type="button" class="btn btn-primary" id="btnJoin">참여</button>
+        <p class="muted tiny jf-note">이름 대신 <b>별명</b>을 넣어 주세요. 화면에 그대로 보입니다.</p>
+      </div>
+      <p class="live-msg" id="liveMsg" hidden></p>
+      <p class="muted tiny">연결하지 않아도 혼자서 끝까지 할 수 있습니다.</p>
+    </div>
+
+    <div class="live-on" id="liveOn" hidden>
+      <div class="live-head">
+        <div class="live-code-wrap" id="liveCodeWrap">
+          <span class="live-label">수업 코드</span>
+          <span class="live-code" id="liveCode">------</span>
+        </div>
+        <div class="live-count"><b id="liveTotal">0</b>명 참여</div>
+        <button type="button" class="btn btn-sm" id="btnLeave">나가기</button>
+      </div>
+      <div class="live-host" id="liveHost" hidden>
+        <p>학생들은 자기 기기에서 <b>코드로 참여하기</b>를 누르고, 위 코드와 닉네임을 넣으면 됩니다.</p>
+        <p class="muted tiny">화면을 넘기면 참여한 학생들의 화면도 같이 넘어갑니다.</p>
+      </div>
+      <div class="roster" id="roster" hidden>
+        <p class="roster-head"><span id="rosterCount">0</span></p>
+        <div class="roster-list" id="rosterList"></div>
+        <button type="button" class="btn btn-sm btn-danger" id="btnResetVotes" hidden>표 비우기</button>
+      </div>
+
+      <p class="live-guest muted" id="liveGuest" hidden>
+        선생님 화면을 따라갑니다. 직접 재는 단계에서는 위쪽의 <b>따라가는 중</b>을 눌러 잠시 꺼 두어도 됩니다.
+      </p>
+    </div>
   </div>
 </section>
 
@@ -176,43 +236,14 @@
       <p class="accent-line">좋습니다. 그럼 <b>직접 재서 확인해 봅시다.</b></p>
     </div>
 
-    <!-- 학급 실시간 투표 -->
-    <div class="live-box" id="liveBox">
-      <div class="live-off" id="liveOff">
-        <h3 class="card-title">우리 반 예상 모으기</h3>
-        <p class="muted">각자 기기에서 고른 것이 한 화면에 모입니다.</p>
-        <div class="abtns">
-          <button type="button" class="btn btn-primary" id="btnOpenClass">학급 투표 열기 (선생님)</button>
-          <button type="button" class="btn" id="btnJoinToggle">코드로 참여하기</button>
-        </div>
-        <div class="join-row" id="joinRow" hidden>
-          <label for="joinCode">수업 코드</label>
-          <input type="text" id="joinCode" maxlength="6" inputmode="latin"
-                 autocomplete="off" autocapitalize="characters" placeholder="ABC123">
-          <button type="button" class="btn btn-primary" id="btnJoin">참여</button>
-        </div>
-        <p class="live-msg" id="liveMsg" hidden></p>
+    <!-- 우리 반 예상 모으기 (참여는 1. 시작 화면에서 한다) -->
+    <div class="live-tallybox" id="liveTallyBox">
+      <div class="lt-head">
+        <h3 class="card-title">우리 반 예상</h3>
+        <span class="live-count"><b id="tallyTotal">0</b>명 참여</span>
       </div>
-
-      <div class="live-on" id="liveOn" hidden>
-        <div class="live-head">
-          <div class="live-code-wrap" id="liveCodeWrap">
-            <span class="live-label">수업 코드</span>
-            <span class="live-code" id="liveCode">------</span>
-          </div>
-          <div class="live-count"><b id="liveTotal">0</b>명 참여</div>
-          <button type="button" class="btn btn-sm" id="btnLeave">나가기</button>
-        </div>
-        <div class="live-join" id="liveJoin" hidden>
-          <img id="liveQr" alt="수업 참여 QR 코드">
-          <div>
-            <p>학생들은 휴대폰으로 QR을 찍거나, 아래 주소에서 코드를 넣으면 됩니다.</p>
-            <p class="live-url" id="liveUrl"></p>
-            <button type="button" class="btn btn-sm btn-danger" id="btnResetVotes">표 비우기</button>
-          </div>
-        </div>
-        <div class="tally" id="predictTally"></div>
-      </div>
+      <p class="muted tiny" id="tallyHint">시작 화면에서 수업 코드로 참여하면, 반 전체의 예상이 여기에 모입니다.</p>
+      <div class="tally" id="predictTally"></div>
     </div>
   </div>
 </section>

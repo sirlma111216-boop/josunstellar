@@ -48,6 +48,9 @@
       b.addEventListener('click', function () { Steps.go(s.n); });
     });
 
+    // 학급 참여는 첫 화면에 있지만, 어느 단계로 이어서 들어와도 연결은 살아 있어야 한다
+    buildLive();
+
     $('btnPrev').addEventListener('click', Steps.prev);
     $('btnNext').addEventListener('click', Steps.next);
 
@@ -67,11 +70,18 @@
   /* ==========================================================================
      이동
      ========================================================================== */
+  /* 학생 화면이 교사를 따라 움직이는 중인가.
+     이때는 다시 서버로 되돌려 보내지 않는다(메아리 방지). */
+  var followingNow = false;
+
   Steps.go = function (n, sub, silent) {
     n = Math.max(1, Math.min(LAST, n));
     sub = Math.max(1, Math.min(SUBS[n] || 1, sub || 1));
     Steps.step = n;
     Steps.sub = sub;
+
+    // 교사가 넘기면 참여한 학생 화면도 같이 넘어간다
+    if (!followingNow && window.Live && Live.role === 'host') Live.setStage(n, sub);
 
     // 화면 전환
     var all = document.querySelectorAll('.step');
@@ -319,7 +329,6 @@
 
       // 예상 고르기
       buildPredict();
-      buildLive();
     }
 
     // 별 3개 확대 — 두 장면 모두 같은 좌표·같은 배율로
@@ -403,30 +412,76 @@
     $('btnJoinToggle').addEventListener('click', function () {
       var row = $('joinRow');
       row.hidden = !row.hidden;
-      if (!row.hidden) $('joinCode').focus();
+      if (!row.hidden) {
+        $('joinNick').value = Live.nick || '';   // 지난 시간에 쓰던 닉네임을 채워 준다
+        $('joinCode').focus();
+      }
     });
 
     $('btnJoin').addEventListener('click', function () {
       msg('참여하는 중…');
-      Live.joinClass($('joinCode').value, function (err) {
+      Live.joinClass($('joinCode').value, $('joinNick').value, function (err) {
         if (err) { msg(err, true); return; }
         msg('');
         renderLive();
       });
     });
-    $('joinCode').addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter') $('btnJoin').click();
+    ['joinCode', 'joinNick'].forEach(function (id) {
+      $(id).addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') $('btnJoin').click();
+      });
     });
 
     $('btnLeave').addEventListener('click', function () { Live.leave(); renderLive(); });
+
+    // 학생: 잠시 혼자 움직이고 싶을 때 따라가기를 끈다
+    $('btnFollow').addEventListener('click', function () {
+      Live.setFollowing(!Live.following);
+      // 다시 켜면 곧바로 선생님 화면으로 간다
+      if (Live.following && Live.stage) applyStage(Live.stage);
+      renderLive();
+    });
+
+    // 교사가 화면을 넘기면 학생 화면도 넘어간다
+    Live.onStage = applyStage;
     $('btnResetVotes').addEventListener('click', function () {
       if (confirm('지금까지 모인 표를 모두 비울까요?')) Live.reset();
     });
 
-    // 서버에서 표가 오면 화면을 갱신한다
-    Live.onChange(function () { if (Steps.step === 4) renderLive(); });
+    // 주소에 코드가 붙어 들어왔다면 참여 칸을 미리 열어 둔다
+    if (Live.pendingCode) {
+      $('joinRow').hidden = false;
+      $('joinCode').value = Live.pendingCode;
+      $('joinNick').value = Live.nick || '';
+      msg('닉네임을 넣고 참여를 누르세요.');
+    }
+
+    // 서버에서 표·참여 상태가 오면 화면을 갱신한다
+    Live.onChange(function () {
+      // 수업 도중에 연 경우에도 학생들이 지금 화면으로 따라오도록 알린다
+      if (Live.role === 'host' && Live.ready) Live.setStage(Steps.step, Steps.sub);
+      renderLive();
+    });
     renderLive();
   }
+
+  /** 교사가 보고 있는 단계로 학생 화면을 옮긴다 */
+  function applyStage(st) {
+    if (!st || Live.role !== 'guest' || !Live.following) return;
+    if (Steps.step === st.step && Steps.sub === st.sub) return;
+    // 별을 재고 있는 중이라면 화면을 빼앗지 않는다. 창을 닫을 때 따라간다.
+    if (document.body.classList.contains('modal-open')) { Steps.waitingStage = st; return; }
+    followingNow = true;
+    try { Steps.go(st.step, st.sub); }
+    finally { followingNow = false; }
+  }
+
+  /** 측정 창을 닫았을 때, 밀린 단계가 있으면 그때 따라간다 */
+  Steps.catchUp = function () {
+    var st = Steps.waitingStage;
+    Steps.waitingStage = null;
+    if (st) applyStage(st);
+  };
 
   function markPredict() {
     var bs = $('predictBtns').querySelectorAll('.predict-btn');
@@ -458,26 +513,79 @@
       if (State.data.prediction === p.key) row.classList.add('is-mine');
       el('span', 'tally-num', row, v + '명');
     });
-    var t = $('liveTotal');
-    if (t) t.textContent = total;
+    var joined = !!(Live.code && Live.ready);
+    setText('tallyTotal', total);
+    setText('liveTotal', Live.joined);
+    var hint = $('tallyHint');
+    if (hint) {
+      hint.hidden = joined && total > 0;
+      hint.textContent = joined
+        ? '아직 아무도 고르지 않았습니다. 각자 기기에서 하나를 골라 주세요.'
+        : '시작 화면에서 수업 코드로 참여하면, 반 전체의 예상이 여기에 모입니다.';
+    }
   }
 
-  /** 학급 연결 상태에 맞춰 화면을 바꾼다 */
+  function setText(id, v) { var e = $(id); if (e) e.textContent = v; }
+
+  /**
+   * 참여자 명단. 서버에서 오는 것은 닉네임뿐이다.
+   * 이름표는 textContent 로만 넣어 입력한 글자가 태그로 읽히지 않게 한다.
+   */
+  function renderRoster(isHost) {
+    var box = $('roster');
+    var list = $('rosterList');
+    var n = Live.members.length;
+    box.hidden = false;
+    $('rosterCount').textContent = n
+      ? '참여한 학생 ' + n + '명 (접속 ' + Live.online + '명)'
+      : '아직 들어온 학생이 없습니다. 위 코드를 불러 주세요.';
+    list.innerHTML = '';
+    Live.members.forEach(function (m) {
+      var chip = el('span', 'chip', list);
+      chip.classList.toggle('is-away', !m.on);
+      // 선생님 화면에서만 누가 아직 안 골랐는지 보인다(무엇을 골랐는지는 안 보인다)
+      if (isHost && m.voted) chip.classList.add('is-voted');
+      chip.textContent = m.nick;
+      if (!m.on) chip.title = '지금 접속이 끊겼습니다';
+    });
+  }
+
+  /** 학급 연결 상태에 맞춰 화면과 상태 띠를 바꾼다 */
   function renderLive() {
     var box = $('liveBox');
     if (!box) return;
-    var on = !!(Live.code && Live.ready);
-    $('liveOff').hidden = on;
-    $('liveOn').hidden = !on;
-    if (!on) return;
-    $('liveCode').textContent = Live.code;
-    // 교사 화면에만 QR·주소·표 비우기를 보여 준다
-    var isHost = Live.role === 'host' && Live.joinInfo;
-    $('liveJoin').hidden = !isHost;
-    if (isHost) {
-      $('liveQr').src = Live.joinInfo.qr;
-      $('liveUrl').textContent = Live.joinInfo.joinUrl;
+    var joined = !!Live.code;
+    var on = joined && Live.ready;
+    var isHost = Live.role === 'host';
+
+    $('liveOff').hidden = joined;
+    $('liveOn').hidden = !joined;
+    $('liveGuest').hidden = isHost;
+
+    if (joined) {
+      $('liveCode').textContent = Live.code;
+      // 참여 방법 안내와 표 비우기는 선생님 화면에만
+      $('liveHost').hidden = !isHost;
+      $('btnResetVotes').hidden = !isHost;
+      renderRoster(isHost);
     }
+
+    // 늘 보이는 상태 띠
+    var strip = $('liveStrip');
+    strip.hidden = !joined;
+    if (joined) {
+      strip.classList.toggle('is-off', !on);
+      $('lsText').textContent = !on
+        ? '수업 ' + Live.code + ' · 다시 연결하는 중…'
+        : (isHost ? '수업 ' + Live.code + ' · ' + Live.online + '명 접속 중'
+                  : '수업 ' + Live.code + ' · ' + (Live.nick || '참여 중'));
+      var fb = $('btnFollow');
+      fb.hidden = isHost;
+      fb.textContent = Live.following ? '따라가는 중' : '따라가기 꺼짐';
+      fb.classList.toggle('is-off', !Live.following);
+      fb.setAttribute('aria-pressed', Live.following ? 'true' : 'false');
+    }
+
     renderTally();
   }
 
@@ -580,7 +688,7 @@
         onPinPlaced: function () { if (global.Admin && Admin.enabled) Admin.onPinPlaced(); }
       });
 
-      Measure.onClose = function () { renderMeasureProgress(); };
+      Measure.onClose = function () { renderMeasureProgress(); Steps.catchUp(); };
       $('btnSheetPrint').addEventListener('click', function () { Report.printSheet(); });
       State.onChange(renderMeasureProgress);
     }
