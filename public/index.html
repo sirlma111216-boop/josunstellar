@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="description" content="천상열차분야지도로 배우는 중3 별과 우주 수업 도구">
-<title>별지기 1395</title>
+<title>조선스텔라 : 천상열차분야지도</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -15,7 +15,7 @@
 <header class="app-header">
   <div class="brand">
     <span class="brand-mark" aria-hidden="true">✦</span>
-    <h1 class="brand-name" id="appName">별지기 1395</h1>
+    <h1 class="brand-name" id="appName">조선스텔라 : 천상열차분야지도</h1>
   </div>
   <div class="header-tools">
     <div class="fs-group" role="group" aria-label="글자 크기 조절">
@@ -417,6 +417,8 @@
       </div>
       <button type="button" class="btn btn-sm" id="btnSheetPrint">기록표 인쇄</button>
     </div>
+    <!-- 교사 화면에만 — 언제 다음으로 넘어갈지 판단할 근거 -->
+    <p class="class-progress" id="classProgress" hidden></p>
     <p class="muted">지도 위 번호를 누르면 그 별이 크게 확대됩니다.</p>
     <div class="map-host" id="mapHost"></div>
     <div id="measTableHost"></div>
@@ -601,14 +603,11 @@
 <script src="assets/js/state.js"></script>
 <script src="assets/js/live.js"></script>
 <script src="assets/js/skydata.js"></script>
-<script src="assets/js/detect.js"></script>
 <script src="assets/js/mapview.js"></script>
 <script src="assets/js/measure.js"></script>
 <script src="assets/js/chart.js"></script>
-<script src="assets/js/demo.js"></script>
 <script src="assets/js/steps.js"></script>
 <script src="assets/js/report.js"></script>
-<script src="assets/js/admin.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

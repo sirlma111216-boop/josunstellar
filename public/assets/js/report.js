@@ -1,5 +1,5 @@
 /* ==========================================================================
-   별지기 1395 — 인쇄물 / 내보내기
+   조선스텔라 — 인쇄물 / 내보내기
      · 탐구 보고서 인쇄 (브라우저 인쇄 기능. PDF 저장은 인쇄 대화상자에서)
      · 빈 기록표 인쇄 (태블릿이 없는 학급용)
      · 교사 수합용 CSV
@@ -96,7 +96,7 @@
 
     /* 머리말 */
     var head = el('header', 'sheet-head', page);
-    el('h1', null, head, '별지기 1395 · 나의 탐구 보고서');
+    el('h1', null, head, APP.NAME + ' · 나의 탐구 보고서');
     el('p', 'sheet-sub', head, '천상열차분야지도로 알아본 조선의 별 기록');
 
     var meta = el('div', 'sheet-meta', page);
@@ -164,7 +164,7 @@
     var page = el('div', 'sheet', root);
 
     var head = el('header', 'sheet-head', page);
-    el('h1', null, head, '별지기 1395 · 별 자국 측정 기록표');
+    el('h1', null, head, APP.NAME + ' · 별 자국 측정 기록표');
     el('p', 'sheet-sub', head, '인쇄한 지도에서 자로 재어 적어 보세요');
 
     var meta = el('div', 'sheet-meta', page);
@@ -296,7 +296,7 @@
     }).join('\r\n');
 
     var who = (State.data.group || '') + (State.data.name || '');
-    var fname = '별지기1395_' + (who ? who.replace(/[\\/:*?"<>|\s]/g, '') + '_' : '') + stamp() + '.csv';
+    var fname = '조선스텔라_' + (who ? who.replace(/[\\/:*?"<>|\s]/g, '') + '_' : '') + stamp() + '.csv';
 
     try {
       // 엑셀에서 한글이 깨지지 않도록 BOM 을 붙인다

@@ -21,6 +21,9 @@ const THROTTLE_MS = 250;
 /** 반 전체 자료는 덩치가 커서 조금 더 느슨하게 묶는다 */
 const WORK_THROTTLE_MS = 700;
 
+/** 데모봇 토큰은 이 말로 시작한다 (한꺼번에 걷어낼 때 쓴다) */
+const DEMO_PREFIX = 'demo-';
+
 /** 닉네임 길이 상한 */
 const NICK_MAX = 12;
 
@@ -293,6 +296,16 @@ export class ClassSession extends DurableObject {
           const what = String(msg.d?.what || 'votes');
           if (what === 'votes' || what === 'all') this.state.votes = {};
           if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; }
+          // 데모봇만 걷어낸다. 교사 화면이 새로고침되어 leave 를 못 보냈을 때를 위해 둔다.
+          if (what === 'demo') {
+            for (const t of Object.keys(this.state.members)) {
+              if (t.indexOf(DEMO_PREFIX) !== 0) continue;
+              delete this.state.members[t];
+              delete this.state.votes[t];
+              delete this.state.results[t];
+              delete this.state.notes[t];
+            }
+          }
           await this.save();
           ws.send(ack(msg.i, this.snap()));
           this.scheduleBroadcast();

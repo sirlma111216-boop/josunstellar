@@ -1,5 +1,5 @@
 /* ==========================================================================
-   별지기 1395 — 부팅 / 공통 기능
+   조선스텔라 — 부팅 / 공통 기능
    글자 크기, 도움말, 토스트, 이미지 지연 로드, 전체 초기화
    ========================================================================== */
 (function (global) {
@@ -102,6 +102,16 @@
     selectedPin: function () { return Steps.map ? Steps.map.selectedPin : null; }
   };
 
+  /* 교사 캘리브레이션은 ?admin=1 로 들어올 때만 읽는다.
+     학생 기기에서는 20KB 를 내려받지도 해석하지도 않는다. */
+  function loadAdmin() {
+    if (new URLSearchParams(location.search).get('admin') !== '1') return;
+    var s = document.createElement('script');
+    s.src = 'assets/js/admin.js';
+    s.onload = function () { if (global.Admin) Admin.init(UI); };
+    document.head.appendChild(s);
+  }
+
   /* ---------- 시작 ---------- */
   function boot() {
     document.title = APP.NAME;
@@ -115,8 +125,8 @@
 
     Config.load(function () {
       Steps.init();
-      Admin.init(UI);
       App.lazyLoadVisible();
+      loadAdmin();
     });
 
     // 설정이 바뀌면 단계 3 사각형을 갱신
@@ -128,7 +138,6 @@
   }
 
   global.App = App;
-  global.AppUI = UI;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

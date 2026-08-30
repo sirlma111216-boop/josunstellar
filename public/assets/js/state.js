@@ -1,5 +1,5 @@
 /* ==========================================================================
-   별지기 1395 — 학생 진행 상태
+   조선스텔라 — 학생 진행 상태
    새로고침해도 이어서 하도록 localStorage 에 저장한다.
    기기 밖으로는 아무것도 나가지 않는다.
    ========================================================================== */
@@ -11,7 +11,6 @@
       step: 1,
       sub: {},              // { 4: 2, 5: 3 } 단계별 소단계
       prediction: null,     // 단계 4 장면 C 에서 고른 예상 key
-      hands: {},            // 손들기 집계 { key: 사람 수 } — 교사가 직접 센다
       measures: {},         // { 별id: [지름1, 지름2, ...] } 원본 이미지 픽셀
       quiz: {},             // 단계 5 퀴즈 정답 여부
       conclusion: '',       // 학생이 쓴 결론
@@ -107,18 +106,6 @@
       State.save();
     },
 
-    /** 손들기 집계 — 교사가 세어 넣는다 */
-    setHands: function (key, n) {
-      State.data.hands[key] = Math.max(0, Math.min(60, n | 0));
-      State.save();
-    },
-    handsOf: function (key) { return (State.data.hands && State.data.hands[key]) || 0; },
-    handsTotal: function () {
-      var t = 0;
-      for (var i = 0; i < PREDICTIONS.length; i++) t += State.handsOf(PREDICTIONS[i].key);
-      return t;
-    },
-    clearHands: function () { State.data.hands = {}; State.save(); },
 
     predictionLabel: function () {
       for (var i = 0; i < PREDICTIONS.length; i++) {

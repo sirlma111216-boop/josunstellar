@@ -114,6 +114,8 @@
   /** 데모 시작. 이미 열린 수업이 있으면 그 수업에 붙는다. */
   Demo.start = function (code, done) {
     if (Demo.running) { done && done(null); return; }
+    // 지난번에 교사 화면이 새로고침되어 남았을 수 있는 찌꺼기를 먼저 걷어낸다
+    if (global.Live && Live.ready) Live.reset('demo');
     Demo.running = true;
     Demo.bots = [];
     Demo.timers = [];
@@ -153,14 +155,25 @@
     });
     Demo.bots = [];
     Demo.done = {};
+    // 소켓이 미처 못 보냈을 수 있으므로 교사 연결로 한 번 더 지운다
+    if (global.Live && Live.ready) setTimeout(function () { Live.reset('demo'); }, 600);
     if (Demo.onChange) Demo.onChange();
   };
 
   Demo.count = function () { return Demo.bots.length; };
   Demo.total = COUNT;
 
-  // 창을 닫아도 봇이 남지 않도록
-  global.addEventListener('pagehide', function () { Demo.stop(); });
+  // 창을 닫거나 새로고침해도 봇이 남지 않도록.
+  // 이때는 늦게 도는 타이머가 살아남지 못하므로 바로 보내고 끊는다.
+  global.addEventListener('pagehide', function () {
+    if (!Demo.running) return;
+    Demo.running = false;
+    (Demo.timers || []).forEach(clearTimeout);
+    Demo.bots.forEach(function (bot) {
+      try { send(bot, 'leave', { token: bot.token }); bot.ws.close(); } catch (e) { /* 무시 */ }
+    });
+    try { if (global.Live && Live.ready) Live.reset('demo'); } catch (e) { /* 무시 */ }
+  });
 
   global.Demo = Demo;
 

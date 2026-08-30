@@ -1,5 +1,5 @@
 /* ==========================================================================
-   별지기 1395 — 8단계 수업 진행 controller
+   조선스텔라 — 8단계 수업 진행 controller
    교사가 화면을 순서대로 넘기면 그것이 곧 수업이 되도록 만든다.
    ========================================================================== */
 (function (global) {
@@ -54,6 +54,7 @@
     // 친구가 새로 올리면 보고 있는 화면을 그 자리에서 갱신한다
     if (global.Live) {
       Live.onWork = function () {
+        if (Steps.step === 6) renderClassProgress();
         if (Steps.step === 7 && Steps.sub === 3) {
           renderScope();
           if (Steps.scopeClass && Steps.chart2) {
@@ -479,10 +480,19 @@
 
     $('btnLeave').addEventListener('click', function () { Live.leave(); renderLive(); });
 
-    // 데모봇 — 수업 전에 혼자 전체 흐름을 돌려 본다
+    // 데모봇 — 수업 전에 혼자 전체 흐름을 돌려 본다.
+    // 교사만 쓰는 기능이라 학생 기기에서는 파일을 읽지 않고, 누를 때 가져온다.
+    function withDemo(fn) {
+      if (global.Demo) { fn(); return; }
+      var sc = document.createElement('script');
+      sc.src = 'assets/js/demo.js';
+      sc.onload = function () { if (global.Demo) { Demo.onChange = renderDemo; fn(); } };
+      sc.onerror = function () { msg('데모봇을 불러오지 못했습니다.', true); };
+      document.head.appendChild(sc);
+    }
+
     $('btnDemo').addEventListener('click', function () {
-      if (!global.Demo) return;
-      if (Demo.running) { Demo.stop(); renderDemo(); return; }
+      if (global.Demo && Demo.running) { Demo.stop(); renderDemo(); return; }
       if (!Live.code) { msg('먼저 수업을 열어 주세요.', true); return; }
       if (Live.joined > 0) {
         var q = [
@@ -492,10 +502,8 @@
         ].join('\n');
         if (!confirm(q)) return;
       }
-      Demo.start(Live.code);
-      renderDemo();
+      withDemo(function () { Demo.start(Live.code); renderDemo(); });
     });
-    if (global.Demo) Demo.onChange = renderDemo;
 
     // 학생: 잠시 혼자 움직이고 싶을 때 따라가기를 끈다
     $('btnFollow').addEventListener('click', function () {
@@ -590,11 +598,27 @@
 
   function setText(id, v) { var e = $(id); if (e) e.textContent = v; }
 
+  /**
+   * 단계 6에서 교사에게만 보여 주는 학급 진행 줄.
+   * 45분 수업에서 "언제 다음으로 넘어갈까"를 판단할 근거가 필요하다.
+   */
+  function renderClassProgress() {
+    var p = $('classProgress');
+    if (!p) return;
+    var host = global.Live && Live.role === 'host' && Live.code;
+    var joined = host ? Live.joined : 0;
+    p.hidden = !(host && joined > 0);
+    if (p.hidden) return;
+    var done = (Live.work && Live.work.people) || 0;
+    p.textContent = joined + '명 중 ' + done + '명이 측정 결과를 올렸습니다.';
+    p.classList.toggle('is-most', joined > 0 && done >= Math.ceil(joined * 0.8));
+  }
+
   /** 데모봇 버튼과 안내를 상태에 맞춰 바꾼다 */
   function renderDemo() {
     var b = $('btnDemo'), hint = $('demoHint');
-    if (!b || !global.Demo) return;
-    if (Demo.running) {
+    if (!b) return;
+    if (global.Demo && Demo.running) {
       b.textContent = '데모 멈추기';
       b.classList.add('is-demo-on');
       hint.textContent = '데모 학생 ' + Demo.count() + '/' + Demo.total +
@@ -939,7 +963,7 @@
       $('btnSheetPrint').addEventListener('click', function () { Report.printSheet(); });
       State.onChange(renderMeasureProgress);
     }
-    if (sub === 2) renderMeasureProgress();
+    if (sub === 2) { renderMeasureProgress(); renderClassProgress(); }
   }
 
   function renderMeasureProgress() {
@@ -974,16 +998,16 @@
       var name = el('td', 'td-name', tr);
       el('b', null, name, st.kor);
       el('span', 'td-trad', name, ' ' + st.trad);
-      el('td', 'td-v', tr, list[0] !== undefined ? list[0].toFixed(1) : '–');
-      el('td', 'td-v', tr, list[1] !== undefined ? list[1].toFixed(1) : '–');
+      // data-l 은 좁은 화면에서 표가 카드로 접힐 때 쓰는 이름표다
+      el('td', 'td-v', tr, list[0] !== undefined ? list[0].toFixed(1) : '–').dataset.l = '1차';
+      el('td', 'td-v', tr, list[1] !== undefined ? list[1].toFixed(1) : '–').dataset.l = '2차';
       var avg = State.averageOf(st.id);
-      el('td', 'td-v td-avg', tr, avg === null ? '–' : avg.toFixed(1));
-      if (withMag) el('td', 'td-v td-mag', tr, magText(st.mag));
+      el('td', 'td-v td-avg', tr, avg === null ? '–' : avg.toFixed(1)).dataset.l = '평균';
+      if (withMag) el('td', 'td-v td-mag', tr, magText(st.mag)).dataset.l = '실제 등급';
     });
     return wrap;
   }
 
-  /* ---------- 단계 7. 결과 ---------- */
   /* ---------- 단계 7. 결과 ---------- */
 
   /** 내가 잰 값을 반 전체 산점도에 보탠다 */
