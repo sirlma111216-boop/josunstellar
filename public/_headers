@@ -29,6 +29,9 @@
 /assets/bill.png
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
+/assets/bgm.mp3
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
 # 코드는 매번 확인 — 화면(HTML)과 어긋나지 않도록
 /assets/js/*
   Cache-Control: no-cache

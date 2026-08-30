@@ -1275,3 +1275,9 @@ body.admin-open{ padding-bottom:60dvh; }
 /* input 은 기본 폭이 넓어 격자를 밀어낸다. 칸에 맞춰 줄어들게 한다. */
 .who-grid .field input{ width:100%; min-width:0; }
 .who-grid .field{ min-width:0; }
+
+/* 배경음악 켜기 — 교실에서 기기마다 따로 켠다(기본 꺼짐) */
+.btn-bgm[hidden]{ display:none; }
+.btn-bgm.is-on{
+  background:var(--accent); color:#231800; border-color:var(--accent);
+}
