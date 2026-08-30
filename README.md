@@ -258,7 +258,9 @@ npm run deploy
 `public/` 폴더만 아무 정적 호스팅에 올려도 된다.
 Cloudflare Pages 는 build output directory 를 `public`, GitHub Pages 는 `/public` 으로 둔다.
 참여 칸은 스스로 접히고 나머지 8단계는 그대로 동작한다.
-`_headers` 가 캐시를 잡아 준다 — 지도 이미지 7일, 코드 10분.
+`_headers` 가 캐시를 잡아 준다 — 지도 이미지는 7일, 코드(HTML·JS·CSS)는 매번 확인.
+코드에 max-age 를 주면 안 된다. index.html 만 새것이고 JS 가 낡으면 화면과 코드가
+어긋난 채로 돌아가, 배포 직후 그 시간 동안 학생 기기에서 앱이 깨질 수 있다.
 이미지를 교체했는데 옛 그림이 보이면 파일 이름을 바꿔 올리면 바로 반영된다.
 
 ## 개발용 서버
