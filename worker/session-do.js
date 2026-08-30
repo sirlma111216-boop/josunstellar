@@ -215,11 +215,12 @@ export class ClassSession extends DurableObject {
         case 'vote': {
           const token = String(msg.d?.token || '').slice(0, 40);
           const key = String(msg.d?.key || '').slice(0, 20);
-          if (!token || !key) { ws.send(nack(msg.i, '잘못된 요청입니다.')); break; }
-          // 한 기기 한 표. 다시 고르면 바뀐다(쌓이지 않는다).
-          this.state.votes[token] = key;
+          if (!token) { ws.send(nack(msg.i, '잘못된 요청입니다.')); break; }
+          // 한 기기 한 표. 다시 고르면 바뀌고(쌓이지 않고), 빈 값이면 취소된다.
+          if (key) this.state.votes[token] = key;
+          else delete this.state.votes[token];
           await this.save();
-          ws.send(ack(msg.i, { ...this.snap(), mine: key }));
+          ws.send(ack(msg.i, { ...this.snap(), mine: key || null }));
           this.scheduleBroadcast();
           break;
         }
@@ -260,6 +261,22 @@ export class ClassSession extends DurableObject {
           else delete this.state.notes[token];
           await this.save();
           ws.send(ack(msg.i, this.classWork()));
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'leave': {
+          // 이 기기가 남긴 것을 모두 지운다(데모봇을 걷어낼 때 쓴다)
+          const token = String(msg.d?.token || '').slice(0, 40);
+          if (token) {
+            delete this.state.members[token];
+            delete this.state.votes[token];
+            delete this.state.results[token];
+            delete this.state.notes[token];
+            await this.save();
+          }
+          ws.send(ack(msg.i, { ok: true }));
+          this.scheduleBroadcast();
           this.scheduleClassBroadcast();
           break;
         }

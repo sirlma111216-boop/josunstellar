@@ -1,0 +1,167 @@
+/* ==========================================================================
+   조선스텔라 — 데모봇
+   수업 전에 혼자서 전체 흐름을 돌려 보기 위한 도구.
+
+   가짜 학생 여러 명이 진짜 학생과 똑같이 WebSocket 으로 붙어서,
+   교사가 화면을 넘길 때마다 그 단계에 맞는 일을 한다.
+     단계 4 → 예상 고르기
+     단계 6·7 → 잰 값 올리기
+     단계 8 → 결론 쓰기
+   사람마다 속도가 달라 하나씩 도착하는 모습까지 그대로 보인다.
+
+   [멈추기] 를 누르면 봇이 남긴 것(명단·표·측정값·결론)을 모두 지우고 빠진다.
+   그래서 리허설 뒤 그 코드로 바로 수업해도 데모 자료가 섞이지 않는다.
+   ========================================================================== */
+(function (global) {
+  'use strict';
+
+  /** 한 반쯤 되도록 */
+  var COUNT = 12;
+
+  var NICKS = ['가람', '나래', '다올', '라온', '마루', '바다',
+               '사랑', '아라', '한별', '차오름', '푸른', '해든'];
+
+  /** 예상 쏠림 — 실제 교실처럼 정답 쪽이 많되 갈리도록 */
+  var VOTE_MIX = ['bright', 'bright', 'bright', 'bright', 'bright', 'bright',
+                  'big', 'big', 'big', 'near', 'near', 'import'];
+
+  var NOTES = [
+    '밝은 별일수록 자국이 더 컸습니다.',
+    '등급이 작을수록 크게 새겼다는 걸 알았어요. 신기했습니다!',
+    '망원경도 없이 밝기를 구분했다는 게 대단하다고 생각했습니다.',
+    '점을 찍어 보니 오른쪽 아래로 내려가는 모양이 나왔습니다.',
+    '조선 사람들이 별을 얼마나 자세히 봤는지 알 것 같아요.',
+    '내가 잰 값은 조금 흔들렸지만 반 전체로 보니 확실했습니다.',
+    '돌에 새긴 크기가 밝기를 나타낸다는 게 놀라웠습니다.',
+    '시리우스가 제일 크고 메이사가 제일 작았습니다.',
+    '600년 전 기록이 지금 관측과 맞는다는 게 신기합니다.',
+    '자국을 재는 게 생각보다 어려웠는데 재미있었어요.',
+    '별의 밝기를 크기로 적어 둔 조상들이 똑똑한 것 같습니다.',
+    '경향선을 보니 규칙이 한눈에 보였습니다.'
+  ];
+
+  var Demo = {
+    running: false,
+    bots: [],
+    done: {}          // 단계별로 이미 시킨 일 { vote:true, result:true, note:true }
+  };
+
+  function wsUrl(code) {
+    var p = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return p + '//' + location.host + '/ws?code=' + encodeURIComponent(code);
+  }
+
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+
+  /** 사람마다 재는 버릇이 다르다 — 조금 크게 재는 사람, 들쭉날쭉한 사람 */
+  function makePoints(bot) {
+    return STARS.map(function (s) {
+      var base = 31.3 - 4.01 * s.mag;          // 실제 자료에서 얻은 관계
+      var v = base + bot.bias + rnd(-bot.noise, bot.noise);
+      return [s.mag, Math.max(3, Math.round(v * 10) / 10)];
+    });
+  }
+
+  function send(bot, type, data) {
+    if (!bot.ws || bot.ws.readyState !== 1) return;
+    bot.ws.send(JSON.stringify({ t: type, i: bot.seq++, d: data }));
+  }
+
+  /** 봇 하나를 붙인다 */
+  function spawn(i, code) {
+    var bot = {
+      nick: NICKS[i % NICKS.length],
+      token: 'demo-' + i + '-' + Math.random().toString(36).slice(2, 7),
+      vote: VOTE_MIX[i % VOTE_MIX.length],
+      note: NOTES[i % NOTES.length],
+      bias: rnd(-2.2, 2.2),        // 이 사람의 치우침
+      noise: rnd(1.2, 4.0),        // 이 사람의 흔들림
+      seq: 1,
+      ws: null,
+      did: {}
+    };
+    try { bot.ws = new WebSocket(wsUrl(code)); }
+    catch (e) { return null; }
+    bot.ws.onopen = function () { send(bot, 'join', { token: bot.token, nick: bot.nick }); };
+    bot.ws.onmessage = function () { /* 봇은 받아 볼 필요가 없다 */ };
+    bot.ws.onerror = function () { /* 조용히 넘어간다 */ };
+    return bot;
+  }
+
+  /** 봇에게 시킬 일을 사람마다 다른 시간에 하나씩 */
+  function each(fn, from, to) {
+    Demo.bots.forEach(function (bot) {
+      var t = setTimeout(function () { if (Demo.running) fn(bot); }, rnd(from, to));
+      Demo.timers.push(t);
+    });
+  }
+
+  function doVote(bot) { if (!bot.did.vote) { bot.did.vote = true; send(bot, 'vote', { token: bot.token, key: bot.vote }); } }
+  function doResult(bot) { if (!bot.did.result) { bot.did.result = true; send(bot, 'result', { token: bot.token, pts: makePoints(bot) }); } }
+  function doNote(bot) { if (!bot.did.note) { bot.did.note = true; send(bot, 'note', { token: bot.token, text: bot.note }); } }
+
+  /**
+   * 교사가 화면을 넘길 때마다 불린다.
+   * 건너뛰어 들어와도 빈 화면이 되지 않도록, 앞 단계에서 했어야 할 일은 몰아서 시킨다.
+   */
+  Demo.onStage = function (step) {
+    if (!Demo.running) return;
+    if (step >= 4 && !Demo.done.vote) { Demo.done.vote = true; each(doVote, 900, 7000); }
+    if (step >= 6 && !Demo.done.result) { Demo.done.result = true; each(doResult, 1500, 12000); }
+    if (step >= 8 && !Demo.done.note) { Demo.done.note = true; each(doNote, 1200, 9000); }
+  };
+
+  /** 데모 시작. 이미 열린 수업이 있으면 그 수업에 붙는다. */
+  Demo.start = function (code, done) {
+    if (Demo.running) { done && done(null); return; }
+    Demo.running = true;
+    Demo.bots = [];
+    Demo.timers = [];
+    Demo.done = {};
+
+    // 한꺼번에 들어오지 않고 하나씩 — 교실에서 코드를 불러 준 뒤 모습 그대로
+    for (var i = 0; i < COUNT; i++) {
+      (function (k) {
+        var t = setTimeout(function () {
+          if (!Demo.running) return;
+          var bot = spawn(k, code);
+          if (bot) Demo.bots.push(bot);
+          if (Demo.onChange) Demo.onChange();
+          // 늦게 들어온 봇도 지금 단계에 맞는 일을 하도록
+          if (bot && Demo.done.vote) setTimeout(function () { doVote(bot); }, rnd(300, 2500));
+          if (bot && Demo.done.result) setTimeout(function () { doResult(bot); }, rnd(500, 4000));
+          if (bot && Demo.done.note) setTimeout(function () { doNote(bot); }, rnd(500, 3500));
+        }, 200 + k * 420);
+        Demo.timers.push(t);
+      })(i);
+    }
+    done && done(null);
+  };
+
+  /** 데모 끝. 봇이 남긴 것을 지우고 빠진다. */
+  Demo.stop = function () {
+    if (!Demo.running) return;
+    Demo.running = false;
+    (Demo.timers || []).forEach(clearTimeout);
+    Demo.timers = [];
+    Demo.bots.forEach(function (bot) {
+      try {
+        send(bot, 'leave', { token: bot.token });
+        // 지워 달라는 말이 서버에 닿은 뒤에 끊는다
+        setTimeout(function () { try { bot.ws.close(); } catch (e) { /* 무시 */ } }, 400);
+      } catch (e) { /* 무시 */ }
+    });
+    Demo.bots = [];
+    Demo.done = {};
+    if (Demo.onChange) Demo.onChange();
+  };
+
+  Demo.count = function () { return Demo.bots.length; };
+  Demo.total = COUNT;
+
+  // 창을 닫아도 봇이 남지 않도록
+  global.addEventListener('pagehide', function () { Demo.stop(); });
+
+  global.Demo = Demo;
+
+})(window);

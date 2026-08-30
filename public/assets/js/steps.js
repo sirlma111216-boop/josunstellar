@@ -96,6 +96,8 @@
 
     // 교사가 넘기면 참여한 학생 화면도 같이 넘어간다
     if (!followingNow && window.Live && Live.role === 'host') Live.setStage(n, sub);
+    // 데모봇도 그 단계에 맞는 일을 한다
+    if (window.Demo && Demo.running) Demo.onStage(n, sub);
 
     // 화면 전환
     var all = document.querySelectorAll('.step');
@@ -477,6 +479,24 @@
 
     $('btnLeave').addEventListener('click', function () { Live.leave(); renderLive(); });
 
+    // 데모봇 — 수업 전에 혼자 전체 흐름을 돌려 본다
+    $('btnDemo').addEventListener('click', function () {
+      if (!global.Demo) return;
+      if (Demo.running) { Demo.stop(); renderDemo(); return; }
+      if (!Live.code) { msg('먼저 수업을 열어 주세요.', true); return; }
+      if (Live.joined > 0) {
+        var q = [
+          '이미 ' + Live.joined + '명이 참여하고 있습니다.',
+          '데모 학생이 섞이게 됩니다. 계속할까요?',
+          '(멈추기를 누르면 데모 학생이 남긴 것은 모두 지워집니다)'
+        ].join('\n');
+        if (!confirm(q)) return;
+      }
+      Demo.start(Live.code);
+      renderDemo();
+    });
+    if (global.Demo) Demo.onChange = renderDemo;
+
     // 학생: 잠시 혼자 움직이고 싶을 때 따라가기를 끈다
     $('btnFollow').addEventListener('click', function () {
       Live.setFollowing(!Live.following);
@@ -570,6 +590,22 @@
 
   function setText(id, v) { var e = $(id); if (e) e.textContent = v; }
 
+  /** 데모봇 버튼과 안내를 상태에 맞춰 바꾼다 */
+  function renderDemo() {
+    var b = $('btnDemo'), hint = $('demoHint');
+    if (!b || !global.Demo) return;
+    if (Demo.running) {
+      b.textContent = '데모 멈추기';
+      b.classList.add('is-demo-on');
+      hint.textContent = '데모 학생 ' + Demo.count() + '/' + Demo.total +
+                         '명 · 화면을 넘기면 그 단계에 맞게 움직입니다';
+    } else {
+      b.textContent = '데모봇으로 시뮬레이션 하기';
+      b.classList.remove('is-demo-on');
+      hint.textContent = '수업 전에 혼자 전체 흐름을 돌려 볼 수 있습니다.';
+    }
+  }
+
   /**
    * 참여자 명단. 서버에서 오는 것은 닉네임뿐이다.
    * 이름표는 textContent 로만 넣어 입력한 글자가 태그로 읽히지 않게 한다.
@@ -579,8 +615,10 @@
     var list = $('rosterList');
     var n = Live.members.length;
     box.hidden = false;
+    var demoOn = !!(global.Demo && Demo.running);
     $('rosterCount').textContent = n
-      ? '참여한 학생 ' + n + '명 (접속 ' + Live.online + '명)'
+      ? '참여한 학생 ' + n + '명 (접속 ' + Live.online + '명)' +
+        (demoOn ? ' · 데모 학생이 섞여 있습니다' : '')
       : '아직 들어온 학생이 없습니다. 위 코드를 불러 주세요.';
     list.innerHTML = '';
     Live.members.forEach(function (m) {

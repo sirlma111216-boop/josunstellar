@@ -1157,3 +1157,14 @@ body.admin-open{ padding-bottom:60dvh; }
   .notes-wall{ display:none !important; }
   .notes-flat{ display:none; }
 }
+
+/* ---------- 데모봇 (교사 화면에만) ---------- */
+.demo-row{
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+  margin-top:.6rem; padding-top:.6rem; border-top:1px dashed var(--line);
+}
+.demo-row .tiny{ margin-top:0 !important; flex:1 1 12rem; }
+#btnDemo.is-demo-on{
+  background:color-mix(in srgb, var(--warn) 25%, var(--bg-2));
+  border-color:var(--warn); color:var(--warn); font-weight:800;
+}
