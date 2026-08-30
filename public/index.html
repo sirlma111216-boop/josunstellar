@@ -441,6 +441,13 @@
 
   <div class="sub" data-sub="3" hidden>
     <h2 class="step-title">점들이 어느 방향으로 모여 있나요?</h2>
+
+    <div class="scope-switch" id="scopeSwitch" hidden>
+      <button type="button" class="btn btn-sm is-on" id="btnScopeMine">내 결과</button>
+      <button type="button" class="btn btn-sm" id="btnScopeClass">우리 반 전체</button>
+      <span class="scope-info" id="scopeInfo"></span>
+    </div>
+
     <div id="chartHost2"></div>
     <div class="step-cta">
       <button type="button" class="btn btn-primary" id="btnTrend">경향선 보기</button>
@@ -448,6 +455,11 @@
     <p class="reveal-note" id="trendNote" hidden>
       점들이 대체로 <b>이 방향</b>으로 모여 있습니다.
       왼쪽(밝은 별)일수록 위쪽(크게 새김)에 있습니다.
+    </p>
+    <p class="reveal-note" id="classNote" hidden>
+      혼자 잰 점만 보면 들쭉날쭉해 보이지만,
+      <b>반 전체의 점을 모으면 방향이 훨씬 또렷해집니다.</b>
+      재는 사람이 많아질수록 실수는 서로 상쇄되고 진짜 경향만 남기 때문입니다.
     </p>
   </div>
 </section>
@@ -466,6 +478,16 @@
 
   <div id="conclusionReveal" hidden>
     <div class="reveal-lines" id="revealLines"></div>
+
+    <!-- 친구들의 결론이 포스트잇처럼 흐른다 -->
+    <div class="notes-wall" id="notesWall" hidden aria-hidden="true">
+      <div class="nw-col nw-up" id="nwLeft"></div>
+      <div class="nw-col nw-down" id="nwRight"></div>
+    </div>
+    <div class="notes-flat" id="notesFlat" hidden>
+      <h3 class="card-title">친구들의 결론</h3>
+      <div class="nf-list" id="nfList"></div>
+    </div>
 
     <div class="card meaning">
       <h3 class="card-title">두 지도의 차이가 뜻하는 것</h3>

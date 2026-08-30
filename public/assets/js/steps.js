@@ -51,6 +51,20 @@
     // 학급 참여는 첫 화면에 있지만, 어느 단계로 이어서 들어와도 연결은 살아 있어야 한다
     buildLive();
 
+    // 친구가 새로 올리면 보고 있는 화면을 그 자리에서 갱신한다
+    if (global.Live) {
+      Live.onWork = function () {
+        if (Steps.step === 7 && Steps.sub === 3) {
+          renderScope();
+          if (Steps.scopeClass && Steps.chart2) {
+            Steps.chart2.opts.classPts = classPoints();
+            Steps.chart2.setClassOn(true);
+          }
+        }
+        if (Steps.step === 8 && !$('conclusionReveal').hidden) renderNotes();
+      };
+    }
+
     $('btnPrev').addEventListener('click', Steps.prev);
     $('btnNext').addEventListener('click', Steps.next);
 
@@ -932,6 +946,16 @@
   }
 
   /* ---------- 단계 7. 결과 ---------- */
+  /* ---------- 단계 7. 결과 ---------- */
+
+  /** 내가 잰 값을 반 전체 산점도에 보탠다 */
+  function shareMyResult() {
+    if (!global.Live || !Live.ready || Live.role !== 'guest') return;
+    Live.sendResult(State.measuredRows().map(function (r) {
+      return [r.star.mag, r.avg];
+    }));
+  }
+
   function build7(sub) {
     if (!Steps.built[7]) {
       Steps.built[7] = true;
@@ -940,6 +964,10 @@
         $('trendNote').hidden = false;
         $('btnTrend').disabled = true;
       });
+
+      $('btnScopeMine').addEventListener('click', function () { setScope(false); });
+      $('btnScopeClass').addEventListener('click', function () { setScope(true); });
+
     }
 
     if (sub === 1) {
@@ -950,6 +978,7 @@
         var p = el('p', 'chart-empty', host, '아직 잰 별이 없습니다. 단계 6에서 먼저 재 봅시다.');
         host.insertBefore(p, host.firstChild);
       }
+      shareMyResult();          // 결과 화면에 들어올 때 반에 보탠다
     }
 
     if (sub === 2) {
@@ -962,10 +991,52 @@
     }
 
     if (sub === 3) {
-      Steps.chart2 = new Scatter($('chartHost2'), { animate: false, showLabels: true });
+      shareMyResult();
+      // 내가 잰 것이 없으면(교사 기기 등) 처음부터 반 전체를 보여 준다
+      if (Steps.scopeClass === undefined) {
+        Steps.scopeClass = !State.measuredRows().length && !!classPoints();
+      }
+      Steps.chart2 = new Scatter($('chartHost2'), {
+        animate: false, showLabels: true,
+        classPts: classPoints(), classOn: !!Steps.scopeClass
+      });
       $('trendNote').hidden = true;
+      $('classNote').hidden = !Steps.scopeClass;
       $('btnTrend').disabled = false;
+      renderScope();
     }
+  }
+
+  /** 반 전체가 올린 점. 없으면 null. */
+  function classPoints() {
+    var w = global.Live && Live.work;
+    return (w && w.pts && w.pts.length) ? w.pts : null;
+  }
+
+  /** 내 결과 / 우리 반 전체 스위치를 그린다 */
+  function renderScope() {
+    var sw = $('scopeSwitch');
+    if (!sw) return;
+    var pts = classPoints();
+    var joined = !!(global.Live && Live.code);
+    // 반에 붙어 있고 누군가 올렸을 때만 보여 준다
+    sw.hidden = !(joined && pts);
+    if (sw.hidden) { Steps.scopeClass = false; return; }
+
+    var people = (Live.work && Live.work.people) || 0;
+    $('scopeInfo').textContent = people + '명 · 점 ' + pts.length + '개';
+    $('btnScopeMine').classList.toggle('is-on', !Steps.scopeClass);
+    $('btnScopeClass').classList.toggle('is-on', !!Steps.scopeClass);
+  }
+
+  function setScope(on) {
+    Steps.scopeClass = !!on;
+    if (Steps.chart2) {
+      Steps.chart2.opts.classPts = classPoints();
+      Steps.chart2.setClassOn(Steps.scopeClass);
+    }
+    $('classNote').hidden = !Steps.scopeClass;
+    renderScope();
   }
 
   /* ---------- 단계 8. 결론 ---------- */
@@ -983,11 +1054,18 @@
         revealLines();
         renderLookback();
         $('btnShowAll').disabled = true;
+        // 내 결론을 반에 올리고, 친구들 것을 받아 온다
+        var mine = (input.value || '').trim();
+        if (global.Live && Live.ready && Live.role === 'guest' && mine) {
+          Live.sendNote(mine, function () { renderNotes(); });
+        } else {
+          renderNotes();
+        }
       });
       $('btnReport').addEventListener('click', function () { Report.printReport(); });
       $('btnCsv').addEventListener('click', function () { Report.downloadCsv(); });
     }
-    if (!$('conclusionReveal').hidden) renderLookback();
+    if (!$('conclusionReveal').hidden) { renderLookback(); renderNotes(); }
   }
 
   function revealLines() {
@@ -998,6 +1076,63 @@
       p.innerHTML = line;
       setTimeout(function () { p.classList.add('shown'); }, 200 + i * 700);
     });
+  }
+
+  /* ---------- 친구들의 결론 ---------- */
+
+  /** 포스트잇 색. 글자가 또렷하게 보이는 옅은 색만 고른다. */
+  var NOTE_TINTS = 6;
+
+  /** 같은 사람은 늘 같은 색이 되도록 닉네임에서 색을 뽑는다 */
+  function tintOf(nick) {
+    var h = 0;
+    var s = String(nick || '');
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 997;
+    return h % NOTE_TINTS;
+  }
+
+  function noteCard(host, note) {
+    var card = el('div', 'note-card tint-' + tintOf(note.nick), host);
+    el('p', 'nc-text', card, note.text);
+    el('p', 'nc-who', card, '— ' + (note.nick || '익명'));
+    return card;
+  }
+
+  /**
+   * 친구들의 결론을 양옆에 흘려 보낸다.
+   * 왼쪽은 위로, 오른쪽은 아래로. 끊기지 않게 같은 묶음을 두 번 넣는다.
+   */
+  function renderNotes() {
+    var wall = $('notesWall'), flat = $('notesFlat');
+    if (!wall) return;
+    var notes = (global.Live && Live.work && Live.work.notes) || [];
+    // 내 결론은 이미 위에 적혀 있으므로 벽에는 남의 것만 흘린다
+    var mine = (State.data.conclusion || '').trim();
+    notes = notes.filter(function (x) { return x.text && x.text.trim() !== mine; });
+
+    if (notes.length < 2) { wall.hidden = true; flat.hidden = true; return; }
+    wall.hidden = false;
+    flat.hidden = false;
+
+    var left = $('nwLeft'), right = $('nwRight'), list = $('nfList');
+    left.innerHTML = ''; right.innerHTML = ''; list.innerHTML = '';
+
+    // 양쪽에 번갈아 나눠 담는다
+    var a = [], b = [];
+    notes.forEach(function (x, i) { (i % 2 ? b : a).push(x); });
+    if (!b.length) b = a.slice();
+
+    [[left, a], [right, b]].forEach(function (pair) {
+      // 두 번 이어 붙여야 한 바퀴 돌 때 끊긴 자리가 보이지 않는다
+      for (var pass = 0; pass < 2; pass++) {
+        pair[1].forEach(function (x) { noteCard(pair[0], x); });
+      }
+      // 글이 많을수록 오래 걸리게 — 흐르는 속도를 일정하게 유지한다
+      pair[0].style.animationDuration = Math.max(24, pair[1].length * 9) + 's';
+    });
+
+    notes.forEach(function (x) { noteCard(list, x); });
+    $('nfList').setAttribute('aria-label', '친구들이 쓴 결론 ' + notes.length + '개');
   }
 
   function renderLookback() {

@@ -23,20 +23,33 @@
 
   /**
    * @param host  붙일 자리
-   * @param opts  animate(점을 하나씩), showLabels(이름 항상 표시), trend(경향선)
+   * @param opts  animate(점을 하나씩), showLabels(이름 항상 표시), trend(경향선),
+   *              classPts([[등급, 지름], …] 반 전체 점), classOn(반 전체를 함께 그릴지)
    */
   function Scatter(host, opts) {
-    this.opts = Object.assign({ animate: false, showLabels: false, trend: false }, opts || {});
+    this.opts = Object.assign({
+      animate: false, showLabels: false, trend: false,
+      classPts: null, classOn: false
+    }, opts || {});
     this.host = host;
     this.rows = State.measuredRows();
     this.build();
   }
 
+  /** 반 전체 점을 함께 그릴지 바꾼다 (축 범위가 달라지므로 다시 그린다) */
+  Scatter.prototype.setClassOn = function (on) {
+    this.opts.classOn = !!on;
+    var wasTrend = this.trendShown;
+    this.build();
+    if (wasTrend) this.showTrend();
+  };
+
   Scatter.prototype.build = function () {
     var rows = this.rows;
+    var classPts = (this.opts.classOn && this.opts.classPts) ? this.opts.classPts : [];
     this.host.innerHTML = '';
 
-    if (!rows.length) {
+    if (!rows.length && !classPts.length) {
       var empty = document.createElement('p');
       empty.className = 'chart-empty';
       empty.textContent = '아직 잰 별이 없습니다. 단계 6에서 먼저 재 봅시다.';
@@ -46,13 +59,14 @@
 
     var svg = n('svg', this.host, {
       viewBox: '0 0 ' + W + ' ' + H, class: 'scatter', role: 'img',
-      'aria-label': '가로는 별의 밝기 등급, 세로는 내가 잰 자국의 크기를 나타낸 점 그래프'
+      'aria-label': '가로는 별의 밝기 등급, 세로는 잰 자국의 크기를 나타낸 점 그래프'
     });
     this.svg = svg;
 
-    /* ---- 축 범위 ---- */
+    /* ---- 축 범위: 내 점과 반 전체 점을 모두 담는다 ---- */
     var mags = rows.map(function (r) { return r.star.mag; });
     var ds = rows.map(function (r) { return r.avg; });
+    classPts.forEach(function (p) { mags.push(p[0]); ds.push(p[1]); });
     var magMin = Math.min.apply(null, mags), magMax = Math.max.apply(null, mags);
     var dMax = Math.max.apply(null, ds);
     magMin = Math.floor(magMin) - 0.5;
@@ -92,13 +106,21 @@
 
     var yname = n('text', svg, { class: 'sc-axis-name', 'text-anchor': 'middle',
       transform: 'translate(20,' + (PAD.t + (H - PAD.t - PAD.b) / 2) + ') rotate(-90)' });
-    yname.textContent = '내가 잰 자국의 크기 (px)';
+    yname.textContent = '잰 자국의 크기 (px)';
     n('text', svg, { x: PAD.l - 10, y: PAD.t + 2, class: 'sc-end', 'text-anchor': 'end' }, '크게');
+
+    /* ---- 반 전체 점을 먼저 옅게 깔아 둔다 ---- */
+    if (classPts.length) {
+      var gc = n('g', svg, { class: 'sc-class' });
+      classPts.forEach(function (p) {
+        n('circle', gc, { cx: self.x(p[0]), cy: self.y(p[1]), r: 5, class: 'sc-dot-class' });
+      });
+    }
 
     /* ---- 경향선 자리(점보다 아래에 깔리도록 먼저) ---- */
     this.trendG = n('g', svg, { class: 'sc-trend', opacity: 0 });
 
-    /* ---- 점 ---- */
+    /* ---- 내 점 ---- */
     this.dots = [];
     var g = n('g', svg, {});
     rows.forEach(function (r, i) {
@@ -135,32 +157,49 @@
       self.dots.push(dot);
     });
 
-    /* ---- 경향선 계산 ---- */
-    this.fit = leastSquares(rows);
+    /* ---- 경향선 ----
+       반 전체를 켰으면 모두의 점으로, 아니면 내 점만으로 구한다.
+       점이 많을수록 흩어짐이 줄어 경향이 또렷해진다. */
+    var fitPts = classPts.length
+      ? classPts
+      : rows.map(function (r) { return [r.star.mag, r.avg]; });
+    this.fit = leastSquares(fitPts);
     if (this.fit) {
       var x1 = magMin + 0.15, x2 = magMax - 0.15;
       n('line', this.trendG, {
         x1: this.x(x1), y1: this.y(this.fit.a + this.fit.b * x1),
         x2: this.x(x2), y2: this.y(this.fit.a + this.fit.b * x2),
-        class: 'sc-trend-line'
+        class: 'sc-trend-line' + (classPts.length ? ' is-class' : '')
       });
     }
+
+    /* ---- 범례 ---- */
+    if (classPts.length) {
+      var lg = n('g', svg, { class: 'sc-legend' });
+      n('circle', lg, { cx: PAD.l + 12, cy: PAD.t + 6, r: 5, class: 'sc-dot-class' });
+      n('text', lg, { x: PAD.l + 24, y: PAD.t + 10, class: 'sc-leg-txt' }, '우리 반');
+      n('circle', lg, { cx: PAD.l + 96, cy: PAD.t + 6, r: 6, class: 'sc-dot' });
+      n('text', lg, { x: PAD.l + 108, y: PAD.t + 10, class: 'sc-leg-txt' }, '나');
+    }
+
+    this.trendShown = false;
     if (this.opts.trend) this.showTrend();
   };
 
   Scatter.prototype.showTrend = function () {
     if (!this.trendG) return;
+    this.trendShown = true;
     this.trendG.style.transition = 'opacity .5s ease';
     this.trendG.setAttribute('opacity', 1);
   };
 
-  /** 최소제곱 직선 y = a + b·x  (x=등급, y=지름) */
-  function leastSquares(rows) {
-    var n0 = rows.length;
+  /** 최소제곱 직선 y = a + b·x  (x=등급, y=지름). 점은 [x, y] 짝의 배열. */
+  function leastSquares(pts) {
+    var n0 = pts.length;
     if (n0 < 2) return null;
     var sx = 0, sy = 0, sxx = 0, sxy = 0;
     for (var i = 0; i < n0; i++) {
-      var x = rows[i].star.mag, y = rows[i].avg;
+      var x = pts[i][0], y = pts[i][1];
       sx += x; sy += y; sxx += x * x; sxy += x * y;
     }
     var den = n0 * sxx - sx * sx;

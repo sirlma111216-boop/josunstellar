@@ -3,8 +3,11 @@
 // 한 반의 참여자·투표·현재 단계를 들고 있고, 그 반에 붙은 WebSocket 들에게 밀어 준다.
 // 외부 데이터베이스가 필요 없다 — 상태와 실시간 처리가 여기 한곳에서 끝난다.
 //
-// 담는 것은 학생이 스스로 정한 닉네임과 익명 집계뿐이다.
-// 실명·학번·반·측정 기록은 서버로 오지 않는다.
+// 담는 것은 학생이 스스로 정한 닉네임과, 수업 중에 함께 보려고 올린 것뿐이다.
+//   · 예상 한 표 (익명 집계)
+//   · 잰 자국의 크기 (등급·지름 짝, 반 전체 산점도를 그리려고)
+//   · 오늘의 결론 한 문장 (서로 읽어 보려고)
+// 실명·학번·반은 서버로 오지 않는다.
 
 import { DurableObject } from 'cloudflare:workers';
 import { decode, ack, nack, push } from './protocol.js';
@@ -14,6 +17,9 @@ const TTL_MS = 12 * 60 * 60 * 1000;
 
 /** 30명이 한꺼번에 눌러도 브로드캐스트가 폭주하지 않도록 묶어 보낸다 */
 const THROTTLE_MS = 250;
+
+/** 반 전체 자료는 덩치가 커서 조금 더 느슨하게 묶는다 */
+const WORK_THROTTLE_MS = 700;
 
 /** 닉네임 길이 상한 */
 const NICK_MAX = 12;
@@ -34,6 +40,40 @@ function cleanNick(v) {
   return out.trim();
 }
 
+/** 한 사람이 올릴 수 있는 측정 점 수 (별 10개 + 여유) */
+const PTS_MAX = 20;
+
+/** 결론 한 편의 길이 상한 */
+const NOTE_MAX = 300;
+
+/** 화면에 그대로 나가는 글이라 제어문자와 태그 기호를 지운다 */
+function cleanText(v, max) {
+  const s = String(v || '');
+  let out = '';
+  for (let i = 0; i < s.length && out.length < max; i++) {
+    const n = s.charCodeAt(i);
+    if (n < 0x20 && n !== 0x0a) continue;        // 줄바꿈만 남긴다
+    if (n === 0x7f) continue;
+    if (NICK_BAD.indexOf(s[i]) >= 0) continue;
+    out += s[i];
+  }
+  return out.trim();
+}
+
+/** 올라온 측정 점을 믿을 수 있는 범위로만 받는다 */
+function cleanPts(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const p of v.slice(0, PTS_MAX)) {
+    if (!Array.isArray(p) || p.length < 2) continue;
+    const mag = Number(p[0]), dia = Number(p[1]);
+    if (!isFinite(mag) || !isFinite(dia)) continue;
+    if (mag < -30 || mag > 30 || dia <= 0 || dia > 2000) continue;
+    out.push([Math.round(mag * 100) / 100, Math.round(dia * 10) / 10]);
+  }
+  return out;
+}
+
 export class ClassSession extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
@@ -41,6 +81,7 @@ export class ClassSession extends DurableObject {
     this.state = null;
     this.loading = null;
     this.flushTimer = null;
+    this.workTimer = null;
   }
 
   /* ------------------------------------------------------------ 상태 보관 */
@@ -51,8 +92,9 @@ export class ClassSession extends DurableObject {
       const saved = await this.ctx.storage.get('state');
       const fresh = saved && (Date.now() - (saved.updatedAt || 0)) < TTL_MS;
       this.state = fresh
-        ? { members: {}, stage: null, ...saved }   // 예전 판에는 없던 칸을 채운다
-        : { createdAt: Date.now(), updatedAt: Date.now(), votes: {}, members: {}, stage: null };
+        ? { members: {}, stage: null, results: {}, notes: {}, ...saved }   // 예전 판에 없던 칸을 채운다
+        : { createdAt: Date.now(), updatedAt: Date.now(), votes: {},
+            members: {}, stage: null, results: {}, notes: {} };
     })();
     await this.loading;
     return this.state;
@@ -103,6 +145,27 @@ export class ClassSession extends DurableObject {
       joined: members.length,
       online: members.filter((m) => m.on).length,
     };
+  }
+
+  /**
+   * 반 전체가 함께 보는 자료.
+   * 산점도 점은 누가 올렸는지 떼고 좌표만 모은다.
+   * 결론은 닉네임과 함께 보여 준다(서로 읽는 것이 목적이라서).
+   */
+  classWork() {
+    const pts = [];
+    let people = 0;
+    for (const t of Object.keys(this.state.results)) {
+      const p = this.state.results[t].pts;
+      if (!p || !p.length) continue;
+      people++;
+      for (const one of p) pts.push(one);
+    }
+    const notes = Object.keys(this.state.notes).map((t) => ({
+      nick: this.state.notes[t].nick,
+      text: this.state.notes[t].text,
+    }));
+    return { pts, people, notes };
   }
 
   /** 학생·교사 화면으로 내려보내는 한 덩어리 */
@@ -173,12 +236,50 @@ export class ClassSession extends DurableObject {
           break;
         }
 
+        case 'result': {
+          // 잰 값을 올린다. 반 전체 산점도를 그리는 데 쓴다.
+          const token = String(msg.d?.token || '').slice(0, 40);
+          const nick = this.state.members[token] ? this.state.members[token].nick : null;
+          const pts = cleanPts(msg.d?.pts);
+          if (!token) { ws.send(nack(msg.i, '잘못된 요청입니다.')); break; }
+          if (pts.length) this.state.results[token] = { nick, pts, at: Date.now() };
+          else delete this.state.results[token];
+          await this.save();
+          ws.send(ack(msg.i, { ok: true }));
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'note': {
+          // 오늘의 결론 한 문장. 서로 읽어 보려고 닉네임과 함께 둔다.
+          const token = String(msg.d?.token || '').slice(0, 40);
+          const nick = this.state.members[token] ? this.state.members[token].nick : null;
+          const text = cleanText(msg.d?.text, NOTE_MAX);
+          if (!token) { ws.send(nack(msg.i, '잘못된 요청입니다.')); break; }
+          if (text) this.state.notes[token] = { nick: nick || '익명', text, at: Date.now() };
+          else delete this.state.notes[token];
+          await this.save();
+          ws.send(ack(msg.i, this.classWork()));
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'work': {
+          // 지금까지 모인 반 전체 자료를 달라
+          ws.send(ack(msg.i, this.classWork()));
+          break;
+        }
+
         case 'reset': {
-          // 교사가 다음 활동을 위해 표만 비운다(참여자 명단은 남는다)
-          this.state.votes = {};
+          // 교사가 다음 활동을 위해 비운다.
+          // what 을 주면 그것만, 안 주면 표만 비운다(참여자 명단은 늘 남는다).
+          const what = String(msg.d?.what || 'votes');
+          if (what === 'votes' || what === 'all') this.state.votes = {};
+          if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; }
           await this.save();
           ws.send(ack(msg.i, this.snap()));
           this.scheduleBroadcast();
+          if (what !== 'votes') this.scheduleClassBroadcast();
           break;
         }
 
@@ -202,6 +303,19 @@ export class ClassSession extends DurableObject {
     }
   }
 
+  /** 반 전체 자료는 덩치가 커서 표 집계와 따로 묶어 보낸다 */
+  scheduleClassBroadcast() {
+    if (this.workTimer) return;
+    this.workTimer = setTimeout(() => {
+      this.workTimer = null;
+      if (!this.state) return;
+      const data = push('work', this.classWork());
+      for (const ws of this.ctx.getWebSockets()) {
+        try { ws.send(data); } catch { /* 끊긴 소켓은 넘어간다 */ }
+      }
+    }, WORK_THROTTLE_MS);
+  }
+
   /** 짧은 시간 안의 여러 변경을 한 번으로 묶는다 */
   scheduleBroadcast() {
     if (this.flushTimer) return;
@@ -222,6 +336,7 @@ export class ClassSession extends DurableObject {
   /** 화면 없이 집계만 필요할 때 (CSV 등) */
   async snapshot() {
     await this.load();
-    return { ...this.snap(), createdAt: this.state.createdAt, updatedAt: this.state.updatedAt };
+    return { ...this.snap(), ...this.classWork(),
+             createdAt: this.state.createdAt, updatedAt: this.state.updatedAt };
   }
 }

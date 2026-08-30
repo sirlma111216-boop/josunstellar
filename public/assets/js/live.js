@@ -2,9 +2,11 @@
    조선스텔라 — 학급 실시간 연결
    단계 4의 예상을 학생 각자의 기기에서 누르면 교사 화면에 바로 모인다.
 
-   서버로 나가는 것은 익명 표 하나뿐이다.
+   서버로 나가는 것은 수업 중에 함께 보려고 올리는 것뿐이다.
      · 기기마다 무작위 토큰을 하나 만들어 "한 기기 한 표"를 지킨다
-     · 이름·학번·측정 기록은 보내지 않는다
+     · 학생이 스스로 정한 닉네임, 예상 한 표,
+       잰 자국의 크기(반 전체 산점도용), 오늘의 결론 한 문장
+     · 실명·학번·반은 보내지 않는다
    연결이 안 되면 앱은 그대로 혼자 쓰는 모드로 동작한다.
    ========================================================================== */
 (function (global) {
@@ -19,6 +21,7 @@
     members: [],       // [{ nick, on, voted }] — 닉네임 말고는 아무것도 오지 않는다
     joined: 0,         // 한 번이라도 들어온 사람 수
     online: 0,         // 지금 붙어 있는 사람 수
+    work: null,        // 반 전체 자료 { pts, people, notes }
     tally: null,       // { counts, total }
     stage: null,       // 교사가 보고 있는 단계 { step, sub }
     following: true,   // 학생이 교사 화면을 따라가는가
@@ -44,6 +47,7 @@
     if (!d) return;
     if (d.counts) Live.tally = { counts: d.counts, total: d.total };
     if (d.members) { Live.members = d.members; Live.joined = d.joined; Live.online = d.online; }
+    if (d.pts) Live.work = { pts: d.pts, people: d.people, notes: d.notes || [] };
   }
 
   Live.onChange = function (fn) { Live.listeners.push(fn); };
@@ -88,6 +92,7 @@
         }
         Live.ready = true;
         notify();
+        Live.fetchWork();
       });
     };
 
@@ -98,6 +103,12 @@
         var cb = Live.waiting[msg.i];
         delete Live.waiting[msg.i];
         if (cb) cb(msg.err || null, msg.d);
+        return;
+      }
+      if (msg.t === 'work' && msg.d) {
+        Live.work = { pts: msg.d.pts || [], people: msg.d.people || 0, notes: msg.d.notes || [] };
+        if (Live.onWork) Live.onWork(Live.work);
+        notify();
         return;
       }
       if (msg.t === 'stage' && msg.d) {
@@ -135,7 +146,7 @@
 
   Live.leave = function () {
     Live.code = null; Live.role = null; Live.tally = null; Live.mine = null;
-    Live.members = []; Live.joined = 0; Live.online = 0;
+    Live.members = []; Live.joined = 0; Live.online = 0; Live.work = null;
     Store.remove('liveCode'); Store.remove('liveRole');
     Live.disconnect();
     notify();
@@ -192,6 +203,32 @@
     });
   };
 
+  /** 내가 잰 값을 반 전체 산점도에 보탠다. [[등급, 지름], …] */
+  Live.sendResult = function (pts) {
+    if (!Live.ready || Live.role !== 'guest') return;
+    Live.send('result', { token: token(), pts: pts });
+  };
+
+  /** 오늘의 결론 한 문장을 올린다 */
+  Live.sendNote = function (text, done) {
+    if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
+    Live.send('note', { token: token(), text: text }, function (err, d) {
+      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes }; notify(); }
+      if (done) done(err || null);
+    });
+  };
+
+  /** 지금까지 모인 반 전체 자료를 받아 온다 */
+  Live.fetchWork = function () {
+    if (!Live.ready) return;
+    Live.send('work', {}, function (err, d) {
+      if (err || !d) return;
+      Live.work = { pts: d.pts || [], people: d.people || 0, notes: d.notes || [] };
+      if (Live.onWork) Live.onWork(Live.work);
+      notify();
+    });
+  };
+
   /** 교사: 지금 보고 있는 단계를 학생들에게 알린다 */
   Live.setStage = function (step, sub) {
     if (Live.role !== 'host' || !Live.ready) return;
@@ -209,8 +246,8 @@
   };
 
   /** 교사: 다음 반을 위해 표를 비운다 */
-  Live.reset = function () {
-    Live.send('reset', {}, function () { /* 브로드캐스트로 갱신된다 */ });
+  Live.reset = function (what) {
+    Live.send('reset', { what: what || 'votes' }, function () { /* 브로드캐스트로 갱신된다 */ });
   };
 
   /* 새로고침해도 붙어 있던 수업으로 돌아간다.
