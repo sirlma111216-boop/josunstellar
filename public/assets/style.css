@@ -793,3 +793,56 @@ body.admin-open{ padding-bottom:60dvh; }
 
   .sheet-sec, .sheet-q{ page-break-after:avoid; }
 }
+
+/* ---------- 학급 실시간 투표 (단계 4) ---------- */
+.live-box{
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:.9rem 1rem; margin-top:1.2rem;
+  max-width:640px; margin-left:auto; margin-right:auto;
+}
+.live-box[hidden]{ display:none; }
+.join-row{
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-top:.6rem;
+}
+.join-row label{ font-size:.85rem; color:var(--ink-dim); }
+.join-row input{
+  flex:0 1 8em; min-height:var(--touch);
+  background:#050a1e; color:var(--ink);
+  border:1px solid var(--line); border-radius:10px; padding:.4rem .6rem;
+  font-family:inherit; font-size:1.4rem; font-weight:800; letter-spacing:.15em;
+  text-align:center; text-transform:uppercase;
+}
+.live-msg{ margin-top:.5rem; font-size:.85rem; color:var(--ink-dim); }
+.live-msg.is-bad{ color:var(--warn); }
+
+.live-head{
+  display:flex; align-items:center; gap:.8rem; flex-wrap:wrap;
+  padding-bottom:.6rem; margin-bottom:.6rem; border-bottom:1px solid var(--line);
+}
+.live-code-wrap{ display:flex; align-items:baseline; gap:.5rem; }
+.live-label{ font-size:.78rem; color:var(--ink-dim); }
+.live-code{
+  font-size:1.6rem; font-weight:800; letter-spacing:.18em; color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+.live-count{ margin-left:auto; font-size:.95rem; color:var(--ink-dim); }
+.live-count b{ font-size:1.3rem; color:var(--ok); }
+
+.live-join{ display:flex; gap:.9rem; align-items:flex-start; margin-bottom:.8rem; }
+.live-join img{
+  width:132px; height:132px; flex:0 0 auto;
+  background:#fff; border-radius:8px; padding:4px;
+}
+.live-join p{ margin:.2rem 0; font-size:.85rem; color:var(--ink-dim); }
+.live-url{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.8rem !important; color:var(--accent) !important;
+  word-break:break-all; margin:.3rem 0 .5rem !important;
+}
+@media (max-width:520px){
+  .live-join{ flex-direction:column; align-items:center; text-align:center; }
+}
+
+/* 내가 고른 줄을 표시 */
+.tally-row.is-mine .tally-name{ color:#fff; font-weight:800; }
+.tally-row.is-mine .tally-name::after{ content:' ◂ 내가 고른 것'; color:var(--accent); font-size:.8em; }

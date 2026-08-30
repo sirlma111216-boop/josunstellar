@@ -1,5 +1,6 @@
 node_modules/
+_work/
+.wrangler/
 .DS_Store
 Thumbs.db
 *.log
-_work/

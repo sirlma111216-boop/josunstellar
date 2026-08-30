@@ -13,7 +13,7 @@
 | 1 | 인트로 | "1395년, 조선. 망원경은 아직 없었다…" 문구가 순서대로 뜬다 |
 | 2 | 지도 소개 | 무엇인가(각석 실물 사진) / 얼마나 대단한가 / 만원권 뒷면 — 카드 3장 |
 | 3 | 확대해 들어가기 | 전체 지도에서 삼수 영역으로 줌인 애니메이션 |
-| 4 | **두 지도 비교** | 채색본(크기 같음) ↔ 각석본(크기 다름), 같은 별 3개 확대 대조, 밀어보기, 예상 고르기 |
+| 4 | **두 지도 비교** | 채색본 ↔ 각석본, 같은 별 3개 확대 대조, 세 층 밀어보기, **학급 실시간 예상 투표** |
 | 5 | 겉보기 등급 | 밝기 차이 → 그리스식 등급 → **"숫자가 작을수록 밝다"** → 0·마이너스 등급 |
 | 6 | 측정하기 | 핀 10개, 확대 측정 뷰, 두 손잡이로 지름 재기, 2차 측정·평균 |
 | 7 | 결과 확인 | 표 → 점 그래프(애니메이션) → "이런 걸 산점도라고 한다" → 경향선 |
@@ -24,8 +24,9 @@
 
 ## 특징
 
-- **정적 단일 페이지 앱** — 서버·로그인·외부 API·CDN 없음.
-- **학생 데이터는 기기 밖으로 나가지 않는다** — 진행 상태와 측정 기록은 localStorage에만.
+- **Cloudflare Worker 하나로 끝난다** — 외부 데이터베이스·로그인·CDN 없음.
+- **학생 데이터는 기기 밖으로 나가지 않는다** — 진행 상태·측정 기록·결론은 localStorage에만.
+  학급 투표만 익명 표 하나가 오간다(이름·학번 없음).
 - 바닐라 HTML/CSS/JS. 그래프·도식·삽화·밤하늘까지 전부 **코드로 직접 그린다.**
 - 터치 우선(버튼·손잡이 44px 이상), 화면 확대 방해 없음, 글자 크기 3단계.
 - 새로고침해도 이어서 진행된다. 도움말 안의 [전체 초기화]로 리셋.
@@ -42,6 +43,24 @@
 
 세 번째 층 덕분에 "돌에 새긴 크기를 밝기로 읽으면 이런 하늘"이 눈으로 보인다.
 자료는 `assets/js/skydata.js` 에 미리 구워 두어 태블릿에서 이미지 분석을 하지 않는다.
+
+## 학급 실시간 투표 (단계 4)
+
+학생들이 각자 휴대폰·태블릿으로 예상을 고르면 교사 화면에 바로 모인다.
+
+1. 교사가 **[학급 투표 열기]** → 6자리 수업 코드와 QR 이 뜬다
+2. 학생은 QR 을 찍거나 같은 주소에서 코드를 넣고 참여한다
+3. 예상을 고르면 모든 화면의 막대가 실시간으로 움직인다
+
+- **한 기기 한 표.** 다시 고르면 바뀌고 쌓이지 않는다
+- 서버로 가는 것은 기기마다 만든 **무작위 토큰과 고른 항목뿐**이다.
+  이름·학번·측정 기록은 보내지 않는다
+- 12시간이 지나면 그 수업의 표는 자동으로 지워진다
+- **연결이 안 돼도 앱은 그대로 동작한다.** 투표 칸만 조용히 접힌다
+
+구현은 Cloudflare **Durable Object** 하나다(수업 하나 = 객체 하나).
+그 안에 상태와 WebSocket 이 함께 있어 외부 데이터베이스가 필요 없고,
+SQLite 저장소를 쓰므로 무료 요금제에서도 된다.
 
 ## 두 지도의 좌표 관계
 
@@ -101,28 +120,36 @@
 ## 폴더 구조
 
 ```
-index.html
-_headers                 Cloudflare Pages 캐시 설정
-assets/
-  style.css              화면 + 인쇄(@media print) 스타일
-  js/constants.js        앱 문구 · 별 10개 데이터 · 확대 배율 정책
-  js/guide.js            측정 기준 문구 + 고리 도식(SVG)
-  js/config.js           교사 설정 로드·저장
-  js/state.js            학생 진행 상태(localStorage)
-  js/skydata.js          밤하늘 레이어용 별 자국 302개
-  js/detect.js           각석본에서 별 자국을 찾는 도구(skydata 를 다시 구울 때)
-  js/mapview.js          지도+핀 / 별 확대창 / 세 층 밀어보기
-  js/measure.js          확대 측정 뷰(두 손잡이)
-  js/chart.js            점 그래프(산점도) SVG
-  js/steps.js            8단계 진행 controller
-  js/report.js           보고서·기록표 인쇄, CSV
-  js/admin.js            교사 캘리브레이션
-  chart_orion.jpg        각석본 2280 × 2480 (측정용)
-  chart_color.jpg        채색본 2280 × 2480
-  chart_full.jpg         전체 지도 540 × 622
-  chart_stone.jpg        각석 실물 사진 1600 × 1048
-  bill.png               만원권 뒷면 사진
-config.json              교사 캘리브레이션 결과
+wrangler.jsonc             Cloudflare Worker 설정
+worker/
+  index.js                 라우팅 · 수업 코드 발급 · WebSocket 넘기기
+  session-do.js            Durable Object — 학급 투표 상태와 실시간 전달
+  protocol.js              메시지 형식 · 수업 코드 만들기
+  qr.js                    QR 만들기
+public/                    Workers Assets 가 그대로 내보내는 화면
+  index.html
+  _headers                 캐시 설정
+  config.json              교사 캘리브레이션 결과
+  assets/
+    style.css              화면 + 인쇄(@media print) 스타일
+    js/constants.js        앱 문구 · 별 10개 데이터 · 확대 배율 정책
+    js/guide.js            측정 기준 문구 + 고리 도식(SVG)
+    js/config.js           교사 설정 로드·저장
+    js/state.js            학생 진행 상태(localStorage)
+    js/live.js             학급 실시간 투표 연결
+    js/skydata.js          밤하늘 레이어용 별 자국 302개
+    js/detect.js           각석본에서 별 자국을 찾는 도구(skydata 를 다시 구울 때)
+    js/mapview.js          지도+핀 / 별 확대창 / 세 층 밀어보기
+    js/measure.js          확대 측정 뷰(두 손잡이)
+    js/chart.js            점 그래프(산점도) SVG
+    js/steps.js            8단계 진행 controller
+    js/report.js           보고서·기록표 인쇄, CSV
+    js/admin.js            교사 캘리브레이션
+    chart_orion.jpg        각석본 2280 × 2480 (측정용)
+    chart_color.jpg        채색본 2280 × 2480
+    chart_full.jpg         전체 지도 540 × 622
+    chart_stone.jpg        각석 실물 사진 1600 × 1048
+    bill.png               만원권 뒷면 사진
 ```
 
 ## 교사 준비 순서
@@ -147,39 +174,40 @@ config.json              교사 캘리브레이션 결과
 
 ## 배포
 
-정적 파일이라 빌드가 필요 없다.
+**Cloudflare Workers** 로 배포한다. 학급 실시간 투표가 Durable Object 를 쓰므로
+Pages 가 아니라 Worker 여야 한다.
 
-### Cloudflare Pages
+```bash
+npm install
+npx wrangler login      # 처음 한 번만
+npm run deploy
+```
 
-Workers & Pages → Create → Pages → Connect to Git 에서 이 저장소를 고르고 이렇게 둔다.
+주소는 `https://josunstellar.<계정>.workers.dev` 형태로 나온다.
+`public/` 안의 화면·이미지는 Workers Assets 가 그대로 내보내므로 빌드 단계가 없다.
 
-| 항목 | 값 |
-|---|---|
-| Framework preset | None |
-| Build command | (비워 둠) |
-| Build output directory | `/` |
-| Production branch | `master` |
+- 교사용 — 주소 뒤에 `?admin=1`
+- 학생 — QR 을 찍거나 `?code=XXXXXX`
 
+캘리브레이션을 고쳤으면 `public/config.json` 을 커밋하고 다시 배포한다.
+
+### 학급 투표를 빼고 정적으로만 쓰려면
+
+`public/` 폴더만 아무 정적 호스팅에 올려도 된다.
+Cloudflare Pages 는 build output directory 를 `public`, GitHub Pages 는 `/public` 으로 둔다.
+투표 칸은 스스로 접히고 나머지 8단계는 그대로 동작한다.
 `_headers` 가 캐시를 잡아 준다 — 지도 이미지 7일, 코드 10분.
-이미지가 3MB 남짓이라 한 번 받은 태블릿은 다시 받지 않는다.
 이미지를 교체했는데 옛 그림이 보이면 파일 이름을 바꿔 올리면 바로 반영된다.
-
-### GitHub Pages
-
-Settings → Pages → Deploy from a branch → `master` / `(root)`.
-`_headers` 는 무시되지만 앱은 그대로 동작한다.
-
-푸시하면 자동으로 다시 배포된다. 캘리브레이션을 고치고 `config.json` 을 커밋하면
-학생 태블릿에 반영된다.
 
 ## 개발용 서버
 
 ```bash
-node tools-serve.js 8123
+npm run dev        # wrangler dev — 학급 투표까지 그대로 돌아간다
 ```
 
-`tools-serve.js` 는 개발 편의용이며 배포에는 필요 없다.
-캘리브레이션의 [서버에 저장] 은 이 서버가 떠 있을 때만 동작한다.
+`node tools-serve.js 8123` 은 Worker 없이 화면만 볼 때 쓰는 간이 서버다.
+캘리브레이션의 [서버에 저장] 은 이 간이 서버에서만 동작한다
+(`wrangler dev` 로 띄웠을 때는 [config.json 내보내기] 를 쓴다).
 
 ## 주의
 

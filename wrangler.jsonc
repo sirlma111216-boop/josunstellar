@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "josunstellar",
+  "main": "worker/index.js",
+  "compatibility_date": "2025-09-01",
+  // qrcode 패키지가 Buffer 등 Node 내장 몇 가지를 쓴다
+  "compatibility_flags": ["nodejs_compat"],
+
+  // 화면·이미지는 Workers Assets 가 그대로 내보낸다 (별도 서버가 필요 없다)
+  "assets": {
+    "directory": "public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/ws", "/api/*"]
+  },
+
+  // 수업 하나 = Durable Object 하나.
+  // 그 안에 학급 투표 상태와 WebSocket 이 함께 있어 실시간 처리가 한곳에서 끝난다.
+  "durable_objects": {
+    "bindings": [
+      { "name": "SESSION", "class_name": "ClassSession" }
+    ]
+  },
+
+  // SQLite 저장소를 쓰면 무료 요금제에서도 Durable Objects 를 쓸 수 있다
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["ClassSession"] }
+  ],
+
+  "observability": { "enabled": true }
+}

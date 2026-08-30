@@ -11,7 +11,7 @@
       step: 1,
       sub: {},              // { 4: 2, 5: 3 } 단계별 소단계
       prediction: null,     // 단계 4 장면 C 에서 고른 예상 key
-      tally: {},            // 이 기기에서 고른 예상 집계 { key: 횟수 }
+      hands: {},            // 손들기 집계 { key: 사람 수 } — 교사가 직접 센다
       measures: {},         // { 별id: [지름1, 지름2, ...] } 원본 이미지 픽셀
       quiz: {},             // 단계 5 퀴즈 정답 여부
       conclusion: '',       // 학생이 쓴 결론
@@ -101,11 +101,24 @@
     },
 
     /* ---------- 예상 ---------- */
+    /** 학생이 고른 예상. 다시 고르면 바뀐다(쌓이지 않는다). */
     setPrediction: function (key) {
       State.data.prediction = key;
-      State.data.tally[key] = (State.data.tally[key] || 0) + 1;
       State.save();
     },
+
+    /** 손들기 집계 — 교사가 세어 넣는다 */
+    setHands: function (key, n) {
+      State.data.hands[key] = Math.max(0, Math.min(60, n | 0));
+      State.save();
+    },
+    handsOf: function (key) { return (State.data.hands && State.data.hands[key]) || 0; },
+    handsTotal: function () {
+      var t = 0;
+      for (var i = 0; i < PREDICTIONS.length; i++) t += State.handsOf(PREDICTIONS[i].key);
+      return t;
+    },
+    clearHands: function () { State.data.hands = {}; State.save(); },
 
     predictionLabel: function () {
       for (var i = 0; i < PREDICTIONS.length; i++) {

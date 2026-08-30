@@ -174,9 +174,45 @@
     <div class="predict" id="predictBtns"></div>
     <div class="predict-after" id="predictAfter" hidden>
       <p class="accent-line">좋습니다. 그럼 <b>직접 재서 확인해 봅시다.</b></p>
-      <h3 class="card-title">우리 반 예상 모으기</h3>
-      <div class="tally" id="predictTally"></div>
-      <p class="muted">이 태블릿에서 고른 것만 모은 결과입니다.</p>
+    </div>
+
+    <!-- 학급 실시간 투표 -->
+    <div class="live-box" id="liveBox">
+      <div class="live-off" id="liveOff">
+        <h3 class="card-title">우리 반 예상 모으기</h3>
+        <p class="muted">각자 기기에서 고른 것이 한 화면에 모입니다.</p>
+        <div class="abtns">
+          <button type="button" class="btn btn-primary" id="btnOpenClass">학급 투표 열기 (선생님)</button>
+          <button type="button" class="btn" id="btnJoinToggle">코드로 참여하기</button>
+        </div>
+        <div class="join-row" id="joinRow" hidden>
+          <label for="joinCode">수업 코드</label>
+          <input type="text" id="joinCode" maxlength="6" inputmode="latin"
+                 autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+          <button type="button" class="btn btn-primary" id="btnJoin">참여</button>
+        </div>
+        <p class="live-msg" id="liveMsg" hidden></p>
+      </div>
+
+      <div class="live-on" id="liveOn" hidden>
+        <div class="live-head">
+          <div class="live-code-wrap" id="liveCodeWrap">
+            <span class="live-label">수업 코드</span>
+            <span class="live-code" id="liveCode">------</span>
+          </div>
+          <div class="live-count"><b id="liveTotal">0</b>명 참여</div>
+          <button type="button" class="btn btn-sm" id="btnLeave">나가기</button>
+        </div>
+        <div class="live-join" id="liveJoin" hidden>
+          <img id="liveQr" alt="수업 참여 QR 코드">
+          <div>
+            <p>학생들은 휴대폰으로 QR을 찍거나, 아래 주소에서 코드를 넣으면 됩니다.</p>
+            <p class="live-url" id="liveUrl"></p>
+            <button type="button" class="btn btn-sm btn-danger" id="btnResetVotes">표 비우기</button>
+          </div>
+        </div>
+        <div class="tally" id="predictTally"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -399,6 +435,7 @@
 <script src="assets/js/guide.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/state.js"></script>
+<script src="assets/js/live.js"></script>
 <script src="assets/js/skydata.js"></script>
 <script src="assets/js/detect.js"></script>
 <script src="assets/js/mapview.js"></script>

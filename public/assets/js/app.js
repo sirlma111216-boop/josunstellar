@@ -111,6 +111,7 @@
     initFontSize();
     initHelp();
     State.load();
+    if (global.Live) Live.restore();   // 새로고침·QR 로 들어와도 수업에 다시 붙는다
 
     Config.load(function () {
       Steps.init();

@@ -319,6 +319,7 @@
 
       // 예상 고르기
       buildPredict();
+      buildLive();
     }
 
     // 별 3개 확대 — 두 장면 모두 같은 좌표·같은 배율로
@@ -372,11 +373,59 @@
         State.setPrediction(p.key);
         markPredict();
         $('predictAfter').hidden = false;
+        if (Live.ready) Live.vote(p.key);   // 학급에 붙어 있으면 한 표 보낸다
         renderTally();
       });
     });
     markPredict();
     if (State.data.prediction) $('predictAfter').hidden = false;
+  }
+
+  /** 학급 투표 버튼들을 배선한다 */
+  function buildLive() {
+    if (!Live.available()) { $('liveBox').hidden = true; return; }
+
+    function msg(text, bad) {
+      var m = $('liveMsg');
+      m.hidden = !text; m.textContent = text || '';
+      m.classList.toggle('is-bad', !!bad);
+    }
+
+    $('btnOpenClass').addEventListener('click', function () {
+      msg('수업을 여는 중…');
+      Live.openClass(function (err) {
+        if (err) { msg(err, true); return; }
+        msg('');
+        renderLive();
+      });
+    });
+
+    $('btnJoinToggle').addEventListener('click', function () {
+      var row = $('joinRow');
+      row.hidden = !row.hidden;
+      if (!row.hidden) $('joinCode').focus();
+    });
+
+    $('btnJoin').addEventListener('click', function () {
+      msg('참여하는 중…');
+      Live.joinClass($('joinCode').value, function (err) {
+        if (err) { msg(err, true); return; }
+        msg('');
+        renderLive();
+      });
+    });
+    $('joinCode').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') $('btnJoin').click();
+    });
+
+    $('btnLeave').addEventListener('click', function () { Live.leave(); renderLive(); });
+    $('btnResetVotes').addEventListener('click', function () {
+      if (confirm('지금까지 모인 표를 모두 비울까요?')) Live.reset();
+    });
+
+    // 서버에서 표가 오면 화면을 갱신한다
+    Live.onChange(function () { if (Steps.step === 4) renderLive(); });
+    renderLive();
   }
 
   function markPredict() {
@@ -395,18 +444,41 @@
     var host = $('predictTally');
     if (!host) return;
     host.innerHTML = '';
-    var tally = State.data.tally || {};
+    var counts = (Live.tally && Live.tally.counts) || {};
+    var total = (Live.tally && Live.tally.total) || 0;
     var max = 1;
-    PREDICTIONS.forEach(function (p) { max = Math.max(max, tally[p.key] || 0); });
+    PREDICTIONS.forEach(function (p) { max = Math.max(max, counts[p.key] || 0); });
     PREDICTIONS.forEach(function (p) {
       var row = el('div', 'tally-row', host);
       el('span', 'tally-name', row, p.label);
       var barWrap = el('div', 'tally-bar', row);
       var bar = el('div', 'tally-fill', barWrap);
-      var v = tally[p.key] || 0;
+      var v = counts[p.key] || 0;
       bar.style.width = (v / max * 100) + '%';
+      if (State.data.prediction === p.key) row.classList.add('is-mine');
       el('span', 'tally-num', row, v + '명');
     });
+    var t = $('liveTotal');
+    if (t) t.textContent = total;
+  }
+
+  /** 학급 연결 상태에 맞춰 화면을 바꾼다 */
+  function renderLive() {
+    var box = $('liveBox');
+    if (!box) return;
+    var on = !!(Live.code && Live.ready);
+    $('liveOff').hidden = on;
+    $('liveOn').hidden = !on;
+    if (!on) return;
+    $('liveCode').textContent = Live.code;
+    // 교사 화면에만 QR·주소·표 비우기를 보여 준다
+    var isHost = Live.role === 'host' && Live.joinInfo;
+    $('liveJoin').hidden = !isHost;
+    if (isHost) {
+      $('liveQr').src = Live.joinInfo.qr;
+      $('liveUrl').textContent = Live.joinInfo.joinUrl;
+    }
+    renderTally();
   }
 
   /* ---------- 단계 5. 겉보기 등급 ---------- */
