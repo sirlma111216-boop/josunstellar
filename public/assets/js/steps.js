@@ -8,7 +8,7 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   /* 단계별 소단계 수 */
-  var SUBS = { 1: 1, 2: 3, 3: 1, 4: 3, 5: 4, 6: 2, 7: 3, 8: 1 };
+  var SUBS = { 1: 1, 2: 3, 3: 1, 4: 3, 5: 6, 6: 2, 7: 3, 8: 1 };
   var LAST = 8;
 
   var Steps = { step: 1, sub: 1, built: {} };
@@ -596,6 +596,10 @@
       $('brightDemo').appendChild(buildBrightDemo());
       $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝음', '어두움'));
       $('magNegative').appendChild(buildMagScale([-1.5, 0, 1, 2, 3], '더 밝음', '어두움', true));
+      buildMagHistory();
+      $('pogsonChart').appendChild(buildPogson());
+      buildMagTable();
+      $('magOurStars').appendChild(buildOurStars());
       buildQuiz();
     }
   }
@@ -637,6 +641,168 @@
     svg('text', s, { x: 20, y: 122, class: 'sd-end', 'text-anchor': 'start' }, '◂ ' + leftWord);
     svg('text', s, { x: 540, y: 122, class: 'sd-end', 'text-anchor': 'end' }, rightWord + ' ▸');
     return s;
+  }
+
+
+  /* ---------- 단계 5 자료 ---------- */
+
+  /** 등급이 걸어온 길. 연도 간격이 아주 넓어 눈금 대신 사건 카드로 늘어놓는다. */
+  var MAG_HISTORY = [
+    { when: '기원전 150년쯤', who: '히파르코스',
+      what: '별 목록을 만들며 밝기를 1~6등급으로 나누었습니다.', mark: true },
+    { when: '서기 150년쯤', who: '프톨레마이오스',
+      what: '그 방식을 그대로 받아 써서 널리 퍼뜨렸습니다.' },
+    { when: '1395년', who: '천상열차분야지도',
+      what: '조선에서 별의 밝기를 자국 크기로 돌에 새겼습니다.', ours: true },
+    { when: '1856년', who: '포그슨',
+      what: '한 등급 차이가 정확히 몇 배인지 정했습니다.' }
+  ];
+
+  function buildMagHistory() {
+    var host = $('magHistory');
+    MAG_HISTORY.forEach(function (e) {
+      var card = el('div', 'mh-card', host);
+      if (e.mark) card.classList.add('is-start');
+      if (e.ours) card.classList.add('is-ours');
+      el('p', 'mh-when', card, e.when);
+      el('p', 'mh-who', card, e.who);
+      el('p', 'mh-what', card, e.what);
+    });
+  }
+
+  /** 포그슨의 100배 규칙. 한 등급마다 밝기가 약 2.5배씩 벌어지는 것을 보여 준다. */
+  function buildPogson() {
+    var rows = [
+      { m: 1, x: 100 }, { m: 2, x: 40 }, { m: 3, x: 16 },
+      { m: 4, x: 6.3 }, { m: 5, x: 2.5 }, { m: 6, x: 1 }
+    ];
+    var W = 560, H = 250;
+    var g = svg('svg', null, { viewBox: '0 0 ' + W + ' ' + H, class: 'sky-demo', role: 'img',
+      'aria-label': '1등급 별은 6등급 별보다 100배 밝습니다' });
+    svg('rect', g, { x: 0, y: 0, width: W, height: H, fill: '#050a20', rx: 12 });
+
+    var step = 520 / rows.length;
+    rows.forEach(function (r, i) {
+      var x = 20 + step * (i + 0.5);
+      // 지름이 아니라 넓이가 밝기에 비례하도록 반지름을 잡는다
+      var rad = 4 + 16 * Math.sqrt(r.x / 100);
+      svg('circle', g, { cx: x, cy: 62, r: rad * 2.2, fill: '#ffd479', opacity: 0.12 });
+      svg('circle', g, { cx: x, cy: 62, r: rad, fill: '#ffe9b8' });
+      svg('text', g, { x: x, y: 120, class: 'sd-mag', 'text-anchor': 'middle' }, r.m + '등급');
+      svg('text', g, { x: x, y: 142, class: 'sd-cap', 'text-anchor': 'middle' }, '밝기 ' + r.x);
+      // 한 칸 건너갈 때마다 몇 배씩 어두워지는지
+      if (i < rows.length - 1) {
+        svg('text', g, { x: x + step / 2, y: 178, class: 'sd-mul', 'text-anchor': 'middle' }, '÷2.5');
+      }
+    });
+
+    // 1등급 ↔ 6등급 = 100배
+    var xa = 20 + step * 0.5, xb = 20 + step * 5.5;
+    svg('path', g, { d: 'M' + xa + ' 200 L' + xa + ' 212 L' + xb + ' 212 L' + xb + ' 200',
+      fill: 'none', stroke: '#7fd4ff', 'stroke-width': 2 });
+    svg('text', g, { x: (xa + xb) / 2, y: 236, class: 'sd-span', 'text-anchor': 'middle' },
+      '1등급은 6등급보다 100배 밝다');
+    return g;
+  }
+
+  /** 우리 곁의 천체들. 별이 아닌 것도 같은 눈금 위에 놓인다. */
+  var MAG_BODIES = [
+    { name: '태양', mag: -26.7, note: '눈으로 직접 보면 안 됩니다' },
+    { name: '보름달', mag: -12.7 },
+    { name: '금성', mag: -4.8, note: '가장 밝을 때' },
+    { name: '목성', mag: -2.9, note: '가장 밝을 때' },
+    { name: '시리우스', mag: -1.5, note: '밤하늘에서 가장 밝은 별', ours: true },
+    { name: '베가', mag: 0.0, note: '등급 0의 기준이 되었던 별' },
+    { name: '데네브', mag: 1.2 },
+    { limit: true, name: '맨눈으로 볼 수 있는 한계', mag: 6.0 },
+    { name: '7×50 쌍안경', mag: 9.5, note: '여기까지 보입니다', tool: true },
+    { name: '60mm 망원경', mag: 12.0, note: '여기까지 보입니다', tool: true }
+  ];
+
+  function buildMagTable() {
+    var host = $('magTable');
+    MAG_BODIES.forEach(function (b) {
+      if (b.limit) {
+        var line = el('div', 'mt-limit', host);
+        el('span', 'mt-limit-txt', line, b.name + ' — ' + fmtMag(b.mag) + '등급');
+        return;
+      }
+      var row = el('div', 'mt-row', host);
+      if (b.ours) row.classList.add('is-ours');
+      if (b.tool) row.classList.add('is-tool');
+
+      // 26등급 차이를 지름에 그대로 옮길 수 없어 눈에 보이도록 눌러 담는다
+      var d = Math.max(7, Math.min(30, 30 - Math.pow(b.mag + 27, 0.62) * 2.4));
+      var dot = el('span', 'mt-dot', row);
+      dot.style.width = d + 'px';
+      dot.style.height = d + 'px';
+
+      var txt = el('span', 'mt-name', row);
+      el('b', null, txt, b.name);
+      if (b.note) el('span', 'mt-note', txt, b.note);
+      el('span', 'mt-mag', row, fmtMag(b.mag));
+    });
+  }
+
+  /** 등급 값을 화면용으로. 마이너스는 빼기 기호가 아니라 −(U+2212) 로 쓴다. */
+  function fmtMag(m) {
+    var v = (Math.round(m * 10) / 10).toFixed(1);
+    return v.charAt(0) === '-' ? '−' + v.slice(1) : v;
+  }
+
+  /** 오늘 재는 별 10개가 눈금 어디쯤에 있는지 */
+  function buildOurStars() {
+    var list = STARS.slice().sort(function (a, b) { return a.mag - b.mag; });
+    var lo = -2, hi = 4;
+    var ROW_H = 19;                       // 이름표 한 줄 높이
+    var CH = 12.5;                        // 한글 한 글자 폭(12px 기준)
+
+    // 이름표를 몇 줄까지 쌓아야 하는지 먼저 계산한다
+    var rowEnd = [];                      // 줄마다 이미 찬 오른쪽 끝
+    var place = [];
+    var W = 560, xa = 40, xb = W - 26;
+    function px(m) { return xa + (m - lo) / (hi - lo) * (xb - xa); }
+
+    list.forEach(function (st) {
+      var w = st.kor.length * CH + 8;
+      var x = px(st.mag);
+      var left = x - w / 2;
+      var r = 0;
+      while (rowEnd[r] !== undefined && rowEnd[r] > left) r++;
+      rowEnd[r] = x + w / 2;
+      place.push({ st: st, x: x, row: r });
+    });
+
+    var rows = rowEnd.length;
+    var axisY = 34 + rows * ROW_H + 16;
+    var H = axisY + 62;
+
+    var g = svg('svg', null, { viewBox: '0 0 ' + W + ' ' + H, class: 'sky-demo', role: 'img',
+      'aria-label': '오늘 재는 별 ' + list.length + '개의 겉보기 등급' });
+    svg('rect', g, { x: 0, y: 0, width: W, height: H, fill: '#050a20', rx: 12 });
+
+    // 눈금
+    svg('line', g, { x1: xa, y1: axisY, x2: xb, y2: axisY, stroke: '#2b3a63', 'stroke-width': 2 });
+    for (var m = lo; m <= hi; m++) {
+      svg('line', g, { x1: px(m), y1: axisY, x2: px(m), y2: axisY + 8,
+        stroke: '#2b3a63', 'stroke-width': 2 });
+      svg('text', g, { x: px(m), y: axisY + 26, class: 'sd-tick', 'text-anchor': 'middle' },
+        fmtMag(m).replace('.0', ''));
+    }
+    svg('text', g, { x: xa, y: axisY + 50, class: 'sd-end', 'text-anchor': 'start' }, '◂ 밝음');
+    svg('text', g, { x: xb, y: axisY + 50, class: 'sd-end', 'text-anchor': 'end' }, '어두움 ▸');
+
+    // 별과 이름표. 겹치지 않는 줄에 올리고 눈금까지 선으로 이어 준다.
+    place.forEach(function (p) {
+      var labelY = 34 + (rows - 1 - p.row) * ROW_H;
+      var rad = Math.max(2.5, 8 - p.st.mag * 1.3);
+      svg('line', g, { x1: p.x, y1: labelY + 5, x2: p.x, y2: axisY - rad,
+        stroke: '#33447a', 'stroke-width': 1 });
+      svg('circle', g, { cx: p.x, cy: axisY, r: rad * 2.4, fill: '#fff', opacity: 0.1 });
+      svg('circle', g, { cx: p.x, cy: axisY, r: rad, fill: '#fff' });
+      svg('text', g, { x: p.x, y: labelY, class: 'sd-star', 'text-anchor': 'middle' }, p.st.kor);
+    });
+    return g;
   }
 
   var QUIZ = [

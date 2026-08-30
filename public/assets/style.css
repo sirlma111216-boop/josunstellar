@@ -913,3 +913,113 @@ body.admin-open{ padding-bottom:60dvh; }
 }
 .chip.is-voted::after{ content:' ✓'; color:var(--ok); }
 .chip.is-away{ opacity:.42; border-style:dashed; }
+
+/* ==========================================================================
+   단계 5. 겉보기 등급 — 유래 · 배수 · 우리 곁의 천체
+   ========================================================================== */
+
+/* ---------- 1등급 / 6등급 정의 카드 ---------- */
+.fact-row{
+  display:flex; gap:.7rem; flex-wrap:wrap;
+  margin:.9rem 0;
+}
+.fact-card{
+  flex:1 1 12rem; min-width:11rem;
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:.7rem .9rem; text-align:center;
+}
+.fc-num{
+  font-size:1.5rem; font-weight:800; color:var(--accent);
+  margin-bottom:.15rem;
+}
+.fact-card p:last-child{ font-size:.9rem; color:var(--ink-dim); }
+
+/* ---------- 등급이 걸어온 길 ---------- */
+.mag-history{
+  display:flex; gap:.6rem; flex-wrap:wrap;
+  margin:1rem 0;
+}
+.mh-card{
+  flex:1 1 11rem; min-width:10.5rem;
+  background:var(--bg-2); border:1px solid var(--line);
+  border-left:3px solid var(--line);
+  border-radius:var(--radius); padding:.6rem .8rem;
+}
+.mh-card.is-start{ border-left-color:var(--accent); }
+.mh-card.is-ours{
+  border-left-color:var(--ok);
+  background:color-mix(in srgb, var(--ok) 10%, var(--bg-2));
+}
+.mh-when{ font-size:.78rem; color:var(--ink-dim); letter-spacing:.02em; }
+.mh-who{ font-size:1.05rem; font-weight:800; color:var(--ink); margin:.1rem 0 .25rem; }
+.mh-card.is-ours .mh-who{ color:var(--ok); }
+.mh-what{ font-size:.85rem; color:var(--ink-dim); line-height:1.45; }
+
+/* ---------- 이어 주는 설명 상자 ---------- */
+.link-box{
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:.8rem 1rem; margin:1rem 0;
+}
+.link-box p{ margin:.35rem 0; }
+.link-box p:first-child{ margin-top:0; }
+.link-box p:last-child{ margin-bottom:0; }
+.calc{
+  font-size:1.15rem; font-weight:700; color:var(--accent);
+  text-align:center; letter-spacing:.02em;
+  padding:.5rem 0; font-variant-numeric:tabular-nums;
+}
+
+/* ---------- 우리 곁의 천체 표 ---------- */
+.mag-table{
+  border:1px solid var(--line); border-radius:var(--radius);
+  overflow:hidden; margin:.9rem 0;
+}
+.mt-row{
+  display:flex; align-items:center; gap:.7rem;
+  padding:.5rem .9rem;
+  border-bottom:1px solid var(--line);
+}
+.mt-row:last-child{ border-bottom:none; }
+.mt-dot{
+  flex:0 0 auto; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #fff, #ffd98a 55%, #d99b2e);
+  box-shadow:0 0 10px rgba(255,214,138,.35);
+}
+.mt-name{ flex:1 1 auto; min-width:0; display:flex; flex-wrap:wrap; align-items:baseline; gap:.45rem; }
+.mt-name b{ font-size:1rem; }
+.mt-note{ font-size:.8rem; color:var(--ink-dim); }
+.mt-mag{
+  flex:0 0 auto; font-size:1.15rem; font-weight:800;
+  color:var(--accent); font-variant-numeric:tabular-nums;
+}
+.mt-row.is-ours{ background:color-mix(in srgb, var(--ok) 12%, transparent); }
+.mt-row.is-ours .mt-mag{ color:var(--ok); }
+.mt-row.is-tool .mt-dot{
+  background:none; border:2px dashed var(--ink-dim); box-shadow:none;
+}
+.mt-row.is-tool .mt-name b,
+.mt-row.is-tool .mt-mag{ color:var(--ink-dim); }
+
+/* 맨눈으로 볼 수 있는 한계 — 표를 가로지르는 선 */
+.mt-limit{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.45rem .9rem;
+  background:color-mix(in srgb, var(--warn) 14%, transparent);
+  border-top:1px dashed var(--warn); border-bottom:1px dashed var(--warn);
+}
+.mt-limit-txt{ font-size:.88rem; font-weight:700; color:var(--warn); }
+
+.mt{ margin-top:1.4rem; }
+.mag-ours{ margin:.6rem 0; }
+
+/* ---------- SVG 자료 글씨 ---------- */
+.sd-mul{ fill:#8fa6d8; font-size:12px; font-weight:700; font-family:inherit; }
+.sd-span{ fill:#7fd4ff; font-size:13px; font-weight:700; font-family:inherit; }
+.sd-tick{ fill:#7f8db5; font-size:12px; font-family:inherit; font-variant-numeric:tabular-nums; }
+.sd-star{ fill:#e8eefc; font-size:12px; font-weight:600; font-family:inherit; }
+
+/* 인쇄물에서는 어두운 판을 그대로 쓰지 않는다 */
+@media print{
+  .mag-history, .mag-table{ break-inside:avoid; }
+  .mh-card, .fact-card, .link-box{ background:none; }
+}
