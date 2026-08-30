@@ -205,6 +205,30 @@
     { han: '之圖', kor: '지도', mean: '그린 그림' }
   ];
 
+  /* 카드별 그림.
+     사진과 상상도를 섞어 쓰므로, 상상해 그린 것은 설명에 그렇게 밝힌다.
+     학생이 옛 사진으로 오해하면 안 되기 때문이다. */
+  var CARD_PICS = {
+    1: { src: 'assets/chart_stone.jpg',
+         cap: '돌에 새겨진 실물 — 천상열차분야지도 각석',
+         alt: '천상열차분야지도 각석 — 돌에 새겨진 실물' },
+    2: { src: 'assets/2-2.png',
+         cap: '바쳐진 탁본을 보고 돌에 새기게 하는 장면 — 상상하여 그린 그림',
+         alt: '왕 앞에 천상열차분야지도 탁본이 펼쳐져 있고, 옆에서 석공들이 돌에 별을 새기고 있는 그림' },
+    3: { src: 'assets/2-3.png',
+         cap: '1395년 하늘에 맞게 다시 계산하는 류방택 — 상상하여 그린 그림',
+         alt: '밤에 별지도를 펴 놓고 붓으로 고쳐 그리는 조선 천문학자, 옆에 혼천의와 계산한 종이가 있는 그림' },
+    4: { src: 'assets/chart_full.jpg',
+         cap: '천상열차분야지도 전체 모습',
+         alt: '천상열차분야지도 전체' },
+    5: { src: 'assets/2-5.png',
+         cap: '방치되었던 태조의 원본, 1687년의 복각, 그리고 오늘날 — 상상하여 그린 그림',
+         alt: '풀밭에 방치된 원본 돌, 1687년에 다시 새기는 장면, 박물관에 보존된 오늘날을 함께 보여 주는 그림' },
+    6: { src: 'assets/chart_full.jpg',
+         cap: '천상열차분야지도 전체 모습',
+         alt: '천상열차분야지도 전체' }
+  };
+
   /* 숫자로 보는 천상열차분야지도 */
   var STONE_FACTS = [
     { num: '1,467', unit: '개', what: '새겨진 별' },
@@ -241,16 +265,10 @@
       ds[j].classList.toggle('is-on', Number(ds[j].dataset.sub) === sub);
     }
 
-    // 카드에 맞춰 왼쪽 그림을 바꾼다
-    // ①②⑤ 돌 자체의 이야기라 각석 실물 사진
-    // ③④⑥ 별과 전체 모습 이야기라 별이 다 보이는 전체 지도
-    var stoneCard = (sub === 1 || sub === 2 || sub === 5);
+    // 카드마다 그에 맞는 그림을 왼쪽에 놓는다.
+    // ②③⑤ 는 그 장면을 상상해 그린 그림이고, 나머지는 실제 유물 사진이다.
     var img = $('s2Img'), cap = $('s2Cap');
-    var want = stoneCard
-      ? { src: IMAGES.stone.src, cap: '돌에 새겨진 실물 — 천상열차분야지도 각석',
-          alt: '천상열차분야지도 각석 — 돌에 새겨진 실물' }
-      : { src: IMAGES.full.src, cap: '천상열차분야지도 전체 모습',
-          alt: '천상열차분야지도 전체' };
+    var want = CARD_PICS[sub] || CARD_PICS[1];
     if (img && img.getAttribute('data-src') !== want.src && img.src.indexOf(want.src) < 0) {
       img.removeAttribute('data-src');
       img.src = want.src;
