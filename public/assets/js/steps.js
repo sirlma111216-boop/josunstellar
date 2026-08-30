@@ -8,7 +8,7 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   /* 단계별 소단계 수 */
-  var SUBS = { 1: 1, 2: 3, 3: 1, 4: 3, 5: 6, 6: 2, 7: 3, 8: 1 };
+  var SUBS = { 1: 1, 2: 6, 3: 1, 4: 3, 5: 6, 6: 2, 7: 3, 8: 1 };
   var LAST = 8;
 
   var Steps = { step: 1, sub: 1, built: {} };
@@ -180,6 +180,21 @@
   }
 
   /* ---------- 단계 2. 지도 소개 ---------- */
+  /* 이름을 한 글자씩 뜯어 보여 준다 */
+  var NAME_PARTS = [
+    { han: '天象', kor: '천상', mean: '하늘의 모습' },
+    { han: '列次', kor: '열차', mean: '차례로 늘어놓다' },
+    { han: '分野', kor: '분야', mean: '구역을 나누다' },
+    { han: '之圖', kor: '지도', mean: '그린 그림' }
+  ];
+
+  /* 숫자로 보는 천상열차분야지도 */
+  var STONE_FACTS = [
+    { num: '1,467', unit: '개', what: '새겨진 별' },
+    { num: '283', unit: '개', what: '별자리' },
+    { num: '122.8 × 200.9', unit: 'cm', what: '돌 한 장의 크기' }
+  ];
+
   function build2(sub) {
     if (!Steps.built[2]) {
       Steps.built[2] = true;
@@ -189,6 +204,19 @@
         var d = el('span', 'dot', dots);
         d.dataset.sub = i;
       }
+      NAME_PARTS.forEach(function (p) {
+        var chip = el('div', 'np-chip', $('s2Name'));
+        el('span', 'np-han', chip, p.han);
+        el('span', 'np-kor', chip, p.kor);
+        el('span', 'np-mean', chip, p.mean);
+      });
+      STONE_FACTS.forEach(function (f) {
+        var cell = el('div', 'num-cell', $('s2Nums'));
+        var big = el('p', 'num-big', cell);
+        el('b', null, big, f.num);
+        el('span', 'num-unit', big, f.unit);
+        el('p', 'num-what', cell, f.what);
+      });
       buildBill($('billArt'));
     }
     var ds = $('s2Dots').querySelectorAll('.dot');
@@ -197,10 +225,11 @@
     }
 
     // 카드에 맞춰 왼쪽 그림을 바꾼다
-    // ① 돌에 새긴 지도라는 말이 나오므로 각석 실물 사진
-    // ②③ 별 1,467개 이야기이므로 별이 다 보이는 전체 지도
+    // ①②⑤ 돌 자체의 이야기라 각석 실물 사진
+    // ③④⑥ 별과 전체 모습 이야기라 별이 다 보이는 전체 지도
+    var stoneCard = (sub === 1 || sub === 2 || sub === 5);
     var img = $('s2Img'), cap = $('s2Cap');
-    var want = (sub === 1)
+    var want = stoneCard
       ? { src: IMAGES.stone.src, cap: '돌에 새겨진 실물 — 천상열차분야지도 각석',
           alt: '천상열차분야지도 각석 — 돌에 새겨진 실물' }
       : { src: IMAGES.full.src, cap: '천상열차분야지도 전체 모습',

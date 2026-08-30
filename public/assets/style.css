@@ -1023,3 +1023,39 @@ body.admin-open{ padding-bottom:60dvh; }
   .mag-history, .mag-table{ break-inside:avoid; }
   .mh-card, .fact-card, .link-box{ background:none; }
 }
+
+/* ==========================================================================
+   단계 2. 이름 풀이 · 숫자로 보기
+   ========================================================================== */
+
+/* 천상 / 열차 / 분야 / 지도 를 한 글자씩 뜯어 본다 */
+.name-parse{
+  display:flex; gap:.4rem; flex-wrap:wrap;
+  margin:.7rem 0;
+}
+.np-chip{
+  flex:1 1 6rem; min-width:5.5rem;
+  background:var(--bg-1); border:1px solid var(--line);
+  border-radius:10px; padding:.45rem .3rem; text-align:center;
+}
+.np-han{ display:block; font-size:1.15rem; font-weight:700; color:var(--accent); }
+.np-kor{ display:block; font-size:.9rem; font-weight:700; margin-top:.1rem; }
+.np-mean{ display:block; font-size:.76rem; color:var(--ink-dim); margin-top:.15rem; }
+
+/* 숫자로 보는 천상열차분야지도 */
+.num-row{
+  display:flex; gap:.5rem; flex-wrap:wrap;
+  margin:.2rem 0 .8rem;
+}
+.num-cell{
+  flex:1 1 6.5rem; min-width:6rem;
+  background:var(--bg-1); border:1px solid var(--line);
+  border-radius:10px; padding:.5rem .4rem; text-align:center;
+}
+.num-big{ font-size:1.25rem; font-weight:800; color:var(--accent); line-height:1.2; }
+.num-unit{ font-size:.8rem; font-weight:600; margin-left:.1em; }
+.num-what{ font-size:.78rem; color:var(--ink-dim); margin-top:.15rem; }
+
+@media print{
+  .np-chip, .num-cell{ background:none; }
+}
