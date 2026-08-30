@@ -1,5 +1,5 @@
 /* ==========================================================================
-   조선스텔라 — 스타일
+   Night Code 1395 — 스타일
    짙은 남색 밤하늘 / 높은 대비 / 교실 프로젝터에서도 읽히는 큰 글자
    터치 타깃 최소 44px / 장식보다 명료함
    ========================================================================== */
@@ -1260,3 +1260,18 @@ body.admin-open{ padding-bottom:60dvh; }
   border-color:color-mix(in srgb, var(--ok) 45%, var(--line));
   color:var(--ok); font-weight:700;
 }
+
+/* 보고서에 넣을 신원 — 학교·이름은 한 줄, 학년·반·번호는 세 칸으로 */
+.who-grid{
+  display:grid; grid-template-columns:repeat(3, 1fr);
+  gap:.5rem; margin:.6rem 0 .8rem;
+}
+.who-grid .field{ margin:0; }
+.who-grid .field.is-wide{ grid-column:1 / -1; }
+/* 좁은 칸(학년·반·번호)은 이름표를 위로 올려야 숫자 칸이 남는다 */
+.who-grid .field:not(.is-wide){ grid-template-columns:1fr; gap:.15rem; }
+.who-grid .field:not(.is-wide) > span{ font-size:.82rem; color:var(--ink-dim); }
+.who-grid .field:not(.is-wide) input{ text-align:center; }
+/* input 은 기본 폭이 넓어 격자를 밀어낸다. 칸에 맞춰 줄어들게 한다. */
+.who-grid .field input{ width:100%; min-width:0; }
+.who-grid .field{ min-width:0; }

@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "josunstellar",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["wrangler", "dev", "--port", "8123"],
-      "port": 8123
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "npx wrangler dev --port %PORT%"],
+      "port": 8123,
+      "autoPort": true
     }
   ]
 }

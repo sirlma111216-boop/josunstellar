@@ -1,5 +1,5 @@
 /* ==========================================================================
-   조선스텔라 — 8단계 수업 진행 controller
+   Night Code 1395 — 8단계 수업 진행 controller
    교사가 화면을 순서대로 넘기면 그것이 곧 수업이 되도록 만든다.
    ========================================================================== */
 (function (global) {
@@ -1125,7 +1125,6 @@
         }
       });
       $('btnReport').addEventListener('click', function () { Report.printReport(); });
-      $('btnCsv').addEventListener('click', function () { Report.downloadCsv(); });
     }
     if (!$('conclusionReveal').hidden) { renderLookback(); renderNotes(); }
   }

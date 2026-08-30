@@ -2,7 +2,7 @@
   "name": "josunstellar",
   "version": "1.0.0",
   "private": true,
-  "description": "조선스텔라 : 천상열차분야지도 — 중3 별과 우주 수업용 웹앱",
+  "description": "Night Code 1395 — 중3 별과 우주 수업용 웹앱 (천상열차분야지도)",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
