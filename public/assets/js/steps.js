@@ -718,7 +718,6 @@
       Steps.built[5] = true;
       $('brightDemo').appendChild(buildBrightDemo());
       $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝음', '어두움'));
-      $('magNegative').appendChild(buildMagScale([-1.5, 0, 1, 2, 3], '더 밝음', '어두움', true));
       buildMagHistory();
       $('pogsonChart').appendChild(buildPogson());
       buildMagTable();

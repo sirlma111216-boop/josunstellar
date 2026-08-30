@@ -1281,3 +1281,7 @@ body.admin-open{ padding-bottom:60dvh; }
 .btn-bgm.is-on{
   background:var(--accent); color:#231800; border-color:var(--accent);
 }
+
+/* 폭이 넓은 자료 그림 (등급 눈금 등) */
+.fig-wide img{ width:100%; max-width:720px; height:auto; display:block; margin:0 auto; border-radius:10px; }
+.fig-wide figcaption{ text-align:center; }
