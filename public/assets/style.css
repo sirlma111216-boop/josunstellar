@@ -1285,3 +1285,12 @@ body.admin-open{ padding-bottom:60dvh; }
 /* 폭이 넓은 자료 그림 (등급 눈금 등) */
 .fig-wide img{ width:100%; max-width:720px; height:auto; display:block; margin:0 auto; border-radius:10px; }
 .fig-wide figcaption{ text-align:center; }
+
+/* 단계 5-2 — 히파르코스 판화와 1·6등급 카드를 나란히 */
+.hipa-row{ display:flex; gap:.9rem; align-items:flex-start; margin:.8rem 0 .2rem; flex-wrap:wrap; }
+.hipa-fig{ flex:0 1 300px; min-width:min(100%, 220px); }
+.hipa-fig img{ border-radius:10px; }
+.hipa-row .fact-row{ flex:1 1 16rem; margin:0; }
+@media (max-width:560px){
+  .hipa-fig{ flex:1 1 100%; }
+}
