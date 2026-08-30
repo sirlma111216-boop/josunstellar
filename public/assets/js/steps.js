@@ -716,7 +716,6 @@
   function build5(sub) {
     if (!Steps.built[5]) {
       Steps.built[5] = true;
-      $('brightDemo').appendChild(buildBrightDemo());
       $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝음', '어두움'));
       buildMagHistory();
       $('pogsonChart').appendChild(buildPogson());
@@ -724,26 +723,6 @@
       $('magOurStars').appendChild(buildOurStars());
       buildQuiz();
     }
-  }
-
-  /** 밝기가 다른 별 5개 */
-  function buildBrightDemo() {
-    var s = svg('svg', null, { viewBox: '0 0 560 150', class: 'sky-demo', role: 'img',
-      'aria-label': '밝기가 서로 다른 별 다섯 개' });
-    svg('rect', s, { x: 0, y: 0, width: 560, height: 150, fill: '#050a20', rx: 12 });
-    var data = [
-      { x: 70,  r: 15, o: 1.00, t: '아주 밝은 별' },
-      { x: 180, r: 10, o: 0.92, t: '밝은 별' },
-      { x: 290, r: 7,  o: 0.80, t: '보통' },
-      { x: 400, r: 4.5, o: 0.66, t: '어두운 별' },
-      { x: 500, r: 2.6, o: 0.5,  t: '겨우 보임' }
-    ];
-    data.forEach(function (d) {
-      svg('circle', s, { cx: d.x, cy: 62, r: d.r * 2.4, fill: '#fff', opacity: d.o * 0.13 });
-      svg('circle', s, { cx: d.x, cy: 62, r: d.r, fill: '#fff', opacity: d.o });
-      svg('text', s, { x: d.x, y: 118, class: 'sd-cap', 'text-anchor': 'middle' }, d.t);
-    });
-    return s;
   }
 
   /** 등급 눈금 */
