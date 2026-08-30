@@ -8,7 +8,7 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   /* 단계별 소단계 수 */
-  var SUBS = { 1: 1, 2: 6, 3: 1, 4: 3, 5: 6, 6: 2, 7: 3, 8: 1 };
+  var SUBS = { 1: 1, 2: 6, 3: 1, 4: 3, 5: 7, 6: 2, 7: 3, 8: 1 };
   var LAST = 8;
 
   var Steps = { step: 1, sub: 1, built: {} };
@@ -54,6 +54,7 @@
     // 친구가 새로 올리면 보고 있는 화면을 그 자리에서 갱신한다
     if (global.Live) {
       Live.onWork = function () {
+        if (Steps.step === 5 && Steps.sub === 6) renderRankTally();
         if (Steps.step === 6) renderClassProgress();
         if (Steps.step === 7 && Steps.sub === 3) {
           renderScope();
@@ -714,6 +715,8 @@
 
   /* ---------- 단계 5. 겉보기 등급 ---------- */
   function build5(sub) {
+    if (sub === 6) { renderRank(); renderRankTally(); }
+    if (sub === 7) buildMagTable();      // 내가 낸 순서를 표에 표시해야 하므로 다시 그린다
     if (!Steps.built[5]) {
       Steps.built[5] = true;
       $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝음', '어두움'));
@@ -721,6 +724,7 @@
       $('pogsonChart').appendChild(buildPogson());
       buildMagTable();
       $('magOurStars').appendChild(buildOurStars());
+      buildRankGame();
       buildQuiz();
     }
   }
@@ -808,13 +812,13 @@
 
   /** 우리 곁의 천체들. 별이 아닌 것도 같은 눈금 위에 놓인다. */
   var MAG_BODIES = [
-    { name: '태양', mag: -26.7, note: '눈으로 직접 보면 안 됩니다' },
-    { name: '보름달', mag: -12.7 },
-    { name: '금성', mag: -4.8, note: '가장 밝을 때' },
-    { name: '목성', mag: -2.9, note: '가장 밝을 때' },
-    { name: '시리우스', mag: -1.5, note: '밤하늘에서 가장 밝은 별', ours: true },
-    { name: '베가', mag: 0.0, note: '등급 0의 기준이 되었던 별' },
-    { name: '데네브', mag: 1.2 },
+    { id: 'sun',     name: '태양', mag: -26.7, note: '눈으로 직접 보면 안 됩니다' },
+    { id: 'moon',    name: '보름달', mag: -12.7 },
+    { id: 'venus',   name: '금성', mag: -4.8, note: '가장 밝을 때' },
+    { id: 'jupiter', name: '목성', mag: -2.9, note: '가장 밝을 때' },
+    { id: 'sirius',  name: '시리우스', mag: -1.5, note: '밤하늘에서 가장 밝은 별', ours: true },
+    { id: 'vega',    name: '베가', mag: 0.0, note: '등급 0의 기준이 되었던 별' },
+    { id: 'deneb',   name: '데네브', mag: 1.2 },
     { limit: true, name: '맨눈으로 볼 수 있는 한계', mag: 6.0 },
     { name: '7×50 쌍안경', mag: 9.5, note: '여기까지 보입니다', tool: true },
     { name: '60mm 망원경', mag: 12.0, note: '여기까지 보입니다', tool: true }
@@ -822,6 +826,13 @@
 
   function buildMagTable() {
     var host = $('magTable');
+    host.innerHTML = '';          // 다시 들어올 때마다 그리므로 비우고 시작한다
+
+    // 밝은 것부터 몇 번째인지 — 순서 맞히기를 채점하는 데 쓴다
+    var trueRank = {};
+    MAG_BODIES.filter(function (b) { return !b.limit && !b.tool; })
+      .forEach(function (b, i) { trueRank[b.id] = i; });
+
     MAG_BODIES.forEach(function (b) {
       if (b.limit) {
         var line = el('div', 'mt-limit', host);
@@ -841,6 +852,14 @@
       var txt = el('span', 'mt-name', row);
       el('b', null, txt, b.name);
       if (b.note) el('span', 'mt-note', txt, b.note);
+      // 내가 놓은 순서가 맞았는지 표시한다
+      var mine = (State.data.rank || []).indexOf(b.id);
+      if (mine >= 0) {
+        var right = (mine === trueRank[b.id]);
+        var tag = el('span', 'mt-guess' + (right ? ' is-right' : ''), txt,
+          right ? '내 예상 ' + (mine + 1) + '위 ✓' : '내 예상 ' + (mine + 1) + '위');
+        tag.title = right ? '맞혔습니다' : '실제로는 ' + (trueRank[b.id] + 1) + '위입니다';
+      }
       el('span', 'mt-mag', row, fmtMag(b.mag));
     });
   }
@@ -849,6 +868,170 @@
   function fmtMag(m) {
     var v = (Math.round(m * 10) / 10).toFixed(1);
     return v.charAt(0) === '-' ? '−' + v.slice(1) : v;
+  }
+
+  /* ---------- 단계 5-6. 밝기 순서 맞히기 ---------- */
+
+  /** 순서를 맞힐 일곱 개 (MAG_BODIES 에서 도구·한계선을 뺀 것) */
+  function rankBodies() {
+    return MAG_BODIES.filter(function (b) { return !b.limit && !b.tool; });
+  }
+
+  /** 한 번 섞으면 그 화면에서는 그대로 둔다(다시 그릴 때마다 흔들리지 않게) */
+  function rankPool() {
+    if (!Steps.rankShuffled) {
+      var a = rankBodies().map(function (b) { return b.id; });
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      Steps.rankShuffled = a;
+    }
+    return Steps.rankShuffled;
+  }
+
+  function bodyById(id) {
+    var all = rankBodies();
+    for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i];
+    return null;
+  }
+
+  function buildRankGame() {
+    $('btnRankSubmit').addEventListener('click', submitRank);
+    $('btnRankReset').addEventListener('click', function () {
+      State.data.rank = [];
+      State.save();
+      rankMsg('');
+      renderRank();
+    });
+    $('btnRankReveal').addEventListener('click', function () { Steps.go(5, 7); });
+  }
+
+  function rankMsg(text, kind) {
+    var m = $('rgMsg');
+    m.hidden = !text;
+    m.textContent = text || '';
+    m.className = 'rg-msg' + (kind ? ' is-' + kind : '');
+  }
+
+  /** 슬롯과 남은 카드를 다시 그린다 */
+  function renderRank() {
+    var slots = $('rgSlots'), pool = $('rgPool');
+    if (!slots) return;
+    var order = State.data.rank || [];
+    var total = rankBodies().length;
+
+    slots.innerHTML = '';
+    for (var i = 0; i < total; i++) {
+      var row = el('div', 'rg-slot', slots);
+      el('span', 'rg-no', row, String(i + 1));
+      var id = order[i];
+      if (id) {
+        var b = bodyById(id);
+        var card = el('button', 'rg-card is-placed', row);
+        card.type = 'button';
+        el('b', null, card, b ? b.name : id);
+        card.title = '빼내기';
+        (function (k) {
+          card.addEventListener('click', function () {
+            var o = (State.data.rank || []).slice();
+            o.splice(k, 1);
+            State.data.rank = o;
+            State.save();
+            rankMsg('');
+            renderRank();
+          });
+        })(i);
+      } else {
+        el('span', 'rg-empty', row, i === order.length ? '여기에 놓입니다' : '');
+        if (i === order.length) row.classList.add('is-next');
+      }
+    }
+
+    pool.innerHTML = '';
+    var left = rankPool().filter(function (id) { return order.indexOf(id) < 0; });
+    left.forEach(function (id) {
+      var b = bodyById(id);
+      var card = el('button', 'rg-card', pool);
+      card.type = 'button';
+      el('b', null, card, b ? b.name : id);
+      if (b && b.note) el('span', 'rg-note', card, b.note);
+      card.addEventListener('click', function () {
+        var o = (State.data.rank || []).slice();
+        o.push(id);
+        State.data.rank = o;
+        State.save();
+        rankMsg('');
+        renderRank();
+      });
+    });
+    if (!left.length) el('p', 'muted tiny', pool, '모두 놓았습니다. [제출하기] 를 눌러 주세요.');
+
+    $('btnRankSubmit').disabled = (order.length !== total);
+    $('btnRankReset').disabled = !order.length;
+  }
+
+  function submitRank() {
+    var order = State.data.rank || [];
+    if (order.length !== rankBodies().length) return;
+    if (global.Live && Live.ready && Live.role === 'guest') {
+      rankMsg('보내는 중…');
+      Live.sendRank(order, function (err) {
+        rankMsg(err ? '보내지 못했습니다. 그래도 내 순서는 남아 있습니다.' : '제출했습니다!',
+                err ? 'bad' : 'ok');
+        renderRankTally();
+      });
+    } else {
+      rankMsg('제출했습니다!', 'ok');
+    }
+  }
+
+  /**
+   * 교사 화면에만 — 학생들이 낸 순위를 한눈에.
+   * 가로가 순위(1~7), 세로가 천체다. 반이 잘 맞혔으면 대각선이 밝게 켜진다.
+   */
+  function renderRankTally() {
+    var host = $('rankTally');
+    if (!host) return;
+    var isHost = global.Live && Live.role === 'host' && Live.code;
+    var ranks = (global.Live && Live.work && Live.work.ranks) || [];
+    host.hidden = !isHost;
+    if (!isHost) return;
+
+    var bodies = rankBodies(), n = bodies.length;
+    host.innerHTML = '';
+    el('h4', 'rgt-title', host, '우리 반이 낸 순서 — ' + ranks.length + '명 제출');
+    if (!ranks.length) {
+      el('p', 'muted tiny', host, '아직 제출한 학생이 없습니다.');
+      return;
+    }
+
+    // counts[천체][순위] = 사람 수
+    var counts = {};
+    bodies.forEach(function (b) { counts[b.id] = new Array(n).fill(0); });
+    ranks.forEach(function (o) {
+      o.forEach(function (id, i) { if (counts[id] && i < n) counts[id][i]++; });
+    });
+
+    var grid = el('div', 'rgt-grid', host);
+    grid.style.gridTemplateColumns = 'minmax(4.5rem, auto) repeat(' + n + ', 1fr)';
+    el('span', 'rgt-corner', grid, '');
+    for (var r = 1; r <= n; r++) el('span', 'rgt-head', grid, r + '위');
+
+    bodies.forEach(function (b, bi) {
+      el('span', 'rgt-name', grid, b.name);
+      for (var r = 0; r < n; r++) {
+        var c = counts[b.id][r];
+        var cell = el('span', 'rgt-cell', grid, c ? String(c) : '');
+        if (c) {
+          cell.style.background = 'color-mix(in srgb, var(--accent) ' +
+            Math.round(18 + 62 * (c / ranks.length)) + '%, transparent)';
+        }
+        if (r === bi) cell.classList.add('is-answer');   // 실제 순위 자리
+      }
+    });
+    el('p', 'muted tiny', host,
+      '테두리가 있는 칸이 실제 순위입니다. 그 줄이 진할수록 반이 잘 맞힌 것입니다.');
   }
 
   /** 오늘 재는 별 10개가 눈금 어디쯤에 있는지 */

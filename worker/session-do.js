@@ -63,6 +63,20 @@ function cleanText(v, max) {
   return out.trim();
 }
 
+/** 순위 하나에 담을 수 있는 항목 수 */
+const RANK_MAX = 12;
+
+/** 올라온 순위를 짧은 이름표 배열로만 받는다 */
+function cleanRank(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const k of v.slice(0, RANK_MAX)) {
+    const s = String(k || '').slice(0, 16);
+    if (s && out.indexOf(s) < 0) out.push(s);   // 같은 것을 두 번 넣을 수 없다
+  }
+  return out;
+}
+
 /** 올라온 측정 점을 믿을 수 있는 범위로만 받는다 */
 function cleanPts(v) {
   if (!Array.isArray(v)) return [];
@@ -95,9 +109,9 @@ export class ClassSession extends DurableObject {
       const saved = await this.ctx.storage.get('state');
       const fresh = saved && (Date.now() - (saved.updatedAt || 0)) < TTL_MS;
       this.state = fresh
-        ? { members: {}, stage: null, results: {}, notes: {}, ...saved }   // 예전 판에 없던 칸을 채운다
+        ? { members: {}, stage: null, results: {}, notes: {}, ranks: {}, ...saved }   // 예전 판에 없던 칸
         : { createdAt: Date.now(), updatedAt: Date.now(), votes: {},
-            members: {}, stage: null, results: {}, notes: {} };
+            members: {}, stage: null, results: {}, notes: {}, ranks: {} };
     })();
     await this.loading;
     return this.state;
@@ -168,7 +182,9 @@ export class ClassSession extends DurableObject {
       nick: this.state.notes[t].nick,
       text: this.state.notes[t].text,
     }));
-    return { pts, people, notes };
+    // 순위는 누가 냈는지 떼고 답만 모은다
+    const ranks = Object.keys(this.state.ranks).map((t) => this.state.ranks[t].order);
+    return { pts, people, notes, ranks };
   }
 
   /** 학생·교사 화면으로 내려보내는 한 덩어리 */
@@ -276,10 +292,24 @@ export class ClassSession extends DurableObject {
             delete this.state.votes[token];
             delete this.state.results[token];
             delete this.state.notes[token];
+            delete this.state.ranks[token];
             await this.save();
           }
           ws.send(ack(msg.i, { ok: true }));
           this.scheduleBroadcast();
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'rank': {
+          // 밝기 순서 맞히기. 답만 모으고 누가 냈는지는 남기지 않는다.
+          const token = String(msg.d?.token || '').slice(0, 40);
+          const order = cleanRank(msg.d?.order);
+          if (!token) { ws.send(nack(msg.i, '잘못된 요청입니다.')); break; }
+          if (order.length) this.state.ranks[token] = { order, at: Date.now() };
+          else delete this.state.ranks[token];
+          await this.save();
+          ws.send(ack(msg.i, this.classWork()));
           this.scheduleClassBroadcast();
           break;
         }
@@ -295,7 +325,7 @@ export class ClassSession extends DurableObject {
           // what 을 주면 그것만, 안 주면 표만 비운다(참여자 명단은 늘 남는다).
           const what = String(msg.d?.what || 'votes');
           if (what === 'votes' || what === 'all') this.state.votes = {};
-          if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; }
+          if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; this.state.ranks = {}; }
           // 데모봇만 걷어낸다. 교사 화면이 새로고침되어 leave 를 못 보냈을 때를 위해 둔다.
           if (what === 'demo') {
             for (const t of Object.keys(this.state.members)) {
@@ -304,6 +334,7 @@ export class ClassSession extends DurableObject {
               delete this.state.votes[t];
               delete this.state.results[t];
               delete this.state.notes[t];
+              delete this.state.ranks[t];
             }
           }
           await this.save();

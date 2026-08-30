@@ -21,7 +21,7 @@
     members: [],       // [{ nick, on, voted }] — 닉네임 말고는 아무것도 오지 않는다
     joined: 0,         // 한 번이라도 들어온 사람 수
     online: 0,         // 지금 붙어 있는 사람 수
-    work: null,        // 반 전체 자료 { pts, people, notes }
+    work: null,        // 반 전체 자료 { pts, people, notes, ranks }
     tally: null,       // { counts, total }
     stage: null,       // 교사가 보고 있는 단계 { step, sub }
     following: true,   // 학생이 교사 화면을 따라가는가
@@ -47,7 +47,7 @@
     if (!d) return;
     if (d.counts) Live.tally = { counts: d.counts, total: d.total };
     if (d.members) { Live.members = d.members; Live.joined = d.joined; Live.online = d.online; }
-    if (d.pts) Live.work = { pts: d.pts, people: d.people, notes: d.notes || [] };
+    if (d.pts) Live.work = { pts: d.pts, people: d.people, notes: d.notes || [], ranks: d.ranks || [] };
   }
 
   Live.onChange = function (fn) { Live.listeners.push(fn); };
@@ -106,7 +106,7 @@
         return;
       }
       if (msg.t === 'work' && msg.d) {
-        Live.work = { pts: msg.d.pts || [], people: msg.d.people || 0, notes: msg.d.notes || [] };
+        Live.work = { pts: msg.d.pts || [], people: msg.d.people || 0, notes: msg.d.notes || [], ranks: msg.d.ranks || [] };
         if (Live.onWork) Live.onWork(Live.work);
         notify();
         return;
@@ -213,7 +213,16 @@
   Live.sendNote = function (text, done) {
     if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
     Live.send('note', { token: token(), text: text }, function (err, d) {
-      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes }; notify(); }
+      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks }; notify(); }
+      if (done) done(err || null);
+    });
+  };
+
+  /** 밝기 순서 맞히기 답을 올린다 */
+  Live.sendRank = function (order, done) {
+    if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
+    Live.send('rank', { token: token(), order: order }, function (err, d) {
+      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks }; notify(); }
       if (done) done(err || null);
     });
   };
@@ -223,7 +232,7 @@
     if (!Live.ready) return;
     Live.send('work', {}, function (err, d) {
       if (err || !d) return;
-      Live.work = { pts: d.pts || [], people: d.people || 0, notes: d.notes || [] };
+      Live.work = { pts: d.pts || [], people: d.people || 0, notes: d.notes || [], ranks: d.ranks || [] };
       if (Live.onWork) Live.onWork(Live.work);
       notify();
     });

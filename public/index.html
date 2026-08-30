@@ -399,9 +399,32 @@
   </div>
 
   <div class="sub" data-sub="6" hidden>
-    <h3 class="sub-title">6. 우리 곁의 천체는 몇 등급일까요?</h3>
-    <p class="step-lead">별만 등급을 매기는 것이 아닙니다.
-       해도, 달도, 행성도 같은 눈금 위에 놓입니다.</p>
+    <h3 class="sub-title">6. 어느 것이 더 밝을까요?</h3>
+    <p class="step-lead">별만 등급을 매기는 것이 아닙니다. 해도, 달도, 행성도 같은 눈금 위에 놓입니다.
+       아래 일곱 개를 <b>밝은 것부터 어두운 것 순서로</b> 놓아 보세요.</p>
+
+    <div class="rank-game" id="rankGame">
+      <div class="rg-slots" id="rgSlots"></div>
+      <p class="muted tiny">카드를 누르면 순서대로 놓입니다. 놓은 카드를 다시 누르면 빼낼 수 있습니다.</p>
+      <div class="rg-pool" id="rgPool"></div>
+      <div class="abtns rg-btns">
+        <button type="button" class="btn btn-primary" id="btnRankSubmit" disabled>제출하기</button>
+        <button type="button" class="btn" id="btnRankReset">처음부터</button>
+      </div>
+      <p class="rg-msg" id="rgMsg" hidden></p>
+    </div>
+
+    <!-- 교사 화면에만 — 학생들이 낸 순위를 한눈에 -->
+    <div class="rg-tally" id="rankTally" hidden></div>
+
+    <div class="step-cta">
+      <button type="button" class="btn btn-big btn-primary" id="btnRankReveal">실제 결과 보기</button>
+    </div>
+  </div>
+
+  <div class="sub" data-sub="7" hidden>
+    <h3 class="sub-title">7. 우리 곁의 천체는 몇 등급일까요?</h3>
+    <p class="step-lead">실제 등급입니다. 여러분이 놓은 순서와 맞춰 보세요.</p>
 
     <div id="magTable" class="mag-table"></div>
 

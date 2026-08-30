@@ -1294,3 +1294,80 @@ body.admin-open{ padding-bottom:60dvh; }
 @media (max-width:560px){
   .hipa-fig{ flex:1 1 100%; }
 }
+
+/* ==========================================================================
+   단계 5-6. 밝기 순서 맞히기
+   ========================================================================== */
+.rank-game{
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:.8rem 1rem; margin:.8rem 0;
+}
+
+/* 순서 슬롯 */
+.rg-slots{ display:grid; gap:.35rem; margin-bottom:.6rem; }
+.rg-slot{
+  display:flex; align-items:center; gap:.6rem;
+  min-height:var(--touch);
+  border:1px dashed var(--line); border-radius:10px; padding:.2rem .5rem;
+}
+.rg-slot.is-next{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
+.rg-no{
+  flex:0 0 1.6rem; text-align:center;
+  font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums;
+}
+.rg-empty{ font-size:.85rem; color:var(--ink-dim); }
+
+/* 카드 */
+.rg-pool{ display:flex; flex-wrap:wrap; gap:.4rem; margin:.5rem 0 .7rem; }
+.rg-card{
+  display:flex; flex-direction:column; align-items:flex-start; gap:.1rem;
+  min-height:var(--touch); padding:.35rem .8rem;
+  background:#16224e; color:var(--ink);
+  border:1px solid var(--line); border-radius:10px;
+  font-family:inherit; cursor:pointer; text-align:left;
+}
+.rg-card:hover{ border-color:var(--accent); }
+.rg-card b{ font-size:1rem; }
+.rg-note{ font-size:.72rem; color:var(--ink-dim); }
+.rg-card.is-placed{
+  flex:1 1 auto; flex-direction:row; align-items:center;
+  background:color-mix(in srgb, var(--accent) 16%, var(--bg-1));
+  border-color:color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+.rg-btns{ margin-top:.2rem; }
+.rg-msg{ margin-top:.5rem; font-size:.9rem; color:var(--ink-dim); }
+.rg-msg.is-ok{ color:var(--ok); font-weight:700; }
+.rg-msg.is-bad{ color:var(--warn); }
+
+/* 교사 화면 — 반이 낸 순위 한눈에 보기 */
+.rg-tally{
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:.8rem 1rem; margin:.8rem 0;
+}
+.rg-tally[hidden]{ display:none; }
+.rgt-title{ font-size:1rem; color:var(--accent); margin-bottom:.5rem; }
+.rgt-grid{ display:grid; gap:2px; font-variant-numeric:tabular-nums; }
+.rgt-head, .rgt-corner{ font-size:.75rem; color:var(--ink-dim); text-align:center; padding:.2rem 0; }
+.rgt-name{ font-size:.82rem; padding:.3rem .4rem .3rem 0; white-space:nowrap; }
+.rgt-cell{
+  display:flex; align-items:center; justify-content:center;
+  min-height:1.9rem; border-radius:5px; background:#0e1734;
+  font-size:.85rem; font-weight:700;
+}
+.rgt-cell.is-answer{ outline:2px solid var(--ok); outline-offset:-2px; }
+
+@media (max-width:560px){
+  .rgt-name{ font-size:.72rem; }
+  .rgt-cell{ min-height:1.6rem; font-size:.75rem; }
+  .rgt-head{ font-size:.65rem; }
+}
+
+/* 결과 표에 붙는 "내 예상" 딱지 */
+.mt-guess{
+  font-size:.72rem; font-weight:700; padding:.05rem .4rem; border-radius:999px;
+  background:#16224e; color:var(--ink-dim); border:1px solid var(--line);
+}
+.mt-guess.is-right{
+  background:color-mix(in srgb, var(--ok) 20%, transparent);
+  color:var(--ok); border-color:color-mix(in srgb, var(--ok) 45%, transparent);
+}
