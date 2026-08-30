@@ -315,27 +315,29 @@
     this.cropH = o.b.h - top;
     box.style.aspectRatio = o.b.w + ' / ' + this.cropH;
 
-    // ① 종이(채색본) — 크롭이 달라 각석본 좌표계에 맞춰 그린다
+    // 하늘에 있던 별이 → 종이에 옮겨지고 → 돌에 새겨지기까지의 순서로 쌓는다.
+
+    // ① 실제 밤하늘 — 맨 아래. 각석본의 자국을 밝기로 읽어 코드로 그린다
+    var cvs = document.createElement('canvas');
+    cvs.className = 'cmp-sky';        // 자리 잡기는 style.css 의 .cmp-sky 가 한다
+    box.appendChild(cvs);
+    this.canvas = cvs;
+
+    // ② 종이(채색본) — 크롭이 달라 각석본 좌표계에 맞춰 그린다
+    var wrapA = el('div', 'cmp-layer', box);
     var imgA = document.createElement('img');
     imgA.className = 'cmp-img'; imgA.src = o.a.src; imgA.alt = o.aName; imgA.draggable = false;
     this.liftLayer(imgA);
-    box.appendChild(imgA);
-    this.imgA = imgA;
+    wrapA.appendChild(imgA);
+    this.wrapA = wrapA; this.imgA = imgA;
 
-    // ② 돌(각석본)
+    // ③ 돌(각석본) — 맨 위
     var wrapB = el('div', 'cmp-layer', box);
     var imgB = document.createElement('img');
     imgB.className = 'cmp-img'; imgB.src = o.b.src; imgB.alt = o.bName; imgB.draggable = false;
     this.liftLayer(imgB);
     wrapB.appendChild(imgB);
     this.wrapB = wrapB;
-
-    // ③ 밤하늘 — 각석본의 자국을 밝기로 읽어 코드로 그린다
-    var wrapC = el('div', 'cmp-layer', box);
-    var cvs = document.createElement('canvas');
-    cvs.className = 'cmp-sky';
-    wrapC.appendChild(cvs);
-    this.wrapC = wrapC; this.canvas = cvs;
 
     var bar = el('div', 'cmp-bar', box);
     var grip = el('span', 'cmp-grip', bar); grip.textContent = '↔';
@@ -367,13 +369,13 @@
     var ctl = el('div', 'cmp-ctl', host);
     var range = document.createElement('input');
     range.type = 'range'; range.min = 0; range.max = 100; range.value = 0;
-    range.setAttribute('aria-label', '종이에서 돌로, 돌에서 밤하늘로 밀어 보기');
+    range.setAttribute('aria-label', '밤하늘에서 종이로, 종이에서 돌로 밀어 보기');
     ctl.appendChild(range);
     range.addEventListener('input', function () { self.setPos(Number(range.value) / 100, true); });
     this.range = range;
 
     var marks = el('div', 'cmp-marks', host);
-    [[0, o.aName], [0.5, o.bName], [1, o.cName]].forEach(function (mk) {
+    [[0, o.cName], [0.5, o.aName], [1, o.bName]].forEach(function (mk) {
       var b = el('button', 'cmp-mark', marks);
       b.textContent = mk[1];
       b.type = 'button';
@@ -411,31 +413,33 @@
   };
 
   /**
-   * 0 → 0.5 : 종이 위로 돌이 오른쪽에서 밀려 들어온다
-   * 0.5 → 1 : 돌 위로 밤하늘이 오른쪽에서 밀려 들어온다
+   * 손잡이를 오른쪽으로 밀면 새 층이 왼쪽에서부터 덮어 온다.
+   *   0 → 0.5 : 밤하늘 위로 종이가
+   *   0.5 → 1 : 종이 위로 돌이
+   * 새 층은 오른쪽을 잘라 두었다가(inset 의 right) 그 값을 줄여 가며 펼친다.
    */
   CompareView.prototype.setPos = function (p, fromRange) {
     this.pos = p;
-    var o = this.opts, edge;
+    var o = this.opts, grow;
     if (p <= 0.5) {
-      edge = 100 - (p / 0.5) * 100;
-      this.wrapB.style.clipPath = 'inset(0 0 0 ' + edge + '%)';
-      this.wrapC.style.clipPath = 'inset(0 0 0 100%)';
-      this.tagL.textContent = o.aName;
-      this.tagR.textContent = o.bName;
+      grow = (p / 0.5) * 100;                       // 종이가 덮은 폭(%)
+      this.wrapA.style.clipPath = 'inset(0 ' + (100 - grow) + '% 0 0)';
+      this.wrapB.style.clipPath = 'inset(0 100% 0 0)';
+      this.tagL.textContent = o.aName;              // 왼쪽 = 새로 덮은 층
+      this.tagR.textContent = o.cName;              // 오른쪽 = 아직 남은 층
     } else {
-      edge = 100 - ((p - 0.5) / 0.5) * 100;
-      this.wrapB.style.clipPath = 'inset(0 0 0 0%)';
-      this.wrapC.style.clipPath = 'inset(0 0 0 ' + edge + '%)';
+      grow = ((p - 0.5) / 0.5) * 100;               // 돌이 덮은 폭(%)
+      this.wrapA.style.clipPath = 'inset(0 0 0 0)';
+      this.wrapB.style.clipPath = 'inset(0 ' + (100 - grow) + '% 0 0)';
       this.tagL.textContent = o.bName;
-      this.tagR.textContent = o.cName;
+      this.tagR.textContent = o.aName;
     }
-    this.bar.style.left = edge + '%';   // 손잡이는 잘린 경계와 같은 자리에
-    var onlyLeft = edge >= 99.5;    // 왼쪽 층이 화면을 다 덮음
-    var onlyRight = edge <= 0.5;    // 오른쪽 층이 다 덮음
-    this.bar.hidden = onlyLeft || onlyRight;
-    this.tagL.hidden = onlyRight;
-    this.tagR.hidden = onlyLeft;
+    this.bar.style.left = grow + '%';   // 손잡이는 잘린 경계와 같은 자리에
+    var noneNew = grow <= 0.5;          // 새 층이 아직 안 보임
+    var allNew = grow >= 99.5;          // 새 층이 다 덮음
+    this.bar.hidden = noneNew || allNew;
+    this.tagL.hidden = noneNew;
+    this.tagR.hidden = allNew;
     if (!fromRange && this.range) this.range.value = Math.round(p * 100);
   };
 
