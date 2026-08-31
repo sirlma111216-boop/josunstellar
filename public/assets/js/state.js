@@ -6,8 +6,13 @@
 (function (global) {
   'use strict';
 
+  /* 저장 형식이 바뀌면 올린다. 지금 2 는 별 번호를 1~10 으로 정리한 판이다.
+     옛 번호로 저장된 측정값은 다른 별에 붙어 버리므로 안전하게 버린다. */
+  var DATA_VERSION = 2;
+
   function blank() {
     return {
+      v: DATA_VERSION,
       step: 1,
       sub: {},              // { 4: 2, 5: 3 } 단계별 소단계
       prediction: null,     // 단계 4 장면 C 에서 고른 예상 key
@@ -30,6 +35,12 @@
 
     load: function () {
       var saved = Store.get('state', null);
+      if (saved && saved.v !== DATA_VERSION) {
+        // 별 번호가 달라졌으므로 별에 매인 것만 비운다(이름·결론 등은 남긴다)
+        saved.measures = {};
+        saved.rank = [];
+        saved.v = DATA_VERSION;
+      }
       State.data = saved ? Object.assign(blank(), saved) : blank();
       return State.data;
     },

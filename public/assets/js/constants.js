@@ -39,20 +39,17 @@
              카펠라·프로키온·알데바란은 이 크롭 안에서 위치를 확정하지 못해 뺐다.
      ========================================================================== */
   var STARS = [
-    { id: 1,  kor: '시리우스',   trad: '천랑(天狼)',            mag: -1.5, px: { x: 2111, y: 2127 } },
-    { id: 2,  kor: '리겔',       trad: '삼수 일곱째 별(參宿七)', mag:  0.1, px: { x: 1780, y: 1104 } },
-    { id: 5,  kor: '베텔게우스', trad: '삼수 넷째 별(參宿四)',   mag:  0.4, px: { x: 1072, y: 1230 }, note: '변광성' },
-    { id: 6,  kor: '알데바란',   trad: '필수 다섯째 별(畢宿五)', mag:  0.9, px: { x: 1139, y:  411 } },
-    { id: 7,  kor: '벨라트릭스', trad: '삼수 다섯째 별(參宿五)', mag:  1.6, px: { x: 1283, y:  921 } },
-    { id: 9,  kor: '알니탁',     trad: '삼수 첫째 별(參宿一)',   mag:  1.7, px: { x: 1442, y: 1281 } },
-    { id: 10, kor: '사이프',     trad: '삼수 여섯째 별(參宿六)', mag:  2.1, px: { x: 1634, y: 1470 } },
-    { id: 11, kor: '민타카',     trad: '삼수 셋째 별(參宿三)',   mag:  2.2, px: { x: 1450, y: 1146 } },
-    { id: 13, kor: '하트샤',     trad: '벌(伐)',                mag:  2.8, px: { x: 1614, y: 1314 }, note: '삼수의 검' },
-    { id: 12, kor: '메이사',     trad: '자수 첫째 별(觜宿一)',   mag:  3.4, px: { x: 1054, y:  951 } }
+    { id: 1 , kor: '시리우스',   trad: '천랑(天狼)',            mag: -1.5, px: { x: 2111, y: 2127 } },
+    { id: 2 , kor: '리겔',       trad: '삼수 일곱째 별(參宿七)', mag:  0.1, px: { x: 1780, y: 1104 } },
+    { id: 3 , kor: '베텔게우스', trad: '삼수 넷째 별(參宿四)',   mag:  0.4, px: { x: 1072, y: 1230 }, note: '변광성' },
+    { id: 4 , kor: '알데바란',   trad: '필수 다섯째 별(畢宿五)', mag:  0.9, px: { x: 1139, y:  411 } },
+    { id: 5 , kor: '벨라트릭스', trad: '삼수 다섯째 별(參宿五)', mag:  1.6, px: { x: 1283, y:  921 } },
+    { id: 6 , kor: '알니탁',     trad: '삼수 첫째 별(參宿一)',   mag:  1.7, px: { x: 1442, y: 1281 } },
+    { id: 7 , kor: '사이프',     trad: '삼수 여섯째 별(參宿六)', mag:  2.1, px: { x: 1634, y: 1470 } },
+    { id: 8 , kor: '민타카',     trad: '삼수 셋째 별(參宿三)',   mag:  2.2, px: { x: 1450, y: 1146 } },
+    { id: 9 , kor: '하트샤',     trad: '벌(伐)',                mag:  2.8, px: { x: 1614, y: 1314 }, note: '삼수의 검' },
+    { id: 10, kor: '메이사',     trad: '자수 첫째 별(觜宿一)',   mag:  3.4, px: { x: 1054, y:  951 } }
   ];
-
-  /* 오리온 허리띠 세 별 — 50px 이내로 붙어 있어 캘리브레이션에서 겹친다 */
-  var BELT_IDS = [9, 8, 11];
 
   /* 단계 4 장면 C — 학생이 고르는 예상 */
   var PREDICTIONS = [
@@ -147,7 +144,6 @@
   global.MARK_PX = MARK_PX;
   global.MARK_MIN_SCREEN_PX = MARK_MIN_SCREEN_PX;
   global.STARS = STARS;
-  global.BELT_IDS = BELT_IDS;
   global.PREDICTIONS = PREDICTIONS;
   global.CONCLUSIONS = CONCLUSIONS;
   global.STEP_LABELS = STEP_LABELS;

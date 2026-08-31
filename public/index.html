@@ -47,76 +47,87 @@
      이 화면만은 학생에게 말을 거는 대신 그 시대를 서술하는 문장이라
      서술체 그대로 둔다. 단계 2부터는 모두 존댓말이다. -->
 <section class="step step-intro" data-step="1" hidden>
-  <div class="intro-stage" id="introStage">
-    <div class="intro-bg" id="introBg"></div>
-    <div class="intro-lines" id="introLines">
-      <p class="il" data-i="0">1395년, 조선.</p>
-      <p class="il" data-i="1">망원경은 아직 없었다.</p>
-      <p class="il" data-i="2">그런데 그들은 별의 밝기까지 기록했다.</p>
-      <p class="il il-last" data-i="3">정말일까? 우리가 직접 재서 확인해보자.</p>
+  <!-- 장면 1. 문구만 천천히 떠오른다 -->
+  <div class="sub" data-sub="1">
+    <div class="intro-stage" id="introStage">
+      <div class="intro-bg" id="introBg"></div>
+      <div class="intro-lines" id="introLines">
+        <p class="il" data-i="0">1395년, 조선.</p>
+        <p class="il" data-i="1">새 나라가 세워졌다.</p>
+        <p class="il" data-i="2">망원경은 아직 없었다.</p>
+        <p class="il" data-i="3">오직 두 눈으로 하늘을 올려다보던 시대.</p>
+        <p class="il" data-i="4">그들은 본 것을 돌에 새겼다.</p>
+        <p class="il il-last" data-i="5">그 돌이, 600년을 건너 여기에 있다.</p>
+      </div>
+      <p class="intro-hint" id="introHint">화면을 누르면 바로 넘어갑니다</p>
     </div>
-    <p class="intro-hint" id="introHint">화면을 누르면 바로 넘어갑니다</p>
-  </div>
-  <div class="step-cta">
-    <button type="button" class="btn btn-big btn-primary" id="btnStart">시작하기</button>
-  </div>
-
-  <!-- 학급 연결. 수업을 시작할 때 다 같이 붙는다. -->
-  <div class="live-box" id="liveBox">
-    <div class="live-off" id="liveOff">
-      <h3 class="card-title">우리 반 같이 하기</h3>
-      <p class="muted">선생님이 화면을 넘기면 학생 화면도 함께 넘어갑니다. 예상 투표도 각자 기기에서 할 수 있습니다.</p>
-      <div class="abtns">
-        <button type="button" class="btn btn-primary" id="btnOpenClass">수업 열기 (선생님)</button>
-        <button type="button" class="btn" id="btnJoinToggle">코드로 참여하기 (학생)</button>
-      </div>
-      <div class="join-row" id="joinRow" hidden>
-        <div class="jf">
-          <label for="joinCode">수업 코드</label>
-          <input type="text" id="joinCode" maxlength="6" inputmode="latin"
-                 autocomplete="off" autocapitalize="characters" placeholder="ABC123">
-        </div>
-        <div class="jf">
-          <label for="joinNick">닉네임</label>
-          <input type="text" id="joinNick" maxlength="12"
-                 autocomplete="off" placeholder="예: 북극성">
-        </div>
-        <button type="button" class="btn btn-primary" id="btnJoin">참여</button>
-        <p class="muted tiny jf-note">이름 대신 <b>별명</b>을 넣어 주세요. 화면에 그대로 보입니다.</p>
-      </div>
-      <p class="live-msg" id="liveMsg" hidden></p>
-      <p class="muted tiny">연결하지 않아도 혼자서 끝까지 할 수 있습니다.</p>
+    <div class="step-cta">
+      <button type="button" class="btn btn-big btn-primary" id="btnStart">시작하기</button>
     </div>
+  </div>
 
-    <div class="live-on" id="liveOn" hidden>
-      <div class="live-head">
-        <div class="live-code-wrap" id="liveCodeWrap">
-          <span class="live-label">수업 코드</span>
-          <span class="live-code" id="liveCode">------</span>
+  <!-- 장면 2. 수업에 함께 붙기 -->
+  <div class="sub" data-sub="2" hidden>
+    <h2 class="step-title">수업에 함께 들어갑시다</h2>
+    <!-- 학급 연결. 수업을 시작할 때 다 같이 붙는다. -->
+    <div class="live-box" id="liveBox">
+      <div class="live-off" id="liveOff">
+        <h3 class="card-title">우리 반 같이 하기</h3>
+        <p class="muted">선생님이 화면을 넘기면 학생 화면도 함께 넘어갑니다. 예상 투표도 각자 기기에서 할 수 있습니다.</p>
+        <div class="abtns">
+          <button type="button" class="btn btn-primary" id="btnOpenClass">수업 열기 (선생님)</button>
+          <button type="button" class="btn" id="btnJoinToggle">코드로 참여하기 (학생)</button>
         </div>
-        <div class="live-count"><b id="liveTotal">0</b>명 참여</div>
-        <button type="button" class="btn btn-sm" id="btnLeave">나가기</button>
-      </div>
-      <div class="live-host" id="liveHost" hidden>
-        <p>학생들은 자기 기기에서 <b>코드로 참여하기</b>를 누르고, 위 코드와 닉네임을 넣으면 됩니다.</p>
-        <p class="muted tiny">화면을 넘기면 참여한 학생들의 화면도 같이 넘어갑니다.</p>
-        <div class="demo-row">
-          <button type="button" class="btn btn-sm" id="btnDemo">데모봇으로 시뮬레이션 하기</button>
-          <span class="muted tiny" id="demoHint">수업 전에 혼자 전체 흐름을 돌려 볼 수 있습니다.</span>
+        <div class="join-row" id="joinRow" hidden>
+          <div class="jf">
+            <label for="joinCode">수업 코드</label>
+            <input type="text" id="joinCode" maxlength="6" inputmode="latin"
+                   autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+          </div>
+          <div class="jf">
+            <label for="joinNick">닉네임</label>
+            <input type="text" id="joinNick" maxlength="12"
+                   autocomplete="off" placeholder="예: 북극성">
+          </div>
+          <button type="button" class="btn btn-primary" id="btnJoin">참여</button>
+          <p class="muted tiny jf-note">이름 대신 <b>별명</b>을 넣어 주세요. 화면에 그대로 보입니다.</p>
         </div>
-      </div>
-      <div class="roster" id="roster" hidden>
-        <p class="roster-head"><span id="rosterCount">0</span></p>
-        <div class="roster-list" id="rosterList"></div>
-        <button type="button" class="btn btn-sm btn-danger" id="btnResetVotes" hidden>표 비우기</button>
+        <p class="live-msg" id="liveMsg" hidden></p>
+        <p class="muted tiny">연결하지 않아도 혼자서 끝까지 할 수 있습니다.</p>
       </div>
 
-      <p class="live-guest muted" id="liveGuest" hidden>
-        선생님 화면을 따라갑니다. 직접 재는 단계에서는 위쪽의 <b>따라가는 중</b>을 눌러 잠시 꺼 두어도 됩니다.
-      </p>
+      <div class="live-on" id="liveOn" hidden>
+        <div class="live-head">
+          <div class="live-code-wrap" id="liveCodeWrap">
+            <span class="live-label">수업 코드</span>
+            <span class="live-code" id="liveCode">------</span>
+          </div>
+          <div class="live-count"><b id="liveTotal">0</b>명 참여</div>
+          <button type="button" class="btn btn-sm" id="btnLeave">나가기</button>
+        </div>
+        <div class="live-host" id="liveHost" hidden>
+          <p>학생들은 자기 기기에서 <b>코드로 참여하기</b>를 누르고, 위 코드와 닉네임을 넣으면 됩니다.</p>
+          <p class="muted tiny">화면을 넘기면 참여한 학생들의 화면도 같이 넘어갑니다.</p>
+          <div class="demo-row">
+            <button type="button" class="btn btn-sm" id="btnDemo">데모봇으로 시뮬레이션 하기</button>
+            <span class="muted tiny" id="demoHint">수업 전에 혼자 전체 흐름을 돌려 볼 수 있습니다.</span>
+          </div>
+        </div>
+        <div class="roster" id="roster" hidden>
+          <p class="roster-head"><span id="rosterCount">0</span></p>
+          <div class="roster-list" id="rosterList"></div>
+          <button type="button" class="btn btn-sm btn-danger" id="btnResetVotes" hidden>표 비우기</button>
+        </div>
+
+        <p class="live-guest muted" id="liveGuest" hidden>
+          선생님 화면을 따라갑니다. 직접 재는 단계에서는 위쪽의 <b>따라가는 중</b>을 눌러 잠시 꺼 두어도 됩니다.
+        </p>
+      </div>
     </div>
   </div>
 </section>
+
+
 
 <!-- ───────── 단계 2. 천상열차분야지도란? ───────── -->
 <section class="step" data-step="2" hidden>
@@ -140,6 +151,7 @@
         <p>이름이 어렵지요? 한 글자씩 뜯어보면 쉽습니다.</p>
         <div class="name-parse" id="s2Name"></div>
         <p class="muted">이어 붙이면 <b>“하늘의 모습을 구역별로 차례차례 그린 그림”</b>이 됩니다.</p>
+        <p class="muted">국보로 지정되어 있고, 지금은 국립고궁박물관에 있습니다.</p>
       </div>
 
       <div class="card sub" data-sub="2" hidden>
@@ -150,6 +162,9 @@
         <p>그러던 어느 날, 그 비석의 <b>탁본</b>을 간직해 온 사람이 나타나 바칩니다.
            이성계는 크게 기뻐하며 “이것을 다시 돌에 새겨라” 명했습니다.</p>
         <p class="muted">탁본(拓本)은 새겨진 돌 위에 종이를 대고 문질러 그대로 떠낸 그림입니다.</p>
+        <p>혼자 만든 것이 아닙니다. <b>권근</b>이 설명하는 글을 짓고,
+           <b>류방택</b>이 별의 자리를 계산하고, <b>설경수</b>가 글씨를 썼습니다.
+           천문학자와 학자와 명필이 함께 매달린 나라의 사업이었습니다.</p>
       </div>
 
       <div class="card sub" data-sub="3" hidden>
@@ -169,10 +184,14 @@
         <div class="num-row" id="s2Nums"></div>
         <p>돌에 새긴 별지도로는 <b>세계에서 두 번째로 오래됐습니다.</b>
            첫 번째는 중국의 순우천문도(1247년)입니다.</p>
-        <p class="accent-line">가장 특별한 점은 따로 있습니다 —
-           <b>별을 밝기에 따라 크기를 다르게 새겼습니다.</b></p>
-        <p class="muted">중국의 천문도보다 나은 점으로 꼽히는 부분입니다.
-           정말 그런지는 잠시 뒤 우리가 직접 재서 확인합니다.</p>
+        <p class="accent-line">하지만 이 지도에는 중국 것에도 없는 것이
+           <b>하나 더 새겨져 있습니다.</b> 그게 무엇인지는 오늘 직접 찾아냅니다.</p>
+        <p>별만 있는 것이 아닙니다. 해가 지나가는 길인 <b>황도</b>,
+           하늘의 적도인 <b>적도</b>, 그리고 <b>은하수</b>까지 함께 새겼습니다.
+           하늘을 스물여덟 구역으로 나눈 <b>28수(宿)</b>의 이름도 적혀 있습니다.</p>
+        <p class="muted">돌 한 장에 별 1,467개를 손으로 새겼습니다.
+           하나에 몇 분씩만 걸렸다 해도 이 지도 한 장에
+           <b>몇 달이 걸렸을 일</b>입니다.</p>
       </div>
 
       <div class="card sub" data-sub="5" hidden>
@@ -192,7 +211,9 @@
         <div id="billArt" class="bill-art"></div>
         <p class="muted">혼천의(渾天儀, 옛 천체 관측 기구) 뒤에 깔린 별지도가 바로 이것입니다.</p>
         <p class="muted">다만 지폐를 만들 때 그림 쪽에 무게를 두다 보니
-           별의 개수와 밝기 표시가 원본과 다르다는 지적도 있었습니다.</p>
+           별의 개수와 자리가 원본과 다르다는 지적도 있었습니다.</p>
+        <p class="muted">1만 원권 앞면은 세종대왕, 뒷면은 혼천의와 이 별지도입니다.
+           우리 돈에 <b>과학이 두 번</b> 들어가 있는 셈입니다.</p>
       </div>
 
       <div class="card-dots" id="s2Dots"></div>
@@ -294,6 +315,26 @@
       <p class="muted tiny" id="tallyHint">시작 화면에서 수업 코드로 참여하면, 반 전체의 예상이 여기에 모입니다.</p>
       <div class="tally" id="predictTally"></div>
     </div>
+  </div>
+
+  <!-- 장면 D. 영상으로 한 번 더 -->
+  <div class="sub" data-sub="4" hidden>
+    <h2 class="step-title">영상으로 한 번 더 보기</h2>
+    <p class="step-lead">지금까지 본 것을 3~4분짜리 영상으로 정리해 봅시다.</p>
+
+    <div class="video-box" id="videoBox">
+      <button type="button" class="video-cover" id="btnVideoPlay"
+              aria-label="영상 재생하기">
+        <span class="vc-play" aria-hidden="true">▶</span>
+        <span class="vc-title">천상열차분야지도</span>
+        <span class="vc-sub">누르면 유튜브 영상이 열립니다</span>
+      </button>
+    </div>
+    <p class="muted tiny">
+      학교 인터넷에서 유튜브가 막혀 있으면 화면이 검게 보일 수 있습니다.
+      그럴 때는 <a href="https://youtu.be/52jrmGFCUNQ" target="_blank" rel="noopener">이 주소</a>를
+      선생님 기기에서 직접 열어 주세요.
+    </p>
   </div>
 </section>
 
@@ -461,8 +502,6 @@
       </div>
       <button type="button" class="btn btn-sm" id="btnSheetPrint">기록표 인쇄</button>
     </div>
-    <!-- 교사 화면에만 — 언제 다음으로 넘어갈지 판단할 근거 -->
-    <p class="class-progress" id="classProgress" hidden></p>
     <p class="muted">지도 위 번호를 누르면 그 별이 크게 확대됩니다.</p>
     <div class="map-host" id="mapHost"></div>
     <div id="measTableHost"></div>

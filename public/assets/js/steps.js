@@ -8,7 +8,7 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   /* 단계별 소단계 수 */
-  var SUBS = { 1: 1, 2: 6, 3: 1, 4: 3, 5: 7, 6: 2, 7: 3, 8: 1 };
+  var SUBS = { 1: 2, 2: 6, 3: 1, 4: 4, 5: 7, 6: 2, 7: 3, 8: 1 };
   var LAST = 8;
 
   var Steps = { step: 1, sub: 1, built: {} };
@@ -55,7 +55,7 @@
     if (global.Live) {
       Live.onWork = function () {
         if (Steps.step === 5 && Steps.sub === 6) renderRankTally();
-        if (Steps.step === 6) renderClassProgress();
+        if (Steps.step === 6 && Steps.sub === 2) renderMeasureProgress();
         if (Steps.step === 7 && Steps.sub === 3) {
           renderScope();
           if (Steps.scopeClass && Steps.chart2) {
@@ -168,7 +168,7 @@
   Steps.enter = function (n, sub) {
     App.lazyLoadVisible();
     switch (n) {
-      case 1: build1(); break;
+      case 1: build1(sub); break;
       case 2: build2(sub); break;
       case 3: build3(); break;
       case 4: build4(sub); break;
@@ -180,18 +180,19 @@
   };
 
   /* ---------- 단계 1. 인트로 ---------- */
-  function build1() {
+  function build1(sub) {
     var stage = $('introStage');
     if (!Steps.built[1]) {
       Steps.built[1] = true;
       stage.addEventListener('click', function () {
         stage.classList.add('show-all');   // 누르면 전부 바로 표시
       });
-      $('btnStart').addEventListener('click', function () { Steps.go(2); });
+      $('btnStart').addEventListener('click', function () { Steps.go(1, 2); });
       var bg = $('introBg');
       bg.style.backgroundImage = 'url("' + IMAGES.full.src + '")';
     }
-    // 다시 들어와도 처음부터 재생
+    // 장면 1 에 들어올 때만 처음부터 재생한다
+    if (sub !== 1) return;
     stage.classList.remove('play', 'show-all');
     void stage.offsetWidth;             // 애니메이션 재시작
     stage.classList.add('play');
@@ -394,6 +395,22 @@
 
       // 예상 고르기
       buildPredict();
+
+      /* 영상은 누르기 전까지 불러오지 않는다.
+         30대가 한꺼번에 유튜브를 받으면 학교망이 버겁고,
+         막혀 있는 학교에서는 어차피 뜨지 않기 때문이다. */
+      $('btnVideoPlay').addEventListener('click', function () {
+        var box = $('videoBox');
+        box.innerHTML = '';
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/52jrmGFCUNQ?rel=0&modestbranding=1';
+        f.title = '천상열차분야지도 소개 영상';
+        f.loading = 'lazy';
+        f.allow = 'accelerometer; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        f.referrerPolicy = 'strict-origin-when-cross-origin';
+        box.appendChild(f);
+      });
     }
 
     // 별 3개 확대 — 두 장면 모두 같은 좌표·같은 배율로
@@ -418,7 +435,7 @@
 
   function renderTrio(host, im) {
     // 별 목록이 바뀌어 없는 번호가 남아 있을 수 있으므로 유효한 별만 쓴다
-    var ids = (Config.get('trioIds', [1, 7, 12]) || []).filter(function (id) { return !!starById(id); });
+    var ids = (Config.get('trioIds', [1, 5, 10]) || []).filter(function (id) { return !!starById(id); });
     if (!ids.length) ids = STARS.slice(0, 3).map(function (s) { return s.id; });
     var size = trioSize();
     host.innerHTML = '';
@@ -616,22 +633,6 @@
   }
 
   function setText(id, v) { var e = $(id); if (e) e.textContent = v; }
-
-  /**
-   * 단계 6에서 교사에게만 보여 주는 학급 진행 줄.
-   * 45분 수업에서 "언제 다음으로 넘어갈까"를 판단할 근거가 필요하다.
-   */
-  function renderClassProgress() {
-    var p = $('classProgress');
-    if (!p) return;
-    var host = global.Live && Live.role === 'host' && Live.code;
-    var joined = host ? Live.joined : 0;
-    p.hidden = !(host && joined > 0);
-    if (p.hidden) return;
-    var done = (Live.work && Live.work.people) || 0;
-    p.textContent = joined + '명 중 ' + done + '명이 측정 결과를 올렸습니다.';
-    p.classList.toggle('is-most', joined > 0 && done >= Math.ceil(joined * 0.8));
-  }
 
   /** 데모봇 버튼과 안내를 상태에 맞춰 바꾼다 */
   function renderDemo() {
@@ -1142,7 +1143,7 @@
       $('btnSheetPrint').addEventListener('click', function () { Report.printSheet(); });
       State.onChange(renderMeasureProgress);
     }
-    if (sub === 2) { renderMeasureProgress(); renderClassProgress(); }
+    if (sub === 2) renderMeasureProgress();
   }
 
   function renderMeasureProgress() {
@@ -1157,17 +1158,34 @@
     host.appendChild(buildMeasureTable(false));
   }
 
+  /**
+   * 별마다 몇 명이 쟀는지 센다 (교사 화면에서만 쓴다).
+   * 반 전체 자료는 학생마다 "잰 별의 [등급, 지름]" 으로 오므로,
+   * 그 별의 등급을 가진 점이 몇 개인지 세면 곧 사람 수가 된다.
+   * 2차까지 다 재지 않고 1차만 해도 평균이 잡히므로 그대로 포함된다.
+   */
+  function measuredByStar() {
+    var w = global.Live && Live.work;
+    if (!w || !w.pts || !w.pts.length) return null;
+    var byMag = {};
+    w.pts.forEach(function (p) { byMag[p[0]] = (byMag[p[0]] || 0) + 1; });
+    return byMag;
+  }
+
   /** 측정 기록 표. withMag=true 면 겉보기 등급 열을 함께 보여준다. */
   function buildMeasureTable(withMag) {
     var wrap = document.createElement('div');
     wrap.className = 'table-wrap';
     var t = el('table', 'data-table', wrap);
+    // 교사 화면에서만 "몇 명이 쟀는지" 칸을 더한다
+    var counts = (global.Live && Live.role === 'host' && Live.code) ? measuredByStar() : null;
     var thead = el('thead', null, t);
     var hr = el('tr', null, thead);
     ['번호', '별 이름 (전통 이름)', '1차', '2차', '평균'].forEach(function (h) {
       el('th', null, hr, h);
     });
     if (withMag) el('th', 'th-mag', hr, '실제 밝기(등급)');
+    if (counts) el('th', 'th-joined', hr, '잰 사람');
 
     var tb = el('tbody', null, t);
     STARS.forEach(function (st) {
@@ -1183,6 +1201,12 @@
       var avg = State.averageOf(st.id);
       el('td', 'td-v td-avg', tr, avg === null ? '–' : avg.toFixed(1)).dataset.l = '평균';
       if (withMag) el('td', 'td-v td-mag', tr, magText(st.mag)).dataset.l = '실제 등급';
+      if (counts) {
+        var c = counts[st.mag] || 0;
+        var cell = el('td', 'td-v td-joined', tr, c + '명');
+        cell.dataset.l = '잰 사람';
+        if (!c) cell.classList.add('is-none');
+      }
     });
     return wrap;
   }
