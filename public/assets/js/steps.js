@@ -1165,11 +1165,10 @@
    * 2차까지 다 재지 않고 1차만 해도 평균이 잡히므로 그대로 포함된다.
    */
   function measuredByStar() {
-    var w = global.Live && Live.work;
-    if (!w || !w.pts || !w.pts.length) return null;
     var byMag = {};
-    w.pts.forEach(function (p) { byMag[p[0]] = (byMag[p[0]] || 0) + 1; });
-    return byMag;
+    var w = global.Live && Live.work;
+    if (w && w.pts) w.pts.forEach(function (p) { byMag[p[0]] = (byMag[p[0]] || 0) + 1; });
+    return byMag;   // 아직 아무도 없으면 전부 0 으로 나온다
   }
 
   /** 측정 기록 표. withMag=true 면 겉보기 등급 열을 함께 보여준다. */

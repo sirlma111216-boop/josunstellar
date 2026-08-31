@@ -5,6 +5,7 @@
    가짜 학생 여러 명이 진짜 학생과 똑같이 WebSocket 으로 붙어서,
    교사가 화면을 넘길 때마다 그 단계에 맞는 일을 한다.
      단계 4 → 예상 고르기
+     단계 5-6 → 밝기 순서 맞히기
      단계 6·7 → 잰 값 올리기
      단계 8 → 결론 쓰기
    사람마다 속도가 달라 하나씩 도착하는 모습까지 그대로 보인다.
@@ -24,6 +25,26 @@
   /** 예상 쏠림 — 실제 교실처럼 정답 쪽이 많되 갈리도록 */
   var VOTE_MIX = ['bright', 'bright', 'bright', 'bright', 'bright', 'bright',
                   'big', 'big', 'big', 'near', 'near', 'import'];
+
+  /* 밝기 순서 정답 */
+  var RANK_TRUE = ['sun', 'moon', 'venus', 'jupiter', 'sirius', 'vega', 'deneb'];
+
+  /** 두 자리를 바꾼 답을 만든다 */
+  function swapped(i, j) {
+    var a = RANK_TRUE.slice();
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+    return a;
+  }
+
+  /* 12명이 낼 답. 금성·목성이 헷갈리는 것이 실제 교실 모습이다. */
+  var RANK_MIX = [
+    RANK_TRUE, RANK_TRUE, RANK_TRUE, RANK_TRUE,
+    swapped(2, 3), swapped(2, 3), swapped(2, 3),   // 금성 ↔ 목성
+    RANK_TRUE, RANK_TRUE,
+    swapped(4, 5),                                  // 시리우스 ↔ 베가
+    swapped(1, 2),                                  // 보름달 ↔ 금성
+    RANK_TRUE
+  ];
 
   var NOTES = [
     '밝은 별일수록 자국이 더 컸습니다.',
@@ -53,9 +74,12 @@
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
 
-  /** 사람마다 재는 버릇이 다르다 — 조금 크게 재는 사람, 들쭉날쭉한 사람 */
-  function makePoints(bot) {
-    return STARS.map(function (s) {
+  /**
+   * 사람마다 재는 버릇이 다르다 — 조금 크게 재는 사람, 들쭉날쭉한 사람.
+   * n 을 주면 앞에서 n 개까지만 잰 것으로 친다.
+   */
+  function makePoints(bot, n) {
+    return STARS.slice(0, n || STARS.length).map(function (s) {
       var base = 31.3 - 4.01 * s.mag;          // 실제 자료에서 얻은 관계
       var v = base + bot.bias + rnd(-bot.noise, bot.noise);
       return [s.mag, Math.max(3, Math.round(v * 10) / 10)];
@@ -73,9 +97,11 @@
       nick: NICKS[i % NICKS.length],
       token: 'demo-' + i + '-' + Math.random().toString(36).slice(2, 7),
       vote: VOTE_MIX[i % VOTE_MIX.length],
+      rank: RANK_MIX[i % RANK_MIX.length],
       note: NOTES[i % NOTES.length],
       bias: rnd(-2.2, 2.2),        // 이 사람의 치우침
       noise: rnd(1.2, 4.0),        // 이 사람의 흔들림
+      pace: rnd(1800, 5200),       // 별 하나 재는 데 걸리는 시간
       seq: 1,
       ws: null,
       did: {}
@@ -97,16 +123,36 @@
   }
 
   function doVote(bot) { if (!bot.did.vote) { bot.did.vote = true; send(bot, 'vote', { token: bot.token, key: bot.vote }); } }
-  function doResult(bot) { if (!bot.did.result) { bot.did.result = true; send(bot, 'result', { token: bot.token, pts: makePoints(bot) }); } }
+  /**
+   * 실제 교실처럼 한 별씩 재 나간다.
+   * 그래야 교사 화면의 "잰 사람" 칸이 별마다 다르게 차오르는 것이 보인다.
+   * 사람마다 속도가 달라서, 끝까지 못 가는 학생도 나온다.
+   */
+  function doResult(bot) {
+    if (bot.did.result) return;
+    bot.did.result = true;
+    var upto = Math.round(rnd(6, STARS.length));   // 이 사람이 끝까지 잴 개수
+    var i = 1;
+    (function next() {
+      if (!Demo.running || i > upto) return;
+      send(bot, 'result', { token: bot.token, pts: makePoints(bot, i) });
+      i++;
+      var t = setTimeout(next, rnd(bot.pace * 0.6, bot.pace * 1.6));
+      Demo.timers.push(t);
+    })();
+  }
+  function doRank(bot) { if (!bot.did.rank) { bot.did.rank = true; send(bot, 'rank', { token: bot.token, order: bot.rank }); } }
   function doNote(bot) { if (!bot.did.note) { bot.did.note = true; send(bot, 'note', { token: bot.token, text: bot.note }); } }
 
   /**
    * 교사가 화면을 넘길 때마다 불린다.
    * 건너뛰어 들어와도 빈 화면이 되지 않도록, 앞 단계에서 했어야 할 일은 몰아서 시킨다.
    */
-  Demo.onStage = function (step) {
+  Demo.onStage = function (step, sub) {
     if (!Demo.running) return;
+    var atRank = (step === 5 && sub >= 6) || step >= 6;   // 카드 게임은 5-6 화면부터
     if (step >= 4 && !Demo.done.vote) { Demo.done.vote = true; each(doVote, 900, 7000); }
+    if (atRank && !Demo.done.rank) { Demo.done.rank = true; each(doRank, 1200, 9000); }
     if (step >= 6 && !Demo.done.result) { Demo.done.result = true; each(doResult, 1500, 12000); }
     if (step >= 8 && !Demo.done.note) { Demo.done.note = true; each(doNote, 1200, 9000); }
   };
@@ -131,6 +177,7 @@
           if (Demo.onChange) Demo.onChange();
           // 늦게 들어온 봇도 지금 단계에 맞는 일을 하도록
           if (bot && Demo.done.vote) setTimeout(function () { doVote(bot); }, rnd(300, 2500));
+          if (bot && Demo.done.rank) setTimeout(function () { doRank(bot); }, rnd(400, 3000));
           if (bot && Demo.done.result) setTimeout(function () { doResult(bot); }, rnd(500, 4000));
           if (bot && Demo.done.note) setTimeout(function () { doNote(bot); }, rnd(500, 3500));
         }, 200 + k * 420);
