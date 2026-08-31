@@ -1184,7 +1184,7 @@
       el('th', null, hr, h);
     });
     if (withMag) el('th', 'th-mag', hr, '실제 밝기(등급)');
-    if (counts) el('th', 'th-joined', hr, '잰 사람');
+    if (counts) el('th', 'th-joined', hr, '측정 학생수');
 
     var tb = el('tbody', null, t);
     STARS.forEach(function (st) {
@@ -1203,7 +1203,7 @@
       if (counts) {
         var c = counts[st.mag] || 0;
         var cell = el('td', 'td-v td-joined', tr, c + '명');
-        cell.dataset.l = '잰 사람';
+        cell.dataset.l = '측정 학생수';
         if (!c) cell.classList.add('is-none');
       }
     });

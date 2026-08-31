@@ -1400,7 +1400,7 @@ body.admin-open{ padding-bottom:60dvh; }
 .vc-title{ font-size:1.1rem; font-weight:800; }
 .vc-sub{ font-size:.82rem; color:var(--ink-dim); }
 
-/* 단계 6 표 — 교사 화면에만 뜨는 "잰 사람" 칸 */
+/* 단계 6 표 — 교사 화면에만 뜨는 "측정 학생수" 칸 */
 .th-joined, .td-joined{ text-align:center; white-space:nowrap; }
 .td-joined{ color:var(--ok); font-weight:700; }
 .td-joined.is-none{ color:var(--ink-dim); font-weight:400; }

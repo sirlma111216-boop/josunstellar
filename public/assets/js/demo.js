@@ -125,7 +125,7 @@
   function doVote(bot) { if (!bot.did.vote) { bot.did.vote = true; send(bot, 'vote', { token: bot.token, key: bot.vote }); } }
   /**
    * 실제 교실처럼 한 별씩 재 나간다.
-   * 그래야 교사 화면의 "잰 사람" 칸이 별마다 다르게 차오르는 것이 보인다.
+   * 그래야 교사 화면의 "측정 학생수" 칸이 별마다 다르게 차오르는 것이 보인다.
    * 사람마다 속도가 달라서, 끝까지 못 가는 학생도 나온다.
    */
   function doResult(bot) {
