@@ -1,20 +1,20 @@
 {
-  "version": 3,
-  "savedAt": "2026-08-27T16:26:46.824Z",
+  "version": 4,
+  "savedAt": "2026-09-01T16:39:51.498Z",
   "preferLocal": false,
   "images": {
     "orion": {
-      "file": "assets/chart_orion.jpg",
+      "file": "assets/chart_orion.webp",
       "width": 2280,
       "height": 2480
     },
     "color": {
-      "file": "assets/chart_color.jpg",
+      "file": "assets/chart_color.webp",
       "width": 2280,
       "height": 2480
     },
     "full": {
-      "file": "assets/chart_full.jpg",
+      "file": "assets/chart_full.webp",
       "width": 540,
       "height": 622
     }
@@ -78,5 +78,11 @@
       "x": 0.46403,
       "y": 0.38347
     }
+  },
+  "media": {
+    "videoAstro": "1ZrqLv4o_SQ",
+    "videoMap": "52jrmGFCUNQ",
+    "videoMoon": "iSkHAU5uHpU",
+    "moonImage": "assets/moon.webp"
   }
 }

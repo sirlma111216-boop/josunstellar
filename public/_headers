@@ -1,9 +1,9 @@
 # ==========================================================================
 # Cloudflare Workers Assets 캐시 설정
-# 지도 이미지가 3MB 남짓이라, 한 번 받은 태블릿은 다시 받지 않게 한다.
+# 한 번 받은 태블릿이 다시 받지 않게 한다.
 # (이 파일을 읽지 않는 호스팅에서는 무시되므로 같이 두어도 무해하다)
 #
-# 이미지는 7일, 코드(HTML·JS·CSS)는 매번 확인.
+# 이미지·소리는 7일, 코드(HTML·JS·CSS)는 매번 확인.
 #
 # 코드에 max-age 를 주면 안 된다. index.html 은 no-cache 라 늘 새것인데
 # JS 만 낡아 있으면 화면과 코드가 어긋난 채로 돌아간다 — 배포 직후 그 시간 동안
@@ -12,30 +12,36 @@
 #
 # 이미지는 코드와 달리 어긋나도 문제가 없어 7일 그대로 둔다.
 # 이미지를 교체했는데 옛 그림이 보이면 파일 이름을 바꿔 올리면 바로 반영된다.
+#
+# ※ 자산을 더하거나 확장자를 바꾸면 이 목록도 함께 고쳐야 한다.
+#    빠뜨려도 앱은 돌아가지만, 그 파일만 매번 다시 받는다.
 # ==========================================================================
 
-/assets/chart_orion.jpg
+/assets/2-2.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
-/assets/chart_color.jpg
+/assets/2-3.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
-/assets/chart_full.jpg
+/assets/2-5.webp
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/bgm.mp3
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/bill.webp
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/chart_color.webp
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/chart_full.webp
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/chart_orion.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 /assets/chart_stone.jpg
-  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
-
-/assets/bill.png
-  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
-
-/assets/2-2.png
-  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
-
-/assets/2-3.png
-  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
-
-/assets/2-5.png
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 /assets/grade.jpg
@@ -44,10 +50,10 @@
 /assets/hipa.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
-/assets/star.webp
+/assets/moon.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
-/assets/bgm.mp3
+/assets/star.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 # 코드는 매번 확인 — 화면(HTML)과 어긋나지 않도록

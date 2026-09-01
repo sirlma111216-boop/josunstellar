@@ -18,23 +18,23 @@
      chart_orion 과 chart_color 는 같은 영역을 같은 축척으로 자른 것이라
      좌표계를 그대로 공유한다. 같은 (x,y)는 두 지도에서 같은 별이다. */
   var IMAGES = {
-    orion: { src: 'assets/chart_orion.jpg', w: 2280, h: 2480 },  // 각석본(흑백) — 측정용
-    color: { src: 'assets/chart_color.jpg', w: 2280, h: 2480 },  // 채색본(컬러)
-    full:  { src: 'assets/chart_full.jpg',  w: 540,  h: 622 },   // 전체 지도
+    orion: { src: 'assets/chart_orion.webp', w: 2280, h: 2480 },  // 각석본(흑백) — 측정용
+    color: { src: 'assets/chart_color.webp', w: 2280, h: 2480 },  // 채색본(컬러)
+    full:  { src: 'assets/chart_full.webp',  w: 540,  h: 622 },   // 전체 지도
     stone: { src: 'assets/chart_stone.jpg', w: 1600, h: 1048 }, // 각석 실물 사진
-    bill:  { src: 'assets/bill.png' }                             // 만원권 뒷면 사진(선택)
+    bill:  { src: 'assets/bill.webp' }                             // 만원권 뒷면 사진(선택)
   };
 
   /* ---------- 별 자국 크기 ----------
      밝은 별일수록 크고 깊게 파여 가운데가 비고 테두리만 진한 고리가 된다.
-     아래는 chart_orion.jpg(2배 확대본) 안의 픽셀 지름 범위. */
+     아래는 chart_orion.webp(2배 확대본) 안의 픽셀 지름 범위. */
   var MARK_PX = { min: 8, max: 60 };
   var MARK_MIN_SCREEN_PX = 60;   // 측정 뷰에서 최소 이만큼은 보이게 확대한다
 
   /* ==========================================================================
      측정할 별 (교사가 각석본에서 직접 찍어 확정한 좌표)
      - mag : 겉보기 등급(근사값). 화면에는 항상 "≈"를 붙인다.
-     - px  : chart_orion.jpg 안의 예상 픽셀 좌표(좌상단 0,0).
+     - px  : chart_orion.webp 안의 예상 픽셀 좌표(좌상단 0,0).
              삼수(參宿) 일곱 별과 천랑·자수는 교사가 각석본에서 직접 찍어 확정했다.
              카펠라·프로키온·알데바란은 이 크롭 안에서 위치를 확정하지 못해 뺐다.
      ========================================================================== */

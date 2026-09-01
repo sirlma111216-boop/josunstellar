@@ -460,7 +460,7 @@
         img.style.display = 'none';
         $('moonImgNone').hidden = false;
       });
-      var src = Config.get('media.moonImage', 'assets/moon.jpg');
+      var src = Config.get('media.moonImage', 'assets/moon.webp');
       img.removeAttribute('data-src');
       img.src = src;
     }
@@ -614,19 +614,19 @@
     1: { src: 'assets/chart_stone.jpg',
          cap: '돌에 새겨진 실물 — 천상열차분야지도 각석',
          alt: '천상열차분야지도 각석 — 돌에 새겨진 실물' },
-    2: { src: 'assets/2-2.png' + PIC_V,
+    2: { src: 'assets/2-2.webp' + PIC_V,
          cap: '바쳐진 탁본을 보고 돌에 새기게 하는 장면 — 상상하여 그린 그림',
          alt: '왕 앞에 천상열차분야지도 탁본이 펼쳐져 있고, 옆에서 석공들이 돌에 별을 새기고 있는 그림' },
-    3: { src: 'assets/2-3.png' + PIC_V,
+    3: { src: 'assets/2-3.webp' + PIC_V,
          cap: '1395년 하늘에 맞게 다시 계산하는 류방택 — 상상하여 그린 그림',
          alt: '밤에 별지도를 펴 놓고 붓으로 고쳐 그리는 조선 천문학자, 옆에 혼천의와 계산한 종이가 있는 그림' },
-    4: { src: 'assets/chart_full.jpg',
+    4: { src: 'assets/chart_full.webp',
          cap: '천상열차분야지도 전체 모습',
          alt: '천상열차분야지도 전체' },
-    5: { src: 'assets/2-5.png' + PIC_V,
+    5: { src: 'assets/2-5.webp' + PIC_V,
          cap: '방치되었던 태조의 원본, 1687년의 복각, 그리고 오늘날 — 상상하여 그린 그림',
          alt: '풀밭에 방치된 원본 돌, 1687년에 다시 새기는 장면, 박물관에 보존된 오늘날을 함께 보여 주는 그림' },
-    6: { src: 'assets/chart_full.jpg',
+    6: { src: 'assets/chart_full.webp',
          cap: '천상열차분야지도 전체 모습',
          alt: '천상열차분야지도 전체' }
   };
@@ -680,7 +680,7 @@
     }
   }
 
-  /** 만원권 뒷면 — 사진(assets/bill.png)이 있으면 사진, 없으면 코드로 그린 그림 */
+  /** 만원권 뒷면 — 사진(assets/bill.webp)이 있으면 사진, 없으면 코드로 그린 그림 */
   function buildBill(host) {
     var img = document.createElement('img');
     img.className = 'bill-photo';

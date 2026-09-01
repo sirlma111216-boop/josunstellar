@@ -25,7 +25,7 @@
       hint: '천상열차분야지도 소개 영상(선택 화면).' },
     { key: 'videoMoon',  label: '단계 6 영상', ph: '유튜브 주소 또는 id',
       hint: '월하정인 관련 영상.' },
-    { key: 'moonImage',  label: '월하정인 그림', ph: 'assets/moon.jpg',
+    { key: 'moonImage',  label: '월하정인 그림', ph: 'assets/moon.webp',
       hint: '그림 파일을 public/assets/ 에 넣고 그 경로를 적습니다.' }
   ];
 

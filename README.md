@@ -305,15 +305,15 @@ public/                    Workers Assets 가 그대로 내보내는 화면
     js/admin.js            교사 캘리브레이션 — ?admin=1 일 때만 읽는다
     js/detect.js           각석본에서 별 자국을 찾는 도구. skydata 를 다시 구울 때만 쓰며
                            화면에서는 읽지 않는다(필요하면 콘솔에서 직접 불러온다)
-    chart_orion.jpg        각석본 2280 × 2480 (측정용)
-    chart_color.jpg        채색본 2280 × 2480
-    chart_full.jpg         전체 지도 540 × 622
+    chart_orion.webp       각석본 2280 × 2480 (측정용)
+    chart_color.webp       채색본 2280 × 2480
+    chart_full.webp        전체 지도 540 × 622
     chart_stone.jpg        각석 실물 사진 1600 × 1048
-    bill.png               만원권 뒷면 사진
-    2-2.png 2-3.png 2-5.png  단계 3 이야기 카드 삽화(교사 제작)
+    bill.webp              만원권 뒷면 사진
+    2-2 2-3 2-5.webp       단계 3 이야기 카드 삽화(교사 제작)
     grade.jpg star.webp hipa.webp  단계 7 등급 설명 그림
+    moon.webp              단계 6 「월하정인」 그림
     bgm.mp3                배경음악(교사 제작) — 기본 꺼짐
-    moon.jpg               단계 6 「월하정인」 그림 — 교사가 넣는다(없으면 안내가 뜬다)
 ```
 
 ## 교사 준비 순서
