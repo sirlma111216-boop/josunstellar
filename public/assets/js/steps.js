@@ -159,7 +159,7 @@
   Steps.showSub = function (n, sub) {
     var host = section(n);
     if (!host) return;
-    // 소단계 블록이 단계 2처럼 두 단 레이아웃 안에 들어가 있을 수도 있으므로
+    // 소단계 블록이 단계 3처럼 두 단 레이아웃 안에 들어가 있을 수도 있으므로
     // 직계 자식만 보지 말고 단계 안의 .sub 를 모두 찾는다.
     var subs = host.querySelectorAll('.sub');
     for (var i = 0; i < subs.length; i++) {
@@ -716,7 +716,7 @@
     return s;
   }
 
-  /* ---------- 단계 3. 확대해 들어가기 ---------- */
+  /* ---------- 단계 4. 확대해 들어가기 ---------- */
 
   /** 확대할 영역 사각형을 설정값에 맞춘다 (캘리브레이션 중에도 실시간 반영) */
   Steps.refreshZoomRect = function () {
@@ -767,7 +767,7 @@
     App.lazyLoadVisible();
   }
 
-  /* ---------- 단계 4. 두 지도 비교 ---------- */
+  /* ---------- 단계 5. 두 지도와 가설 ---------- */
   var TRIO_ZOOM = 1.7;
 
   function trioSize() {
@@ -1174,7 +1174,7 @@
     renderTally();
   }
 
-  /* ---------- 단계 5. 겉보기 등급 ---------- */
+  /* ---------- 단계 7. 겉보기 등급 ---------- */
   function build7(sub) {
     if (sub === 7) buildMagTable();      // 내가 낸 순서를 표에 표시해야 하므로 다시 그린다
     if (!Steps.built[7]) {
@@ -1209,7 +1209,7 @@
   }
 
 
-  /* ---------- 단계 5 자료 ---------- */
+  /* ---------- 단계 7 자료 ---------- */
 
   /** 등급이 걸어온 길. 연도 간격이 아주 넓어 눈금 대신 사건 카드로 늘어놓는다. */
   var MAG_HISTORY = [
@@ -1619,7 +1619,7 @@
     });
   }
 
-  /* ---------- 단계 6. 측정 ---------- */
+  /* ---------- 단계 8. 측정 ---------- */
   function build8(sub) {
     if (!Steps.built[8]) {
       Steps.built[8] = true;
@@ -1706,7 +1706,7 @@
     return wrap;
   }
 
-  /* ---------- 단계 7. 결과 ---------- */
+  /* ---------- 단계 9. 결과 ---------- */
 
   /** 내가 잰 값을 반 전체 산점도에 보탠다 */
   function shareMyResult() {
@@ -1735,7 +1735,7 @@
       host.innerHTML = '';
       host.appendChild(buildMeasureTable(true));
       if (!State.measuredCount()) {
-        var p = el('p', 'chart-empty', host, '아직 잰 별이 없습니다. 단계 6에서 먼저 재 봅시다.');
+        var p = el('p', 'chart-empty', host, '아직 잰 별이 없습니다. 단계 8에서 먼저 재 봅시다.');
         host.insertBefore(p, host.firstChild);
       }
       shareMyResult();          // 결과 화면에 들어올 때 반에 보탠다
@@ -1799,7 +1799,7 @@
     renderScope();
   }
 
-  /* ---------- 단계 8. 결론 ---------- */
+  /* ---------- 단계 10. 결론 ---------- */
   function build10() {
     if (!Steps.built[10]) {
       Steps.built[10] = true;
@@ -1920,7 +1920,13 @@
 
     var judge = el('p', 'lb-judge', host);
     if (!mine) {
-      judge.textContent = '단계 4로 돌아가 예상을 골라 보세요.';
+      // 1차시 기록은 이 기기 안에만 있다. 학교 공용 기기라 2차시에 다른 것을
+      // 잡았다면 여기가 빈다 — 왜 비었는지 알려 주고, 되돌아가라고 하지 않는다.
+      // (이미 답을 본 뒤라 지금 고르는 것은 예상이 아니다)
+      judge.textContent = Live.code
+        ? '지난 시간 기록이 이 기기에 없습니다. 다른 기기로 참여했다면 그럴 수 있습니다. ' +
+          '우리 반이 함께 낸 것은 위 화면에서 그대로 볼 수 있습니다.'
+        : '지난 시간 기록이 이 기기에 없습니다. 단계 5로 돌아가면 예상을 고를 수 있습니다.';
     } else if (State.data.prediction === 'bright') {
       judge.innerHTML = '✓ 예상이 <b>맞았습니다.</b> 자국의 크기는 별의 밝기와 이어져 있었습니다.';
     } else {
