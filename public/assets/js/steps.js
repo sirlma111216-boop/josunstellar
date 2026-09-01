@@ -641,9 +641,10 @@
   function build3(sub) {
     if (!Steps.built[3]) {
       Steps.built[3] = true;
-      // 카드 진행 점
+      // 카드 진행 점 — 이야기 카드 수만큼
+      // (s2… 라는 이름은 이 절이 단계 2 였을 때 붙은 것이다. 지금은 단계 3 이다.)
       var dots = $('s2Dots');
-      for (var i = 1; i <= SUBS[2]; i++) {
+      for (var i = 1; i <= SUBS[3]; i++) {
         var d = el('span', 'dot', dots);
         d.dataset.sub = i;
       }
