@@ -1067,6 +1067,54 @@ body.admin-open{ padding-bottom:60dvh; }
 .sb-split.is-first{ padding-left:0; }
 .sb-split.is-first::before{ display:none; }
 
+
+/* ==========================================================================
+   수업에 붙기 — 누구세요? 를 먼저 묻고, 고른 쪽 칸만 펼친다
+   ========================================================================== */
+.who-pick{
+  display:grid; gap:.7rem; margin:1rem 0;
+  grid-template-columns:repeat(auto-fit, minmax(13rem, 1fr));
+}
+.who-card{
+  display:flex; flex-direction:column; align-items:flex-start; gap:.15rem;
+  font:inherit; text-align:left; cursor:pointer;
+  background:var(--bg-2); color:var(--ink);
+  border:1px solid var(--line); border-radius:var(--radius);
+  padding:1.1rem 1.2rem; min-height:var(--touch);
+  transition:border-color .12s, background .12s, transform .12s;
+}
+.who-card b{ font-size:1.08rem; }
+.who-card span:last-child{ font-size:.86rem; color:var(--ink-dim); }
+.who-icon{ font-size:1.7rem; line-height:1.2; margin-bottom:.15rem; }
+.who-card:hover{
+  border-color:var(--accent);
+  background:color-mix(in srgb, var(--accent) 9%, var(--bg-2));
+}
+.who-card:active{ transform:translateY(1px); }
+.who-card:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+.btn-back{
+  font:inherit; font-size:.86rem; cursor:pointer;
+  background:none; border:0; padding:.3rem 0; margin-bottom:.5rem;
+  color:var(--ink-dim); min-height:var(--touch);
+}
+.btn-back:hover{ color:var(--accent); }
+.btn-back:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+
+.wp-block + .wp-block{ margin-top:0; }
+.wp-cap{ font-size:.86rem; font-weight:700; color:var(--accent); margin:0 0 .5rem; }
+.wp-block .join-row{ margin:0 0 .5rem; }
+.wp-block .muted.tiny{ margin:.4rem 0 0; }
+
+/* 두 갈래 사이의 '또는' */
+.wp-or{
+  display:flex; align-items:center; gap:.8rem;
+  margin:1.2rem 0; color:var(--ink-dim); font-size:.82rem;
+}
+.wp-or::before, .wp-or::after{
+  content:''; flex:1 1 auto; height:1px; background:var(--line);
+}
+
 @media print{
   .plan-box, .recap, .magplay, .moon-shapes, .sb-split{ display:none !important; }
 }

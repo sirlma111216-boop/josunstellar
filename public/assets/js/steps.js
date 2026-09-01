@@ -889,26 +889,35 @@
       m.classList.toggle('is-bad', !!bad);
     }
 
+    /* 역할을 고르면 그쪽 칸만 펼친다. 'ask' | 'host' | 'guest' */
+    function setWho(mode) {
+      var off = $('liveOff');
+      off.dataset.mode = mode;
+      var panes = off.querySelectorAll('[data-when]');
+      for (var i = 0; i < panes.length; i++) {
+        panes[i].hidden = panes[i].dataset.when !== mode;
+      }
+      msg('');
+      if (mode === 'host') {
+        $('reopenCode').value = Live.lastHostCode() || '';
+        renderPastCodes();
+      } else if (mode === 'guest') {
+        $('joinNick').value = Live.nick || '';   // 지난 시간에 쓰던 닉네임
+        $('joinCode').focus();
+      }
+    }
+    $('btnWhoHost').addEventListener('click', function () { setWho('host'); });
+    $('btnWhoGuest').addEventListener('click', function () { setWho('guest'); });
+    $('btnWhoBackH').addEventListener('click', function () { setWho('ask'); });
+    $('btnWhoBackG').addEventListener('click', function () { setWho('ask'); });
+    Steps.resetWho = function () { setWho('ask'); };
+
     $('btnOpenClass').addEventListener('click', function () {
       msg('수업을 여는 중…');
       Live.openClass(function (err) {
         if (err) { msg(err, true); return; }
-        msg('');
         renderLive();
       });
-    });
-
-    // 2차시 — 지난 수업 코드로 다시 열면 1차시 자료가 그대로 이어진다
-    $('reopenRow').hidden = false;
-    $('btnReopenToggle').addEventListener('click', function () {
-      var box = $('reopenBox');
-      box.hidden = !box.hidden;
-      $('joinRow').hidden = true;              // 코드 칸 두 개가 같이 뜨지 않게
-      if (!box.hidden) {
-        $('reopenCode').value = Live.lastHostCode() || '';
-        renderPastCodes();
-        $('reopenCode').focus();
-      }
     });
 
     /** 이 기기에서 연 적 있는 코드를 눌러 고를 수 있게 늘어놓는다 */
@@ -933,35 +942,26 @@
       var d = Math.floor((Date.now() - at) / 86400000);
       return d <= 0 ? '오늘' : d === 1 ? '어제' : d + '일 전';
     }
+
     $('btnReopen').addEventListener('click', function () {
       msg('지난 수업을 여는 중…');
       Live.reopenClass($('reopenCode').value, function (err) {
         if (err) { msg(err, true); return; }
-        msg('');
-        $('reopenBox').hidden = true;          // 다음에 열 때 다시 펼쳐지도록
         renderLive();
       });
-    });
-    $('reopenCode').addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter') $('btnReopen').click();
-    });
-
-    $('btnJoinToggle').addEventListener('click', function () {
-      var row = $('joinRow');
-      row.hidden = !row.hidden;
-      $('reopenBox').hidden = true;
-      if (!row.hidden) {
-        $('joinNick').value = Live.nick || '';   // 지난 시간에 쓰던 닉네임을 채워 준다
-        $('joinCode').focus();
-      }
     });
 
     $('btnJoin').addEventListener('click', function () {
       msg('참여하는 중…');
       Live.joinClass($('joinCode').value, $('joinNick').value, function (err) {
         if (err) { msg(err, true); return; }
-        msg('');
         renderLive();
+      });
+    });
+
+    ['reopenCode'].forEach(function (id) {
+      $(id).addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') $('btnReopen').click();
       });
     });
     ['joinCode', 'joinNick'].forEach(function (id) {
@@ -1011,11 +1011,10 @@
       if (confirm('지금까지 모인 표를 모두 비울까요?')) Live.reset();
     });
 
-    // 주소에 코드가 붙어 들어왔다면 참여 칸을 미리 열어 둔다
+    // 주소에 코드가 붙어 들어왔다면 학생 칸을 미리 펼쳐 둔다
     if (Live.pendingCode) {
-      $('joinRow').hidden = false;
+      setWho('guest');
       $('joinCode').value = Live.pendingCode;
-      $('joinNick').value = Live.nick || '';
       msg('닉네임을 넣고 참여를 누르세요.');
     }
 
@@ -1142,6 +1141,11 @@
     $('liveOff').hidden = joined;
     $('liveOn').hidden = !joined;
     $('liveGuest').hidden = isHost;
+
+    // 들어와 있다가 나간 순간에만 "누구세요?" 로 되돌린다.
+    // 그릴 때마다 되돌리면 주소로 들어온 학생의 펼쳐진 칸까지 접힌다.
+    if (Steps.wasJoined && !joined && Steps.resetWho) Steps.resetWho();
+    Steps.wasJoined = joined;
 
     if (joined) {
       $('liveCode').textContent = Live.code;

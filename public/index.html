@@ -71,44 +71,82 @@
     <h2 class="step-title">수업에 함께 들어갑시다</h2>
     <!-- 학급 연결. 수업을 시작할 때 다 같이 붙는다. -->
     <div class="live-box" id="liveBox">
-      <div class="live-off" id="liveOff">
+      <!-- 역할을 먼저 고르고, 고른 쪽 칸만 펼친다.
+           둘을 한꺼번에 보여 주면 코드 넣는 칸이 두 개라 헷갈린다. -->
+      <div class="live-off" id="liveOff" data-mode="ask">
         <h3 class="card-title">우리 반 같이 하기</h3>
-        <p class="muted">선생님이 화면을 넘기면 학생 화면도 함께 넘어갑니다. 예상 투표도 각자 기기에서 할 수 있습니다.</p>
-        <div class="abtns">
-          <button type="button" class="btn btn-primary" id="btnOpenClass">수업 열기 (선생님)</button>
-          <button type="button" class="btn" id="btnJoinToggle">코드로 참여하기 (학생)</button>
-        </div>
-        <p class="reopen-row" id="reopenRow" hidden>
-          2차시인가요?
-          <button type="button" class="btn-link" id="btnReopenToggle">지난 수업 코드로 이어서 열기</button>
-        </p>
-        <div class="join-row" id="reopenBox" hidden>
-          <div class="jf">
-            <label for="reopenCode">1차시에 쓴 수업 코드</label>
-            <input type="text" id="reopenCode" maxlength="6" inputmode="latin"
-                   autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+
+        <!-- ① 누구세요? -->
+        <div class="who-ask" data-when="ask">
+          <p class="muted">선생님이 화면을 넘기면 학생 화면도 함께 넘어갑니다.
+             예상과 측정 결과도 각자 기기에서 올릴 수 있습니다.</p>
+          <div class="who-pick">
+            <button type="button" class="who-card" id="btnWhoHost">
+              <span class="who-icon" aria-hidden="true">🎓</span>
+              <b>선생님이에요</b>
+              <span>수업을 엽니다</span>
+            </button>
+            <button type="button" class="who-card" id="btnWhoGuest">
+              <span class="who-icon" aria-hidden="true">✋</span>
+              <b>학생이에요</b>
+              <span>코드를 받아 들어갑니다</span>
+            </button>
           </div>
-          <button type="button" class="btn btn-primary" id="btnReopen">이어서 열기</button>
-          <div class="past-codes" id="pastCodes" hidden></div>
-          <p class="muted tiny jf-note">1차시의 예상·확인 방법·순서 답이 그대로 되살아납니다.
-             수업을 연 지 <b>8일</b>이 지났으면 새로 열어 주세요.</p>
+          <p class="muted tiny">연결하지 않아도 혼자서 끝까지 할 수 있습니다.</p>
         </div>
-        <div class="join-row" id="joinRow" hidden>
-          <div class="jf">
-            <label for="joinCode">수업 코드</label>
-            <input type="text" id="joinCode" maxlength="6" inputmode="latin"
-                   autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+
+        <!-- ② 선생님 -->
+        <div class="who-panel" data-when="host" hidden>
+          <button type="button" class="btn-back" id="btnWhoBackH">◂ 다시 고르기</button>
+
+          <div class="wp-block">
+            <p class="wp-cap">처음 여는 수업이라면</p>
+            <button type="button" class="btn btn-big btn-primary" id="btnOpenClass">새 수업 열기</button>
+            <p class="muted tiny">6자리 코드가 나옵니다. 그 코드를 학생들에게 불러 주세요.</p>
           </div>
-          <div class="jf">
-            <label for="joinNick">닉네임</label>
-            <input type="text" id="joinNick" maxlength="12"
-                   autocomplete="off" placeholder="예: 북극성">
+
+          <div class="wp-or"><span>또는</span></div>
+
+          <div class="wp-block">
+            <p class="wp-cap">2차시라면 — 1차시에 쓴 코드로</p>
+            <div class="join-row">
+              <div class="jf">
+                <label for="reopenCode">1차시 수업 코드</label>
+                <input type="text" id="reopenCode" maxlength="6" inputmode="latin"
+                       autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+              </div>
+              <button type="button" class="btn btn-primary" id="btnReopen">이어서 열기</button>
+            </div>
+            <div class="past-codes" id="pastCodes" hidden></div>
+            <p class="muted tiny">1차시의 예상·확인 방법·순서 답이 그대로 되살아납니다.
+               수업을 연 지 <b>8일</b>이 지났으면 새로 열어 주세요.</p>
           </div>
-          <button type="button" class="btn btn-primary" id="btnJoin">참여</button>
-          <p class="muted tiny jf-note">이름 대신 <b>별명</b>을 넣어 주세요. 화면에 그대로 보입니다.</p>
         </div>
+
+        <!-- ③ 학생 -->
+        <div class="who-panel" data-when="guest" hidden>
+          <button type="button" class="btn-back" id="btnWhoBackG">◂ 다시 고르기</button>
+
+          <div class="wp-block">
+            <p class="wp-cap">선생님이 불러 주신 코드를 넣으세요</p>
+            <div class="join-row">
+              <div class="jf">
+                <label for="joinCode">수업 코드</label>
+                <input type="text" id="joinCode" maxlength="6" inputmode="latin"
+                       autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+              </div>
+              <div class="jf">
+                <label for="joinNick">닉네임</label>
+                <input type="text" id="joinNick" maxlength="12"
+                       autocomplete="off" placeholder="예: 북극성">
+              </div>
+              <button type="button" class="btn btn-primary" id="btnJoin">참여</button>
+            </div>
+            <p class="muted tiny">이름 대신 <b>별명</b>을 넣어 주세요. 화면에 그대로 보입니다.</p>
+          </div>
+        </div>
+
         <p class="live-msg" id="liveMsg" hidden></p>
-        <p class="muted tiny">연결하지 않아도 혼자서 끝까지 할 수 있습니다.</p>
       </div>
 
       <div class="live-on" id="liveOn" hidden>
