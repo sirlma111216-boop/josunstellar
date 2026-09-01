@@ -582,30 +582,25 @@
   <button type="button" class="btn-skip" data-skip>건너뛰기 ▸</button>
   <h2 class="step-title">옛 그림 속 달</h2>
 
+  <!-- 6-1. 그림을 보며 이상한 점 찾기 -->
   <div class="sub" data-sub="1">
-    <!-- 지난 시간 되짚기 -->
-    <div class="recap" id="recapBox">
-      <h3 class="recap-title">지난 시간에</h3>
-      <ul class="recap-list">
-        <li><b>종이에 그린 지도</b>는 별 크기가 모두 같았습니다.</li>
-        <li><b>돌에 새긴 지도</b>는 별마다 크기가 달랐습니다.</li>
-        <li>왜 그런지 <b>우리 반이 예상</b>을 세웠습니다.</li>
-      </ul>
-      <div class="recap-cols">
-        <div>
-          <p class="recap-cap" id="recapTallyCap">우리 반의 예상</p>
-          <div class="tally" id="recapTally"></div>
-        </div>
-        <div>
-          <p class="recap-cap" id="recapPlansCap">우리가 말한 확인 방법</p>
-          <div class="recap-plans" id="recapPlans"></div>
-        </div>
-      </div>
+    <!-- 왜 갑자기 옛 그림인가 — 여기가 서지 않으면 뜬금없어진다 -->
+    <div class="bridge">
+      <p class="bridge-cap">지난 시간에 우리가 하기로 한 일</p>
+      <p class="bridge-line">600년 전 사람이 <b>돌에 남긴 기록</b>을,
+         오늘의 지식으로 <b>확인하는 것</b>.</p>
+      <p class="bridge-mid">이것이 바로 <b>고천문학</b>이 하는 일입니다.</p>
+      <p class="bridge-sub">그런데 이 일은 별지도로만 하는 게 아닙니다.
+         <b>옛 그림 한 장</b>으로도 할 수 있습니다.
+         재러 가기 전에, 그 방법을 먼저 겪어 봅시다.</p>
     </div>
 
-    <h3 class="sub-title mt">그림 한 장을 같이 봅시다</h3>
+    <h3 class="sub-title mt">200여 년 전, 신윤복이 그린 그림입니다</h3>
+    <p class="step-lead">천천히 살펴보세요. 그리고 <b>이상한 점 하나</b>를 골라 봅시다.</p>
+
     <figure class="fig fig-wide">
-      <img class="lazy-img" id="moonImg" alt="신윤복의 월하정인. 달빛 아래 두 사람이 서 있고 위쪽에 얇은 달이 떠 있다.">
+      <img class="lazy-img" id="moonImg"
+           alt="신윤복의 월하정인. 담장 옆에 두 사람이 서 있고 지붕 위로 얇은 달이 떠 있다.">
       <figcaption>신윤복 「월하정인(月下情人)」</figcaption>
     </figure>
     <p class="muted tiny" id="moonImgNone" hidden>
@@ -614,13 +609,44 @@
     </p>
 
     <div class="card">
-      <h3 class="card-title">이 그림 속 달, 이상한 점이 없나요?</h3>
-      <div id="moonShapes" class="moon-shapes"></div>
-      <p class="muted">보통 초승달과 그믐달은 이렇게 생겼습니다. 그림 속 달과 견주어 보세요.</p>
+      <h3 class="card-title">어느 것이 이상한가요?</h3>
+      <p class="muted">하나만 고르세요. 다시 누르면 바꿀 수 있습니다.</p>
+      <div class="spot-grid" id="spotBtns"></div>
+    </div>
+
+    <div class="live-tallybox" id="spotBox">
+      <div class="lt-head">
+        <h3 class="card-title">우리 반이 고른 것</h3>
+        <span class="live-count"><b id="spotTotal">0</b>명 참여</span>
+      </div>
+      <p class="muted tiny" id="spotHint">수업 코드로 참여하면 반 전체가 고른 것이 여기에 모입니다.</p>
+      <div class="tally" id="spotTally"></div>
+    </div>
+
+    <div class="step-cta">
+      <button type="button" class="btn btn-big btn-primary" id="btnSpotReveal">정답 확인</button>
+    </div>
+  </div>
+
+  <!-- 6-2. 달 이야기 -->
+  <div class="sub" data-sub="2" hidden>
+    <div class="verdict">
+      <p class="verdict-cap">이상한 것은 이것이었습니다</p>
+      <p class="verdict-line">달의 <b>모양</b>이 이상하다</p>
+      <p class="verdict-sub">초승달도 그믐달도 이런 모양으로는 뜨지 않습니다.</p>
     </div>
 
     <div class="card">
-      <h3 class="card-title">그림에는 <b>자정 무렵</b>이라고 적혀 있습니다</h3>
+      <h3 class="card-title">보통 달은 이렇게 생겼습니다</h3>
+      <div id="moonShapes" class="moon-shapes"></div>
+      <p class="muted">해가 <b>옆에서</b> 비추기 때문에, 초승달도 그믐달도
+         불룩한 쪽이 <b>옆</b>을 향합니다.</p>
+      <p>그런데 그림 속 달은 <b>불룩한 쪽이 위</b>를 향하고, 굽은 안쪽이 아래로 내려와 있습니다.
+         어느 쪽으로도 설명이 되지 않는 모양입니다.</p>
+    </div>
+
+    <div class="card">
+      <h3 class="card-title">게다가 그림에는 <b>자정 무렵</b>이라고 적혀 있습니다</h3>
       <p>자정에 이렇게 얇은 달이 하늘에 떠 있을 수 있을까요?</p>
       <div class="predict" id="moonBtns"></div>
       <label class="field field-block" for="moonWhy">
@@ -647,8 +673,6 @@
          다만 학자들 사이에 <b>다른 해석도 있습니다.</b></p>
       <p class="accent-line">중요한 건 답이 아니라 <b>방법</b>입니다.
          옛 기록을 오늘의 자료와 맞춰 보는 것 — 이것이 고천문학입니다.</p>
-      <p class="muted">지난 시간 우리가 세운 가설도 똑같이 확인합니다 —
-         <b>밝은 별일수록 크게 새겼을 것이다.</b> 오늘 직접 재서 맞는지 봅니다.</p>
     </div>
   </div>
 </section>
@@ -658,7 +682,38 @@
   <h2 class="step-title">별의 밝기를 나타내는 방법</h2>
 
 
-<div class="sub" data-sub="1">
+  <div class="sub" data-sub="1">
+    <div class="recap" id="recapBox">
+      <h3 class="recap-title">지난 시간에</h3>
+      <ul class="recap-list">
+        <li><b>종이에 그린 지도</b>는 별 크기가 모두 같았습니다.</li>
+        <li><b>돌에 새긴 지도</b>는 별마다 크기가 달랐습니다.</li>
+        <li>왜 그런지 예상하고, 그중 <b>확인할 수 있는 것</b>을 골라 가설로 세웠습니다.</li>
+      </ul>
+      <div class="recap-cols">
+        <div>
+          <p class="recap-cap" id="recapTallyCap">우리 반의 예상</p>
+          <div class="tally" id="recapTally"></div>
+        </div>
+        <div>
+          <p class="recap-cap" id="recapPlansCap">우리가 말한 확인 방법</p>
+          <div class="recap-plans" id="recapPlans"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict verdict-sm">
+      <p class="verdict-cap">우리가 세운 가설</p>
+      <p class="verdict-line">밝은 별일수록 <b>크게</b> 새겼을 것이다.</p>
+    </div>
+
+    <div class="link-box accent-box">
+      <p class="big-line">확인하려면 먼저 <b>밝기</b>를 다룰 줄 알아야 합니다.</p>
+      <p>별의 밝기를 어떻게 숫자로 나타내는지 배우고, 그다음 시간에 직접 재 봅시다.</p>
+    </div>
+  </div>
+
+<div class="sub" data-sub="2" hidden>
     <h3 class="sub-title">1. 별은 밝기가 다릅니다</h3>
     <p class="step-lead">밤하늘을 보면 아주 밝은 별도 있고, 겨우 보이는 별도 있습니다.</p>
     <figure class="fig fig-wide">
@@ -669,7 +724,7 @@
     <p class="muted">같은 밤하늘에 있어도 밝기는 이렇게 다릅니다.</p>
   </div>
 
-<div class="sub" data-sub="2" hidden>
+<div class="sub" data-sub="3" hidden>
     <h3 class="sub-title">2. 2100년 전, 히파르코스가 시작했습니다</h3>
     <p class="step-lead">기원전 2세기, 그리스의 천문학자 <b>히파르코스</b>는
        밤하늘의 별을 하나하나 적어 <b>별 목록</b>을 만들었습니다.
@@ -713,7 +768,7 @@
     </div>
   </div>
 
-<div class="sub" data-sub="3" hidden>
+<div class="sub" data-sub="4" hidden>
     <h3 class="sub-title">3. 여기가 제일 헷갈립니다</h3>
     <div class="warn-box">
       <p class="warn-big">숫자가 <b>작을수록</b> 밝습니다!</p>
@@ -723,7 +778,7 @@
     <div id="magQuiz" class="quiz"></div>
   </div>
 
-<div class="sub" data-sub="4" hidden>
+<div class="sub" data-sub="5" hidden>
     <h3 class="sub-title">4. 0등급, 그리고 마이너스 등급</h3>
     <p class="step-lead">망원경이 생기고 밝기를 정밀하게 재게 되자,
        6등급 안에 다 담기지 않는 별들이 나왔습니다.
@@ -739,7 +794,7 @@
     <p class="muted">반대쪽으로도 늘어나서, 큰 망원경이 보는 어두운 천체는 20등급을 넘기도 합니다.</p>
   </div>
 
-  <div class="sub" data-sub="5" hidden>
+  <div class="sub" data-sub="6" hidden>
     <h3 class="sub-title">5. 직접 바꿔 보며 익히기</h3>
     <p class="step-lead">손잡이를 움직여 등급을 바꿔 보세요.
        숫자가 <b>작아질수록</b> 별이 어떻게 되는지 눈으로 확인해 봅시다.</p>
@@ -770,7 +825,7 @@
     </div>
   </div>
 
-<div class="sub" data-sub="6" hidden>
+<div class="sub" data-sub="7" hidden>
     <h3 class="sub-title">6. 한 등급 차이는 약 2.5배 <span class="deep-tag">심화</span></h3>
     <p class="step-lead">히파르코스는 눈대중으로 나누었을 뿐, 몇 배인지는 정하지 않았습니다.
        1856년 <b>포그슨</b>이 이렇게 못 박았습니다 —
@@ -786,7 +841,7 @@
     </div>
   </div>
 
-<div class="sub" data-sub="7" hidden>
+<div class="sub" data-sub="8" hidden>
     <h3 class="sub-title">7. 우리 곁의 천체는 몇 등급일까요?</h3>
     <p class="step-lead">실제 등급입니다. 여러분이 놓은 순서와 맞춰 보세요.</p>
 
@@ -980,15 +1035,15 @@
         <table class="time-table">
           <thead><tr><th>단계</th><th>하는 일</th><th>시간</th></tr></thead>
           <tbody>
-            <tr><td>6 월하정인</td><td>옛 그림 속 달로 고천문학의 방법을 봅니다</td><td>8분</td></tr>
-            <tr><td>7 등급</td><td>겉보기 등급을 익히고, 지난 시간 순서를 맞춰 봅니다</td><td>12분</td></tr>
+            <tr><td>6 월하정인</td><td>옛 그림에서 <b>이상한 점을 골라 보고</b>, 고천문학의 방법을 겪습니다</td><td>8분</td></tr>
+            <tr><td>7 등급</td><td><b>지난 시간을 되짚고</b>, 겉보기 등급을 익히고, 지난 시간 순서를 맞춰 봅니다</td><td>12분</td></tr>
             <tr><td>8 측정</td><td><b>별 10개를 1차·2차 두 번씩</b> 잽니다</td><td>15분</td></tr>
             <tr><td>9 그래프</td><td>내 점과 반 전체의 점을 찍어 봅니다</td><td>7분</td></tr>
             <tr><td>10 결론</td><td>알게 된 것을 쓰고 서로 봅니다</td><td>3분</td></tr>
           </tbody>
         </table>
         <p class="muted tiny">7단계의 <b>심화</b>(한 등급 차이는 약 2.5배)는 순서에서 빠져 있습니다.
-           필요한 학급만 5번 화면의 단추로 들어가면 됩니다.</p>
+           필요한 학급만 6번 화면의 단추로 들어가면 됩니다.</p>
       </div>
 
       <div class="modal-sub">

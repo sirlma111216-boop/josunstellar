@@ -109,8 +109,8 @@ export class ClassSession extends DurableObject {
       const saved = await this.ctx.storage.get('state');
       const fresh = saved && (Date.now() - (saved.updatedAt || 0)) < TTL_MS;
       this.state = fresh
-        ? { members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {}, ...saved }   // 예전 판에 없던 칸
-        : { createdAt: Date.now(), updatedAt: Date.now(), votes: {},
+        ? { members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {}, spots: {}, ...saved }   // 예전 판에 없던 칸
+        : { createdAt: Date.now(), updatedAt: Date.now(), votes: {}, spots: {},
             members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {} };
     })();
     await this.loading;
@@ -190,7 +190,12 @@ export class ClassSession extends DurableObject {
       why: this.state.plans[t].why,
       how: this.state.plans[t].how,
     }));
-    return { pts, people, notes, ranks, plans };
+    // 월하정인에서 고른 '이상한 점' — 누가 골랐는지는 담지 않고 수만 센다
+    const spots = {};
+    for (const key of Object.values(this.state.spots || {})) {
+      spots[key] = (spots[key] || 0) + 1;
+    }
+    return { pts, people, notes, ranks, plans, spots };
   }
 
   /** 학생·교사 화면으로 내려보내는 한 덩어리 */
@@ -301,10 +306,25 @@ export class ClassSession extends DurableObject {
             delete this.state.notes[token];
             delete this.state.ranks[token];
             delete this.state.plans[token];
+            if (this.state.spots) delete this.state.spots[token];
             await this.save();
           }
           ws.send(ack(msg.i, { ok: true }));
           this.scheduleBroadcast();
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'spot': {
+          // 월하정인에서 고른 '이상한 점'. 한 기기 한 표.
+          const token = String(msg.d?.token || '').slice(0, 40);
+          const key = String(msg.d?.key || '').slice(0, 20);
+          if (!token) { ws.send(nack(msg.i, '잘못된 요청입니다.')); break; }
+          if (!this.state.spots) this.state.spots = {};
+          if (key) this.state.spots[token] = key;
+          else delete this.state.spots[token];
+          await this.save();
+          ws.send(ack(msg.i, this.classWork()));
           this.scheduleClassBroadcast();
           break;
         }
@@ -347,7 +367,7 @@ export class ClassSession extends DurableObject {
           // 교사가 다음 활동을 위해 비운다.
           // what 을 주면 그것만, 안 주면 표만 비운다(참여자 명단은 늘 남는다).
           const what = String(msg.d?.what || 'votes');
-          if (what === 'votes' || what === 'all') this.state.votes = {};
+          if (what === 'votes' || what === 'all') { this.state.votes = {}; this.state.spots = {}; }
           if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; this.state.ranks = {}; this.state.plans = {}; }
           // 데모봇만 걷어낸다. 교사 화면이 새로고침되어 leave 를 못 보냈을 때를 위해 둔다.
           if (what === 'demo') {
@@ -355,6 +375,7 @@ export class ClassSession extends DurableObject {
               if (t.indexOf(DEMO_PREFIX) !== 0) continue;
               delete this.state.members[t];
               delete this.state.votes[t];
+              if (this.state.spots) delete this.state.spots[t];
               delete this.state.results[t];
               delete this.state.notes[t];
               delete this.state.ranks[t];

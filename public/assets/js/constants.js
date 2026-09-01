@@ -59,6 +59,18 @@
     { key: 'import', label: '더 중요한 별이라서' }
   ];
 
+  /* 단계 6-1 — 월하정인에서 고를 '이상한 점' 여섯 가지.
+     right 가 붙은 것 하나만 실제로 이상하다. 나머지는 그림에 정말 있는 것이지만
+     이상할 것은 없는 것들이라, 그림을 꼼꼼히 봐야 갈린다. */
+  var MOON_SPOTS = [
+    { key: 'lantern', label: '남자가 등불을 들고 있다' },
+    { key: 'shadow',  label: '담장에 그림자가 없다' },
+    { key: 'moon',    label: '달의 모양이 이상하다', right: true },
+    { key: 'text',    label: '그림 안에 글씨가 적혀 있다' },
+    { key: 'veil',    label: '여자가 쓰개치마로 얼굴을 가렸다' },
+    { key: 'roof',    label: '달이 지붕 바로 위에 낮게 떠 있다' }
+  ];
+
   /* 단계 10 — 순서대로 띄우는 정리 문구 */
   var CONCLUSIONS = [
     '밝은 별일수록 크게 새겨져 있었습니다.',
@@ -75,7 +87,7 @@
     { n: 4,  short: '확대',     long: '한 곳만 골라 확대', period: 1 },
     { n: 5,  short: '비교',     long: '두 지도와 가설',    period: 1, last: true },
     { n: 6,  short: '월하정인', long: '옛 그림 속 달',     period: 2, first: true },
-    { n: 7,  short: '등급',     long: '겉보기 등급',       period: 2 },
+    { n: 7,  short: '등급',     long: '되짚기와 겉보기 등급', period: 2 },
     { n: 8,  short: '측정',     long: '직접 재기',         period: 2 },
     { n: 9,  short: '그래프',   long: '결과 확인',         period: 2 },
     { n: 10, short: '결론',     long: '무엇을 알아냈나',   period: 2 }
@@ -147,6 +159,7 @@
   global.MARK_MIN_SCREEN_PX = MARK_MIN_SCREEN_PX;
   global.STARS = STARS;
   global.PREDICTIONS = PREDICTIONS;
+  global.MOON_SPOTS = MOON_SPOTS;
   global.CONCLUSIONS = CONCLUSIONS;
   global.STEP_LABELS = STEP_LABELS;
   global.starById = starById;

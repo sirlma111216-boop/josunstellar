@@ -43,12 +43,26 @@
     return t;
   }
 
+  /** 반 전체 자료를 서버가 준 그대로 받는다. 빠진 칸만 기본값으로 채운다. */
+  function takeWork(d) {
+    if (!d) return null;
+    var w = {};
+    for (var k in d) if (Object.prototype.hasOwnProperty.call(d, k)) w[k] = d[k];
+    w.pts = w.pts || [];
+    w.people = w.people || 0;
+    w.notes = w.notes || [];
+    w.ranks = w.ranks || [];
+    w.plans = w.plans || [];
+    w.spots = w.spots || {};
+    return w;
+  }
+
   /** 서버가 내려준 집계·명단을 그대로 받아 넣는다 */
   function take(d) {
     if (!d) return;
     if (d.counts) Live.tally = { counts: d.counts, total: d.total };
     if (d.members) { Live.members = d.members; Live.joined = d.joined; Live.online = d.online; }
-    if (d.pts) Live.work = { pts: d.pts, people: d.people, notes: d.notes || [], ranks: d.ranks || [], plans: d.plans || [] };
+    if (d.pts) Live.work = takeWork(d);
   }
 
   Live.onChange = function (fn) { Live.listeners.push(fn); };
@@ -115,7 +129,7 @@
         return;
       }
       if (msg.t === 'work' && msg.d) {
-        Live.work = { pts: msg.d.pts || [], people: msg.d.people || 0, notes: msg.d.notes || [], ranks: msg.d.ranks || [], plans: msg.d.plans || [] };
+        Live.work = takeWork(msg.d);
         if (Live.onWork) Live.onWork(Live.work);
         notify();
         return;
@@ -268,16 +282,25 @@
   Live.sendNote = function (text, done) {
     if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
     Live.send('note', { token: token(), text: text }, function (err, d) {
-      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks, plans: d.plans }; notify(); }
+      if (!err && d) { Live.work = takeWork(d); notify(); }
       if (done) done(err || null);
     });
   };
 
   /** 가설 — 왜 그렇게 생각했는지와 확인할 방법 */
+  /** 월하정인에서 고른 '이상한 점'을 올린다 */
+  Live.sendSpot = function (key, done) {
+    if (!Live.ready) { if (done) done('연결되지 않았습니다.'); return; }
+    Live.send('spot', { token: token(), key: key || '' }, function (err, d) {
+      if (!err && d) { Live.work = takeWork(d); notify(); }
+      if (done) done(err || null);
+    });
+  };
+
   Live.sendPlan = function (why, how, done) {
     if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
     Live.send('plan', { token: token(), why: why, how: how }, function (err, d) {
-      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks, plans: d.plans }; notify(); }
+      if (!err && d) { Live.work = takeWork(d); notify(); }
       if (done) done(err || null);
     });
   };
@@ -286,7 +309,7 @@
   Live.sendRank = function (order, done) {
     if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
     Live.send('rank', { token: token(), order: order }, function (err, d) {
-      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks, plans: d.plans }; notify(); }
+      if (!err && d) { Live.work = takeWork(d); notify(); }
       if (done) done(err || null);
     });
   };
@@ -296,7 +319,7 @@
     if (!Live.ready) return;
     Live.send('work', {}, function (err, d) {
       if (err || !d) return;
-      Live.work = { pts: d.pts || [], people: d.people || 0, notes: d.notes || [], ranks: d.ranks || [], plans: d.plans || [] };
+      Live.work = takeWork(d);
       if (Live.onWork) Live.onWork(Live.work);
       notify();
     });

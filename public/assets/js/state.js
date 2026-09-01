@@ -21,7 +21,8 @@
       hypoWhy: '',          // 왜 그렇게 생각했나 (단계 5-3)
       hypoHow: '',          // 확인할 방법 (단계 5-3)
       hypoSent: false,      // 가설을 냈는가
-      moonGuess: null,      // 월하정인 예상 (단계 6)
+      moonSpot: null,       // 월하정인에서 고른 이상한 점 (단계 6-1)
+      moonGuess: null,      // 자정에 얇은 달이 뜰 수 있나 (단계 6-2)
       moonWhy: '',          // 그 까닭
       rank: [],             // 밝기 순서 맞히기에 낸 답
       conclusion: '',       // 학생이 쓴 결론

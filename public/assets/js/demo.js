@@ -6,6 +6,7 @@
    교사가 화면을 넘길 때마다 그 단계에 맞는 일을 한다.
      단계 5-3 → 예상 고르고 가설 내기
      단계 5-5 → 밝기 순서 맞히기
+     단계 6-1 → 그림에서 이상한 점 고르기
      단계 8   → 잰 값 올리기 (한 별씩)
      단계 10  → 결론 쓰기
    사람마다 속도가 달라 하나씩 도착하는 모습까지 그대로 보인다.
@@ -25,6 +26,10 @@
   /** 예상 쏠림 — 실제 교실처럼 정답 쪽이 많되 갈리도록 */
   var VOTE_MIX = ['bright', 'bright', 'bright', 'bright', 'bright', 'bright',
                   'big', 'big', 'big', 'near', 'near', 'import'];
+
+  /* 월하정인에서 고르는 이상한 점 — 달을 맞히는 아이가 절반쯤 되도록 섞는다 */
+  var SPOT_MIX = ['moon', 'moon', 'moon', 'moon', 'moon',
+                  'roof', 'roof', 'lantern', 'lantern', 'shadow', 'text', 'veil'];
 
   /* 밝기 순서 정답 */
   var RANK_TRUE = ['sun', 'moon', 'venus', 'jupiter', 'sirius', 'vega', 'deneb'];
@@ -113,6 +118,7 @@
       nick: NICKS[i % NICKS.length],
       token: 'demo-' + i + '-' + Math.random().toString(36).slice(2, 7),
       vote: VOTE_MIX[i % VOTE_MIX.length],
+      spot: SPOT_MIX[i % SPOT_MIX.length],
       rank: RANK_MIX[i % RANK_MIX.length],
       plan: PLANS[i % PLANS.length],
       note: NOTES[i % NOTES.length],
@@ -140,6 +146,7 @@
   }
 
   function doVote(bot) { if (!bot.did.vote) { bot.did.vote = true; send(bot, 'vote', { token: bot.token, key: bot.vote }); } }
+  function doSpot(bot) { if (!bot.did.spot) { bot.did.spot = true; send(bot, 'spot', { token: bot.token, key: bot.spot }); } }
   /**
    * 실제 교실처럼 한 별씩 재 나간다.
    * 그래야 교사 화면의 "측정 학생수" 칸이 별마다 다르게 차오르는 것이 보인다.
@@ -174,10 +181,12 @@
   Demo.onStage = function (step, sub) {
     if (!Demo.running) return;
     var atHypo = (step === 5 && sub >= 3) || step >= 6;   // 가설은 5-3 화면부터
-    var atRank = (step === 5 && sub >= 5) || step >= 6;   // 순서 맞히기는 5-4 부터
+    var atRank = (step === 5 && sub >= 5) || step >= 6;   // 순서 맞히기는 5-5 부터
+    var atSpot = step >= 6;                              // 월하정인은 6-1 부터
     if (atHypo && !Demo.done.vote) { Demo.done.vote = true; each(doVote, 900, 6000); }
     if (atHypo && !Demo.done.plan) { Demo.done.plan = true; each(doPlan, 2500, 11000); }
     if (atRank && !Demo.done.rank) { Demo.done.rank = true; each(doRank, 1200, 9000); }
+    if (atSpot && !Demo.done.spot) { Demo.done.spot = true; each(doSpot, 1200, 8000); }
     if (step >= 8 && !Demo.done.result) { Demo.done.result = true; each(doResult, 1500, 12000); }
     if (step >= 10 && !Demo.done.note) { Demo.done.note = true; each(doNote, 1200, 9000); }
   };

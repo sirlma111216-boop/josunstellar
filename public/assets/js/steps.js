@@ -8,12 +8,12 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   /* 단계별 소단계 수 */
-  var SUBS = { 1: 2, 2: 3, 3: 6, 4: 1, 5: 7, 6: 1, 7: 7, 8: 2, 9: 3, 10: 1 };
+  var SUBS = { 1: 2, 2: 3, 3: 6, 4: 1, 5: 7, 6: 2, 7: 8, 8: 2, 9: 3, 10: 1 };
   var LAST = 10;
 
   /* 심화 화면 — [다음]/[이전] 으로는 건너뛰고, 교사가 눌러야 들어간다.
      성취기준 해설이 수식 도입을 배제하므로 포그슨 규칙을 여기로 돌렸다. */
-  var DEEP = { 7: [6] };
+  var DEEP = { 7: [7] };
   function isDeep(n, sub) { return (DEEP[n] || []).indexOf(sub) >= 0; }
 
   var Steps = { step: 1, sub: 1, built: {} };
@@ -68,8 +68,9 @@
       Live.onWork = function () {
         if (Steps.step === 5 && Steps.sub === 3) renderPlanBox();
         if ((Steps.step === 5 && Steps.sub === 5) ||
-            (Steps.step === 7 && Steps.sub === 7)) renderRankTally();
-        if (Steps.step === 6) renderRecap();
+            (Steps.step === 7 && Steps.sub === 8)) renderRankTally();
+        if (Steps.step === 6 && Steps.sub === 1) renderSpotTally();
+        if (Steps.step === 7 && Steps.sub === 1) renderRecap();
         if (Steps.step === 8 && Steps.sub === 2) renderMeasureProgress();
         if (Steps.step === 9 && Steps.sub === 3) {
           renderScope();
@@ -198,7 +199,7 @@
       case 3: build3(sub); break;
       case 4: build4(); break;
       case 5: build5(sub); break;
-      case 6: build6(); break;
+      case 6: build6(sub); break;
       case 7: build7(sub); break;
       case 8: build8(sub); break;
       case 9: build9(sub); break;
@@ -428,9 +429,11 @@
     return wrap;
   }
 
-  function build6() {
+  function build6(sub) {
     if (!Steps.built[6]) {
       Steps.built[6] = true;
+
+      buildSpots();
 
       var shapes = $('moonShapes');
       shapes.appendChild(moonShape('left', '초승달 — 오른쪽이 밝다'));
@@ -464,9 +467,64 @@
       img.removeAttribute('data-src');
       img.src = src;
     }
-    markMoon();
-    renderRecap();
-    showVideoState('btnMoonVideo', 'moonVideoNone', 'videoMoon');
+    if (sub === 1) { markSpot(); renderSpotTally(); }
+    if (sub === 2) {
+      markMoon();
+      showVideoState('btnMoonVideo', 'moonVideoNone', 'videoMoon');
+    }
+  }
+
+  /* ---------- 단계 6-1. 그림에서 이상한 점 찾기 ---------- */
+
+  function buildSpots() {
+    var host = $('spotBtns');
+    MOON_SPOTS.forEach(function (c) {
+      var b = el('button', 'spot-btn', host);
+      b.type = 'button';
+      b.dataset.key = c.key;
+      el('span', 'sb-label', b, c.label);
+      b.addEventListener('click', function () {
+        // 다시 누르면 고른 것을 뺀다
+        var next = State.data.moonSpot === c.key ? null : c.key;
+        State.data.moonSpot = next;
+        State.save();
+        markSpot();
+        if (global.Live && Live.ready) Live.sendSpot(next || '');
+      });
+    });
+    $('btnSpotReveal').addEventListener('click', function () { Steps.go(6, 2); });
+  }
+
+  function markSpot() {
+    var bs = $('spotBtns').querySelectorAll('.spot-btn');
+    for (var i = 0; i < bs.length; i++) {
+      bs[i].classList.toggle('is-picked', bs[i].dataset.key === State.data.moonSpot);
+    }
+  }
+
+  /** 반 전체가 무엇을 골랐는지. 정답은 알려 주지 않고 수만 보여 준다. */
+  function renderSpotTally() {
+    var t = $('spotTally');
+    if (!t) return;
+    t.innerHTML = '';
+    var counts = (global.Live && Live.work && Live.work.spots) || {};
+    var total = 0, max = 1;
+    MOON_SPOTS.forEach(function (c) {
+      total += counts[c.key] || 0;
+      max = Math.max(max, counts[c.key] || 0);
+    });
+    var joined = !!(global.Live && Live.code);
+    $('spotHint').hidden = joined;
+    $('spotTotal').textContent = total;
+
+    MOON_SPOTS.forEach(function (c) {
+      var row = el('div', 'tally-row', t);
+      el('span', 'tally-name', row, c.label);
+      var bar = el('div', 'tally-bar', row);
+      el('div', 'tally-fill', bar).style.width = ((counts[c.key] || 0) / max * 100) + '%';
+      if (State.data.moonSpot === c.key) row.classList.add('is-mine');
+      el('span', 'tally-num', row, (counts[c.key] || 0) + '명');
+    });
   }
 
   function markMoon() {
@@ -557,7 +615,7 @@
 
     // 심화 화면은 순서에서 건너뛰므로, 여기서만 들어갈 수 있다
     var deep = $('btnDeepMag');
-    if (deep) deep.addEventListener('click', function () { Steps.go(7, 6); });
+    if (deep) deep.addEventListener('click', function () { Steps.go(7, 7); });
 
     // 배경 별 몇 개는 고정으로 깔아 둔다(비교 대상)
     for (var i = 0; i < 26; i++) {
@@ -1176,7 +1234,11 @@
 
   /* ---------- 단계 7. 겉보기 등급 ---------- */
   function build7(sub) {
-    if (sub === 7) buildMagTable();      // 내가 낸 순서를 표에 표시해야 하므로 다시 그린다
+    if (sub === 1) renderRecap();
+    if (sub === 8) {
+      buildMagTable();                   // 내가 낸 순서를 표에 표시해야 하므로 다시 그린다
+      renderRankTally();
+    }
     if (!Steps.built[7]) {
       Steps.built[7] = true;
       buildMagPlay();
