@@ -72,6 +72,8 @@
         if (Steps.step === 6 && Steps.sub === 1) renderSpotTally();
         if (Steps.step === 7 && Steps.sub === 1) renderRecap();
         if (Steps.step === 8 && Steps.sub === 2) renderMeasureProgress();
+        // 9-1 의 표에도 같은 "측정 학생수" 칸이 있다. 늦게 끝낸 학생이 올리면 여기도 차오른다.
+        if (Steps.step === 9 && Steps.sub === 1) renderResultTable();
         if (Steps.step === 9 && Steps.sub === 3) {
           renderScope();
           if (Steps.scopeClass && Steps.chart2) {
@@ -1697,9 +1699,9 @@
         onPinPlaced: function () { if (global.Admin && Admin.enabled) Admin.onPinPlaced(); }
       });
 
-      Measure.onClose = function () { renderMeasureProgress(); Steps.catchUp(); };
+      Measure.onClose = function () { renderMeasureProgress(); shareMyResult(); Steps.catchUp(); };
       $('btnSheetPrint').addEventListener('click', function () { Report.printSheet(); });
-      State.onChange(renderMeasureProgress);
+      State.onChange(function () { renderMeasureProgress(); scheduleShare(); });
     }
     if (sub === 2) renderMeasureProgress();
   }
@@ -1771,11 +1773,41 @@
   /* ---------- 단계 9. 결과 ---------- */
 
   /** 내가 잰 값을 반 전체 산점도에 보탠다 */
+  /* 잰 값을 반에 보탠다.
+     재는 동안 계속 보내야 교사 화면의 "측정 학생수" 가 그때그때 차오른다.
+     예전에는 단계 9 에 들어갈 때만 보내서, 다 재고 넘어가기 전까지 표가 0 이었다. */
+  var lastShared = '';
+
   function shareMyResult() {
     if (!global.Live || !Live.ready || Live.role !== 'guest') return;
-    Live.sendResult(State.measuredRows().map(function (r) {
-      return [r.star.mag, r.avg];
-    }));
+    var pts = State.measuredRows().map(function (r) { return [r.star.mag, r.avg]; });
+    // 수업 코드까지 넣어, 다른 수업으로 옮겨 붙으면 다시 올라가게 한다
+    var sig = Live.code + '|' + JSON.stringify(pts);
+    if (sig === lastShared) return;      // 달라진 게 없으면 보내지 않는다
+    lastShared = sig;
+    Live.sendResult(pts);
+  }
+
+  /** 한 별을 재는 동안 여러 번 바뀌므로, 잠깐 모았다가 한 번에 보낸다 */
+  var shareTimer = null;
+  function scheduleShare() {
+    if (shareTimer) return;
+    shareTimer = setTimeout(function () {
+      shareTimer = null;
+      shareMyResult();
+    }, 800);
+  }
+
+  /** 단계 9-1 의 결과 표 */
+  function renderResultTable() {
+    var host = $('resultTableHost');
+    if (!host) return;
+    host.innerHTML = '';
+    host.appendChild(buildMeasureTable(true));
+    if (!State.measuredCount()) {
+      var p = el('p', 'chart-empty', host, '아직 잰 별이 없습니다. 단계 8에서 먼저 재 봅시다.');
+      host.insertBefore(p, host.firstChild);
+    }
   }
 
   function build9(sub) {
@@ -1793,14 +1825,8 @@
     }
 
     if (sub === 1) {
-      var host = $('resultTableHost');
-      host.innerHTML = '';
-      host.appendChild(buildMeasureTable(true));
-      if (!State.measuredCount()) {
-        var p = el('p', 'chart-empty', host, '아직 잰 별이 없습니다. 단계 8에서 먼저 재 봅시다.');
-        host.insertBefore(p, host.firstChild);
-      }
-      shareMyResult();          // 결과 화면에 들어올 때 반에 보탠다
+      renderResultTable();
+      shareMyResult();          // 결과 화면에 들어올 때 한 번 더 보탠다
     }
 
     if (sub === 2) {
