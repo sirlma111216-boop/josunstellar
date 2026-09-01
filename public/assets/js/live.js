@@ -175,14 +175,60 @@
     fetch('api/new-code', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('no worker'); return r.json(); })
       .then(function (d) {
-        Live.nick = null;                  // 선생님 기기는 명단에 올리지 않는다
-        Store.remove('liveNick');
-        Live.connect(d.code, 'host');
+        asHost(d.code);
         done(null, d);
       })
       .catch(function () {
         done('학급 기능을 쓸 수 없습니다. Cloudflare Worker 로 배포한 주소에서만 됩니다.');
       });
+  };
+
+  var HOST_KEEP_MS = 8 * 24 * 60 * 60 * 1000;   // 서버 보관 기간과 같게
+  var HOST_MAX = 5;
+
+  /** 선생님으로 붙는다. 연 코드는 기기에 남겨 2차시에 다시 꺼내 쓴다.
+      한 개만 남기면 2차시에 실수로 [수업 열기]를 누르는 순간 1차시 코드가 사라지므로
+      최근 몇 개를 함께 들고 있는다. */
+  function asHost(code) {
+    Live.nick = null;                      // 선생님 기기는 명단에 올리지 않는다
+    Store.remove('liveNick');
+    var list = hostList().filter(function (h) { return h.code !== code; });
+    list.unshift({ code: code, at: Date.now() });
+    Store.set('hostCodes', list.slice(0, HOST_MAX));
+    Live.connect(code, 'host');
+  }
+
+  /** 이 기기가 연 적 있는 수업 코드들 — 최근 것부터. 8일이 지난 것은 뺀다. */
+  function hostList() {
+    var raw = Store.get('hostCodes', null);
+    if (!raw) {                                   // 옛 형식(한 개)에서 넘어온다
+      var one = Store.get('hostCode', null);
+      raw = one && one.code ? [one] : [];
+    }
+    if (!Array.isArray(raw)) return [];
+    var now = Date.now();
+    return raw.filter(function (h) {
+      return h && h.code && (now - (h.at || 0)) < HOST_KEEP_MS;
+    });
+  }
+
+  /** 다시 열기 칸에 보여 줄 목록. 지금 붙어 있는 코드는 뺀다. */
+  Live.pastHostCodes = function () {
+    return hostList().filter(function (h) { return h.code !== Live.code; });
+  };
+
+  /** 그중 가장 최근 것 */
+  Live.lastHostCode = function () {
+    var l = Live.pastHostCodes();
+    return l.length ? l[0].code : null;
+  };
+
+  /** 교사: 지난 수업 코드로 다시 연다 (1차시 자료를 그대로 이어받는다) */
+  Live.reopenClass = function (raw, done) {
+    var code = String(raw || '').trim().toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 6);
+    if (code.length !== 6) { done('코드 6자리를 넣어 주세요.'); return; }
+    asHost(code);
+    done(null, { code: code });
   };
 
   /** 학생: 코드로 들어간다 */

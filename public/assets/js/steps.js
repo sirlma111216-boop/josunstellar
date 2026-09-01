@@ -486,6 +486,29 @@
     if (!t) return;
     t.innerHTML = '';
     var counts = (global.Live && Live.tally && Live.tally.counts) || {};
+    var total = 0;
+    PREDICTIONS.forEach(function (p) { total += counts[p.key] || 0; });
+
+    // 새 코드로 2차시를 열면 반 전체 집계가 없다. 그때는 내가 고른 것만이라도 보여 준다.
+    var mineOnly = !total;
+    var cap = $('recapTallyCap');
+    if (mineOnly) {
+      counts = {};
+      if (State.data.prediction) counts[State.data.prediction] = 1;
+      if (cap) cap.textContent = State.data.prediction
+        ? '내가 고른 예상 — 반 전체는 지난 수업 코드로 열어야 나옵니다'
+        : '우리 반의 예상';
+      // 반 자료도 내 답도 없다 — 빈 막대만 남기지 말고 왜 비었는지 알려 준다
+      if (!State.data.prediction) {
+        el('p', 'muted tiny', t,
+          '1차시에 쓴 수업 코드로 다시 열면 그때의 예상이 그대로 나옵니다. ' +
+          '시작 화면에서 [지난 수업 코드로 이어서 열기]를 눌러 주세요.');
+        renderRecapPlans();
+        return;
+      }
+    } else if (cap) {
+      cap.textContent = '우리 반의 예상';
+    }
     var max = 1;
     PREDICTIONS.forEach(function (p) { max = Math.max(max, counts[p.key] || 0); });
     PREDICTIONS.forEach(function (p) {
@@ -494,14 +517,27 @@
       var bar = el('div', 'tally-bar', row);
       el('div', 'tally-fill', bar).style.width = ((counts[p.key] || 0) / max * 100) + '%';
       if (State.data.prediction === p.key) row.classList.add('is-mine');
-      el('span', 'tally-num', row, (counts[p.key] || 0) + '명');
+      el('span', 'tally-num', row, mineOnly
+        ? (counts[p.key] ? '내 예상' : '')
+        : (counts[p.key] || 0) + '명');
     });
 
+    renderRecapPlans();
+  }
+
+  /** 되짚기 화면 아래쪽 — 우리가 말한 확인 방법 */
+  function renderRecapPlans() {
     var host = $('recapPlans');
     host.innerHTML = '';
     var plans = ((global.Live && Live.work && Live.work.plans) || [])
       .filter(function (p) { return p.how; }).slice(0, 4);
-    if (!plans.length && State.data.hypoHow) plans = [{ nick: '나', how: State.data.hypoHow }];
+    var pcap = $('recapPlansCap');
+    if (!plans.length && State.data.hypoHow) {
+      plans = [{ nick: '나', how: State.data.hypoHow }];
+      if (pcap) pcap.textContent = '내가 적어 둔 확인 방법';
+    } else if (pcap) {
+      pcap.textContent = '우리가 말한 확인 방법';
+    }
     if (!plans.length) { el('p', 'muted tiny', host, '지난 시간에 적어 둔 방법이 없습니다.'); return; }
     plans.forEach(function (p) {
       var row = el('div', 'plan-row', host);
@@ -860,9 +896,58 @@
       });
     });
 
+    // 2차시 — 지난 수업 코드로 다시 열면 1차시 자료가 그대로 이어진다
+    $('reopenRow').hidden = false;
+    $('btnReopenToggle').addEventListener('click', function () {
+      var box = $('reopenBox');
+      box.hidden = !box.hidden;
+      $('joinRow').hidden = true;              // 코드 칸 두 개가 같이 뜨지 않게
+      if (!box.hidden) {
+        $('reopenCode').value = Live.lastHostCode() || '';
+        renderPastCodes();
+        $('reopenCode').focus();
+      }
+    });
+
+    /** 이 기기에서 연 적 있는 코드를 눌러 고를 수 있게 늘어놓는다 */
+    function renderPastCodes() {
+      var host = $('pastCodes');
+      var list = Live.pastHostCodes();
+      host.innerHTML = '';
+      host.hidden = list.length < 2;      // 하나뿐이면 이미 칸에 채워져 있다
+      if (host.hidden) return;
+      el('span', 'past-cap', host, '이 기기에서 연 수업');
+      list.forEach(function (h) {
+        var b = el('button', 'past-chip', host);
+        b.type = 'button';
+        el('b', null, b, h.code);
+        el('span', null, b, ' · ' + whenText(h.at));
+        b.addEventListener('click', function () { $('reopenCode').value = h.code; });
+      });
+    }
+
+    /** "오늘 / 어제 / 3일 전" — 어느 수업이었는지 알아보게 */
+    function whenText(at) {
+      var d = Math.floor((Date.now() - at) / 86400000);
+      return d <= 0 ? '오늘' : d === 1 ? '어제' : d + '일 전';
+    }
+    $('btnReopen').addEventListener('click', function () {
+      msg('지난 수업을 여는 중…');
+      Live.reopenClass($('reopenCode').value, function (err) {
+        if (err) { msg(err, true); return; }
+        msg('');
+        $('reopenBox').hidden = true;          // 다음에 열 때 다시 펼쳐지도록
+        renderLive();
+      });
+    });
+    $('reopenCode').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') $('btnReopen').click();
+    });
+
     $('btnJoinToggle').addEventListener('click', function () {
       var row = $('joinRow');
       row.hidden = !row.hidden;
+      $('reopenBox').hidden = true;
       if (!row.hidden) {
         $('joinNick').value = Live.nick || '';   // 지난 시간에 쓰던 닉네임을 채워 준다
         $('joinCode').focus();

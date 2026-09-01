@@ -78,6 +78,21 @@
           <button type="button" class="btn btn-primary" id="btnOpenClass">수업 열기 (선생님)</button>
           <button type="button" class="btn" id="btnJoinToggle">코드로 참여하기 (학생)</button>
         </div>
+        <p class="reopen-row" id="reopenRow" hidden>
+          2차시인가요?
+          <button type="button" class="btn-link" id="btnReopenToggle">지난 수업 코드로 이어서 열기</button>
+        </p>
+        <div class="join-row" id="reopenBox" hidden>
+          <div class="jf">
+            <label for="reopenCode">1차시에 쓴 수업 코드</label>
+            <input type="text" id="reopenCode" maxlength="6" inputmode="latin"
+                   autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+          </div>
+          <button type="button" class="btn btn-primary" id="btnReopen">이어서 열기</button>
+          <div class="past-codes" id="pastCodes" hidden></div>
+          <p class="muted tiny jf-note">1차시의 예상·확인 방법·순서 답이 그대로 되살아납니다.
+             수업을 연 지 <b>8일</b>이 지났으면 새로 열어 주세요.</p>
+        </div>
         <div class="join-row" id="joinRow" hidden>
           <div class="jf">
             <label for="joinCode">수업 코드</label>
@@ -484,11 +499,11 @@
       </ul>
       <div class="recap-cols">
         <div>
-          <p class="recap-cap">우리 반의 예상</p>
+          <p class="recap-cap" id="recapTallyCap">우리 반의 예상</p>
           <div class="tally" id="recapTally"></div>
         </div>
         <div>
-          <p class="recap-cap">우리가 말한 확인 방법</p>
+          <p class="recap-cap" id="recapPlansCap">우리가 말한 확인 방법</p>
           <div class="recap-plans" id="recapPlans"></div>
         </div>
       </div>
@@ -894,6 +909,9 @@
           <li>수업 코드로 참여하면 <b>닉네임과 측정값</b>만 반 전체 집계에 쓰입니다.</li>
           <li>겉보기 등급은 <b>근사값(≈)</b>이며, 베텔게우스는 변광성이라 대표값입니다.</li>
           <li>단계 표시줄의 번호를 누르면 어느 단계로든 바로 갈 수 있습니다.</li>
+          <li><b>2차시를 열 때</b>는 시작 화면에서 <b>[지난 수업 코드로 이어서 열기]</b>를 눌러
+             1차시에 쓴 코드로 여세요. 그래야 지난 시간 예상과 확인 방법이 그대로 나옵니다.
+             수업 기록은 <b>8일</b> 동안 남습니다.</li>
         </ul>
       </div>
 

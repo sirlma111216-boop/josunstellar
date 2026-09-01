@@ -13,7 +13,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { decode, ack, nack, push } from './protocol.js';
 
 /** 수업이 끝나고 이만큼 지나면 저장소를 비운다 */
-const TTL_MS = 12 * 60 * 60 * 1000;
+const TTL_MS = 8 * 24 * 60 * 60 * 1000;   // 두 차시가 한 주 떨어져 있어도 이어지게
 
 /** 30명이 한꺼번에 눌러도 브로드캐스트가 폭주하지 않도록 묶어 보낸다 */
 const THROTTLE_MS = 250;
