@@ -5,7 +5,7 @@
    가짜 학생 여러 명이 진짜 학생과 똑같이 WebSocket 으로 붙어서,
    교사가 화면을 넘길 때마다 그 단계에 맞는 일을 한다.
      단계 5-3 → 예상 고르고 가설 내기
-     단계 5-4 → 밝기 순서 맞히기
+     단계 5-5 → 밝기 순서 맞히기
      단계 8   → 잰 값 올리기 (한 별씩)
      단계 10  → 결론 쓰기
    사람마다 속도가 달라 하나씩 도착하는 모습까지 그대로 보인다.
@@ -174,7 +174,7 @@
   Demo.onStage = function (step, sub) {
     if (!Demo.running) return;
     var atHypo = (step === 5 && sub >= 3) || step >= 6;   // 가설은 5-3 화면부터
-    var atRank = (step === 5 && sub >= 4) || step >= 6;   // 순서 맞히기는 5-4 부터
+    var atRank = (step === 5 && sub >= 5) || step >= 6;   // 순서 맞히기는 5-4 부터
     if (atHypo && !Demo.done.vote) { Demo.done.vote = true; each(doVote, 900, 6000); }
     if (atHypo && !Demo.done.plan) { Demo.done.plan = true; each(doPlan, 2500, 11000); }
     if (atRank && !Demo.done.rank) { Demo.done.rank = true; each(doRank, 1200, 9000); }

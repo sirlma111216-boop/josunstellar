@@ -73,7 +73,7 @@
     { n: 2,  short: '고천문학', long: '고천문학이란',      period: 1 },
     { n: 3,  short: '지도',     long: '천상열차분야지도',  period: 1 },
     { n: 4,  short: '확대',     long: '한 곳만 골라 확대', period: 1 },
-    { n: 5,  short: '비교',     long: '두 지도와 가설',    period: 1 },
+    { n: 5,  short: '비교',     long: '두 지도와 가설',    period: 1, last: true },
     { n: 6,  short: '월하정인', long: '옛 그림 속 달',     period: 2, first: true },
     { n: 7,  short: '등급',     long: '겉보기 등급',       period: 2 },
     { n: 8,  short: '측정',     long: '직접 재기',         period: 2 },

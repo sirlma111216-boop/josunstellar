@@ -8,7 +8,7 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   /* 단계별 소단계 수 */
-  var SUBS = { 1: 2, 2: 3, 3: 6, 4: 1, 5: 6, 6: 1, 7: 7, 8: 2, 9: 3, 10: 1 };
+  var SUBS = { 1: 2, 2: 3, 3: 6, 4: 1, 5: 7, 6: 1, 7: 7, 8: 2, 9: 3, 10: 1 };
   var LAST = 10;
 
   /* 심화 화면 — [다음]/[이전] 으로는 건너뛰고, 교사가 눌러야 들어간다.
@@ -43,12 +43,12 @@
   Steps.init = function () {
     // 단계 표시줄
     var bar = $('stepbar');
-    STEP_LABELS.forEach(function (s) {
-      // 1차시와 2차시 사이에 선을 하나 넣는다
-      if (s.first) {
-        var gap = el('span', 'sb-split', bar);
+    STEP_LABELS.forEach(function (s, i) {
+      // 차시가 시작되는 자리마다 이름표를 하나 세운다
+      if (i === 0 || s.first) {
+        var gap = el('span', 'sb-split' + (i === 0 ? ' is-first' : ''), bar);
         gap.setAttribute('aria-hidden', 'true');
-        el('span', 'sb-split-txt', gap, '2차시');
+        el('span', 'sb-split-txt', gap, s.period + '차시');
       }
       var b = el('button', 'sb-item', bar);
       b.type = 'button';
@@ -67,7 +67,7 @@
     if (global.Live) {
       Live.onWork = function () {
         if (Steps.step === 5 && Steps.sub === 3) renderPlanBox();
-        if ((Steps.step === 5 && Steps.sub === 4) ||
+        if ((Steps.step === 5 && Steps.sub === 5) ||
             (Steps.step === 7 && Steps.sub === 7)) renderRankTally();
         if (Steps.step === 6) renderRecap();
         if (Steps.step === 8 && Steps.sub === 2) renderMeasureProgress();
@@ -776,8 +776,9 @@
 
   function build5(sub) {
     if (sub === 3) { renderPlanBox(); renderTally(); }
-    if (sub === 4) { renderRank(); renderRankTally(); }
-    if (sub === 6) renderMyHypo();
+    if (sub === 4) renderVerdict();
+    if (sub === 5) { renderRank(); renderRankTally(); }
+    if (sub === 7) renderMyHypo();
     if (!Steps.built[5]) {
       Steps.built[5] = true;
       buildRankGame();
@@ -1325,7 +1326,35 @@
     return v.charAt(0) === '-' ? '−' + v.slice(1) : v;
   }
 
-  /* ---------- 단계 5-6. 밝기 순서 맞히기 ---------- */
+  /* ---------- 단계 5-4. 우리 반의 결론 ----------
+     반이 가장 많이 고른 예상을 짚어 준다. 답을 알려 주는 자리가 아니라
+     "우리가 이렇게 보기로 했다"를 못 박는 자리다. 확인은 다음 차시에 한다. */
+  function renderVerdict() {
+    var host = $('verdictPick');
+    if (!host) return;
+    var counts = (global.Live && Live.tally && Live.tally.counts) || {};
+    var got = [];
+    PREDICTIONS.forEach(function (p) {
+      if (counts[p.key]) got.push({ label: p.label, n: counts[p.key] });
+    });
+    got.sort(function (x, y) { return y.n - x.n; });
+
+    host.innerHTML = '';
+    if (!got.length) {
+      // 반 자료가 없으면(혼자 하거나 연결이 없을 때) 내가 고른 것으로 말한다
+      var mine = State.predictionLabel();
+      if (mine) el('p', 'verdict-pick', host, '내가 고른 예상 — ' + mine);
+      return;
+    }
+    var line = el('p', 'verdict-pick', host);
+    el('span', null, line, '우리 반이 낸 예상 — ');
+    got.forEach(function (g, i) {
+      if (i) el('span', null, line, ' · ');
+      el('b', null, line, g.label + ' ' + g.n + '명');
+    });
+  }
+
+  /* ---------- 단계 5-5. 밝기 순서 맞히기 ---------- */
 
   /** 순서를 맞힐 일곱 개 (MAG_BODIES 에서 도구·한계선을 뺀 것) */
   function rankBodies() {
