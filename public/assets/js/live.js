@@ -1,6 +1,6 @@
 /* ==========================================================================
    Night Code 1395 — 학급 실시간 연결
-   단계 4의 예상을 학생 각자의 기기에서 누르면 교사 화면에 바로 모인다.
+   단계 5-3 의 예상을 학생 각자의 기기에서 누르면 교사 화면에 바로 모인다.
 
    서버로 나가는 것은 수업 중에 함께 보려고 올리는 것뿐이다.
      · 기기마다 무작위 토큰을 하나 만들어 "한 기기 한 표"를 지킨다
@@ -21,7 +21,8 @@
     members: [],       // [{ nick, on, voted }] — 닉네임 말고는 아무것도 오지 않는다
     joined: 0,         // 한 번이라도 들어온 사람 수
     online: 0,         // 지금 붙어 있는 사람 수
-    work: null,        // 반 전체 자료 { pts, people, notes, ranks }
+    work: null,        // 반 전체 자료 { pts, people, notes, ranks, plans }
+    myRank: null,      // 서버에 남아 있던 내 순서 답 (차시가 나뉘어도 되살린다)
     tally: null,       // { counts, total }
     stage: null,       // 교사가 보고 있는 단계 { step, sub }
     following: true,   // 학생이 교사 화면을 따라가는가
@@ -47,7 +48,7 @@
     if (!d) return;
     if (d.counts) Live.tally = { counts: d.counts, total: d.total };
     if (d.members) { Live.members = d.members; Live.joined = d.joined; Live.online = d.online; }
-    if (d.pts) Live.work = { pts: d.pts, people: d.people, notes: d.notes || [], ranks: d.ranks || [] };
+    if (d.pts) Live.work = { pts: d.pts, people: d.people, notes: d.notes || [], ranks: d.ranks || [], plans: d.plans || [] };
   }
 
   Live.onChange = function (fn) { Live.listeners.push(fn); };
@@ -88,6 +89,14 @@
           take(d);
           Live.mine = d.mine;
           if (d.nick) Live.nick = d.nick;          // 서버가 다듬은 형태로 맞춘다
+          // 1차시에 낸 순서 답이 서버에 남아 있으면 되살린다
+          if (d.myRank && d.myRank.length) {
+            Live.myRank = d.myRank;
+            if (global.State && !(State.data.rank || []).length) {
+              State.data.rank = d.myRank.slice();
+              State.save();
+            }
+          }
           if (d.stage) { Live.stage = d.stage; if (Live.onStage) Live.onStage(d.stage); }
         }
         Live.ready = true;
@@ -106,7 +115,7 @@
         return;
       }
       if (msg.t === 'work' && msg.d) {
-        Live.work = { pts: msg.d.pts || [], people: msg.d.people || 0, notes: msg.d.notes || [], ranks: msg.d.ranks || [] };
+        Live.work = { pts: msg.d.pts || [], people: msg.d.people || 0, notes: msg.d.notes || [], ranks: msg.d.ranks || [], plans: msg.d.plans || [] };
         if (Live.onWork) Live.onWork(Live.work);
         notify();
         return;
@@ -146,7 +155,7 @@
 
   Live.leave = function () {
     Live.code = null; Live.role = null; Live.tally = null; Live.mine = null;
-    Live.members = []; Live.joined = 0; Live.online = 0; Live.work = null;
+    Live.members = []; Live.joined = 0; Live.online = 0; Live.work = null; Live.myRank = null;
     Store.remove('liveCode'); Store.remove('liveRole');
     Live.disconnect();
     notify();
@@ -213,7 +222,16 @@
   Live.sendNote = function (text, done) {
     if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
     Live.send('note', { token: token(), text: text }, function (err, d) {
-      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks }; notify(); }
+      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks, plans: d.plans }; notify(); }
+      if (done) done(err || null);
+    });
+  };
+
+  /** 가설 — 왜 그렇게 생각했는지와 확인할 방법 */
+  Live.sendPlan = function (why, how, done) {
+    if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
+    Live.send('plan', { token: token(), why: why, how: how }, function (err, d) {
+      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks, plans: d.plans }; notify(); }
       if (done) done(err || null);
     });
   };
@@ -222,7 +240,7 @@
   Live.sendRank = function (order, done) {
     if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
     Live.send('rank', { token: token(), order: order }, function (err, d) {
-      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks }; notify(); }
+      if (!err && d) { Live.work = { pts: d.pts, people: d.people, notes: d.notes, ranks: d.ranks, plans: d.plans }; notify(); }
       if (done) done(err || null);
     });
   };
@@ -232,7 +250,7 @@
     if (!Live.ready) return;
     Live.send('work', {}, function (err, d) {
       if (err || !d) return;
-      Live.work = { pts: d.pts || [], people: d.people || 0, notes: d.notes || [], ranks: d.ranks || [] };
+      Live.work = { pts: d.pts || [], people: d.people || 0, notes: d.notes || [], ranks: d.ranks || [], plans: d.plans || [] };
       if (Live.onWork) Live.onWork(Live.work);
       notify();
     });

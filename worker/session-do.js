@@ -109,9 +109,9 @@ export class ClassSession extends DurableObject {
       const saved = await this.ctx.storage.get('state');
       const fresh = saved && (Date.now() - (saved.updatedAt || 0)) < TTL_MS;
       this.state = fresh
-        ? { members: {}, stage: null, results: {}, notes: {}, ranks: {}, ...saved }   // 예전 판에 없던 칸
+        ? { members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {}, ...saved }   // 예전 판에 없던 칸
         : { createdAt: Date.now(), updatedAt: Date.now(), votes: {},
-            members: {}, stage: null, results: {}, notes: {}, ranks: {} };
+            members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {} };
     })();
     await this.loading;
     return this.state;
@@ -184,7 +184,13 @@ export class ClassSession extends DurableObject {
     }));
     // 순위는 누가 냈는지 떼고 답만 모은다
     const ranks = Object.keys(this.state.ranks).map((t) => this.state.ranks[t].order);
-    return { pts, people, notes, ranks };
+    // 확인 방법은 서로 읽어 보는 것이 목적이라 닉네임과 함께 둔다
+    const plans = Object.keys(this.state.plans).map((t) => ({
+      nick: this.state.plans[t].nick,
+      why: this.state.plans[t].why,
+      how: this.state.plans[t].how,
+    }));
+    return { pts, people, notes, ranks, plans };
   }
 
   /** 학생·교사 화면으로 내려보내는 한 덩어리 */
@@ -224,6 +230,7 @@ export class ClassSession extends DurableObject {
           ws.send(ack(msg.i, {
             ...this.snap(),
             mine: this.state.votes[token] || null,
+            myRank: (this.state.ranks[token] && this.state.ranks[token].order) || null,
             nick: nick || null,
             stage: this.state.stage,
           }));
@@ -247,7 +254,7 @@ export class ClassSession extends DurableObject {
         case 'stage': {
           // 교사가 화면을 넘기면 그 단계를 모두에게 알린다
           const st = msg.d || {};
-          const step = Math.max(1, Math.min(8, st.step | 0)) || 1;
+          const step = Math.max(1, Math.min(10, st.step | 0)) || 1;
           const sub = Math.max(1, Math.min(9, st.sub | 0)) || 1;
           this.state.stage = { step, sub, at: Date.now() };
           await this.save();
@@ -293,10 +300,26 @@ export class ClassSession extends DurableObject {
             delete this.state.results[token];
             delete this.state.notes[token];
             delete this.state.ranks[token];
+            delete this.state.plans[token];
             await this.save();
           }
           ws.send(ack(msg.i, { ok: true }));
           this.scheduleBroadcast();
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'plan': {
+          // 가설 — 왜 그렇게 생각했는지와 확인할 방법
+          const token = String(msg.d?.token || '').slice(0, 40);
+          const nick = this.state.members[token] ? this.state.members[token].nick : null;
+          const why = cleanText(msg.d?.why, 160);
+          const how = cleanText(msg.d?.how, 160);
+          if (!token) { ws.send(nack(msg.i, '잘못된 요청입니다.')); break; }
+          if (why || how) this.state.plans[token] = { nick: nick || '익명', why, how, at: Date.now() };
+          else delete this.state.plans[token];
+          await this.save();
+          ws.send(ack(msg.i, this.classWork()));
           this.scheduleClassBroadcast();
           break;
         }
@@ -325,7 +348,7 @@ export class ClassSession extends DurableObject {
           // what 을 주면 그것만, 안 주면 표만 비운다(참여자 명단은 늘 남는다).
           const what = String(msg.d?.what || 'votes');
           if (what === 'votes' || what === 'all') this.state.votes = {};
-          if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; this.state.ranks = {}; }
+          if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; this.state.ranks = {}; this.state.plans = {}; }
           // 데모봇만 걷어낸다. 교사 화면이 새로고침되어 leave 를 못 보냈을 때를 위해 둔다.
           if (what === 'demo') {
             for (const t of Object.keys(this.state.members)) {
@@ -335,6 +358,7 @@ export class ClassSession extends DurableObject {
               delete this.state.results[t];
               delete this.state.notes[t];
               delete this.state.ranks[t];
+              delete this.state.plans[t];
             }
           }
           await this.save();

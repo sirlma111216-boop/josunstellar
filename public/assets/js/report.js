@@ -132,10 +132,12 @@
     sec(page, '1. 탐구 질문');
     el('p', 'sheet-q', page, '왜 별마다 크기를 다르게 새겼을까?');
 
-    /* 2. 나의 예상 */
-    sec(page, '2. 나의 예상');
+    /* 2. 나의 가설 */
+    sec(page, '2. 나의 가설');
     var mine = State.predictionLabel();
-    el('p', 'sheet-p', page, mine ? '☑ ' + mine : '(고르지 않음)');
+    el('p', 'sheet-p', page, '예상 — ' + (mine ? '☑ ' + mine : '(고르지 않음)'));
+    el('p', 'sheet-p', page, '그렇게 생각한 까닭 — ' + (State.data.hypoWhy || '(쓰지 않음)'));
+    el('p', 'sheet-p', page, '확인할 방법 — ' + (State.data.hypoHow || '(쓰지 않음)'));
 
     /* 3. 측정 결과 */
     sec(page, '3. 측정 결과');

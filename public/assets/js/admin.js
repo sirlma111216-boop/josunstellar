@@ -1,8 +1,8 @@
 /* ==========================================================================
    Night Code 1395 — 교사 캘리브레이션 (주소 뒤에 ?admin=1)
      · 측정 핀을 별 자국 한가운데로 옮긴다 (확대 미리보기 창 제공)
-     · 단계 3에서 확대해 들어갈 영역을 지정한다
-     · 단계 4에서 나란히 확대할 별 3개를 고른다
+     · 단계 4에서 확대해 들어갈 영역을 지정한다
+     · 단계 5에서 나란히 확대할 별 3개를 고른다
      · 결과를 config.json 으로 내보내 배포한다
    ========================================================================== */
 (function (global) {
@@ -17,6 +17,18 @@
     if (parent) parent.appendChild(n);
     return n;
   }
+  /* 교사가 넣는 수업 자료 */
+  var MEDIA_FIELDS = [
+    { key: 'videoAstro', label: '단계 2 영상', ph: '유튜브 주소 또는 id',
+      hint: '고천문학자 소개 영상. 비워 두면 그 화면에 안내만 뜹니다.' },
+    { key: 'videoMap',   label: '단계 5 영상', ph: '유튜브 주소 또는 id',
+      hint: '천상열차분야지도 소개 영상(선택 화면).' },
+    { key: 'videoMoon',  label: '단계 6 영상', ph: '유튜브 주소 또는 id',
+      hint: '월하정인 관련 영상.' },
+    { key: 'moonImage',  label: '월하정인 그림', ph: 'assets/moon.jpg',
+      hint: '그림 파일을 public/assets/ 에 넣고 그 경로를 적습니다.' }
+  ];
+
   function section(parent, title) {
     var s = el('div', 'admin-sec', parent);
     el('h3', null, s, title);
@@ -168,8 +180,8 @@
       Admin.refreshPreview();
     });
 
-    /* --- ② 단계 3 확대 영역 --- */
-    var s2 = section(panel, '② 단계 3에서 확대해 들어갈 영역');
+    /* --- ② 단계 4 확대 영역 --- */
+    var s2 = section(panel, '② 단계 4에서 확대해 들어갈 영역');
     el('p', 'ahint warn', s2,
       '⚠ 기본값은 눈으로 확인하지 않은 어림값입니다. 전체 지도에서 삼수(오리온) 자리에 ' +
       '사각형을 맞춘 뒤 아래 "확인함"을 켜 주세요.');
@@ -179,10 +191,10 @@
     slider(s2, '높이',   'zoomRegion.h', 0.05, 0.6, 0.002, pct);
     checkbox(s2, '이 영역을 눈으로 확인함', 'zoomRegion.confirmed');
     var b2 = el('div', 'abtns', s2);
-    button(b2, '단계 3 화면 보기', '', function () { Admin.ui.goStep(3); });
+    button(b2, '단계 4 화면 보기', '', function () { Admin.ui.goStep(4); });
 
-    /* --- ③ 단계 4 별 3개 --- */
-    var s3 = section(panel, '③ 단계 4에서 나란히 확대할 별 3개');
+    /* --- ③ 단계 5 별 3개 --- */
+    var s3 = section(panel, '③ 단계 5에서 나란히 확대할 별 3개');
     el('p', 'ahint', s3, '크기 차이가 잘 드러나도록 밝은 별·중간 별·어두운 별을 고르면 좋습니다.');
     Admin.trioPicker = el('div', 'pin-picker', s3);
     for (var t = 0; t < STARS.length; t++) {
@@ -194,11 +206,29 @@
       })(STARS[t]);
     }
     var b3 = el('div', 'abtns', s3);
-    button(b3, '단계 4 화면 보기', '', function () { Admin.ui.goStep(4); });
+    button(b3, '단계 5 화면 보기', '', function () { Admin.ui.goStep(5); });
     Admin.markTrio();
 
-    /* --- ④ 저장 --- */
-    var s4 = section(panel, '④ 설정 저장 · 내보내기');
+    /* --- ④ 수업 자료 (영상 주소·그림) --- */
+    var sM = section(panel, '④ 수업 자료');
+    el('p', 'ahint', sM,
+      '영상은 유튜브 주소를 그대로 붙여 넣으면 됩니다. 비워 두면 그 화면에 재생 버튼이 뜨지 않습니다.');
+    MEDIA_FIELDS.forEach(function (m) {
+      var row = el('label', 'afield', sM);
+      el('span', null, row, m.label);
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.placeholder = m.ph;
+      inp.value = Config.get('media.' + m.key, '') || '';
+      inp.addEventListener('input', function () {
+        Config.set('media.' + m.key, inp.value.trim());
+      });
+      row.appendChild(inp);
+      el('p', 'ahint', sM, m.hint);
+    });
+
+    /* --- ⑤ 저장 --- */
+    var s4 = section(panel, '⑤ 설정 저장 · 내보내기');
     checkbox(s4, 'config.json 보다 이 기기 설정을 우선 사용', 'preferLocal');
     var b4 = el('div', 'abtns', s4);
     button(b4, '이 기기에 저장', 'btn-primary', function () {
@@ -261,7 +291,7 @@
     Admin.syncUI();
   };
 
-  /* ---------- 단계 4 별 3개 고르기 ---------- */
+  /* ---------- 단계 5 별 3개 고르기 ---------- */
   Admin.toggleTrio = function (id) {
     var list = (Config.get('trioIds', []) || []).slice();
     var at = list.indexOf(id);

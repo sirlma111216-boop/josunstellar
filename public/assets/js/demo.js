@@ -4,10 +4,10 @@
 
    가짜 학생 여러 명이 진짜 학생과 똑같이 WebSocket 으로 붙어서,
    교사가 화면을 넘길 때마다 그 단계에 맞는 일을 한다.
-     단계 4 → 예상 고르기
-     단계 5-6 → 밝기 순서 맞히기
-     단계 6·7 → 잰 값 올리기
-     단계 8 → 결론 쓰기
+     단계 5-3 → 예상 고르고 가설 내기
+     단계 5-4 → 밝기 순서 맞히기
+     단계 8   → 잰 값 올리기 (한 별씩)
+     단계 10  → 결론 쓰기
    사람마다 속도가 달라 하나씩 도착하는 모습까지 그대로 보인다.
 
    [멈추기] 를 누르면 봇이 남긴 것(명단·표·측정값·결론)을 모두 지우고 빠진다.
@@ -44,6 +44,22 @@
     swapped(4, 5),                                  // 시리우스 ↔ 베가
     swapped(1, 2),                                  // 보름달 ↔ 금성
     RANK_TRUE
+  ];
+
+  /* 가설 — 까닭과 확인 방법. "재 보면 된다" 에 이르는 답이 섞이도록. */
+  var PLANS = [
+    { why: '밝은 별이 더 눈에 띄니까',        how: '별 자국의 크기를 자로 재 본다' },
+    { why: '큰 별이라서 크게 그린 것 같다',   how: '크기를 재서 밝기랑 비교한다' },
+    { why: '중요한 별을 크게 새겼을 것 같다', how: '옛날 기록을 찾아본다' },
+    { why: '가까우면 크게 보이니까',          how: '별까지 거리를 알아본다' },
+    { why: '밝을수록 크게 새겼을 것 같다',    how: '자국 지름을 재고 등급이랑 견줘 본다' },
+    { why: '',                                how: '여러 개를 재서 규칙이 있는지 본다' },
+    { why: '눈에 잘 보이는 별이니까',          how: '크기를 다 재서 표로 만든다' },
+    { why: '',                                how: '' },
+    { why: '별마다 다르게 보여서',            how: '확대해서 지름을 재 본다' },
+    { why: '밝기를 표시하려던 것 같다',       how: '재 보고 실제 밝기랑 맞는지 확인한다' },
+    { why: '크게 새길수록 눈에 띄니까',       how: '자국을 재서 그래프로 그려 본다' },
+    { why: '',                                how: '친구들 것과 모아서 비교한다' }
   ];
 
   var NOTES = [
@@ -98,6 +114,7 @@
       token: 'demo-' + i + '-' + Math.random().toString(36).slice(2, 7),
       vote: VOTE_MIX[i % VOTE_MIX.length],
       rank: RANK_MIX[i % RANK_MIX.length],
+      plan: PLANS[i % PLANS.length],
       note: NOTES[i % NOTES.length],
       bias: rnd(-2.2, 2.2),        // 이 사람의 치우침
       noise: rnd(1.2, 4.0),        // 이 사람의 흔들림
@@ -141,6 +158,12 @@
       Demo.timers.push(t);
     })();
   }
+  function doPlan(bot) {
+    if (bot.did.plan) return;
+    bot.did.plan = true;
+    if (!bot.plan.why && !bot.plan.how) return;   // 아무것도 안 쓴 학생도 있다
+    send(bot, 'plan', { token: bot.token, why: bot.plan.why, how: bot.plan.how });
+  }
   function doRank(bot) { if (!bot.did.rank) { bot.did.rank = true; send(bot, 'rank', { token: bot.token, order: bot.rank }); } }
   function doNote(bot) { if (!bot.did.note) { bot.did.note = true; send(bot, 'note', { token: bot.token, text: bot.note }); } }
 
@@ -150,11 +173,13 @@
    */
   Demo.onStage = function (step, sub) {
     if (!Demo.running) return;
-    var atRank = (step === 5 && sub >= 6) || step >= 6;   // 카드 게임은 5-6 화면부터
-    if (step >= 4 && !Demo.done.vote) { Demo.done.vote = true; each(doVote, 900, 7000); }
+    var atHypo = (step === 5 && sub >= 3) || step >= 6;   // 가설은 5-3 화면부터
+    var atRank = (step === 5 && sub >= 4) || step >= 6;   // 순서 맞히기는 5-4 부터
+    if (atHypo && !Demo.done.vote) { Demo.done.vote = true; each(doVote, 900, 6000); }
+    if (atHypo && !Demo.done.plan) { Demo.done.plan = true; each(doPlan, 2500, 11000); }
     if (atRank && !Demo.done.rank) { Demo.done.rank = true; each(doRank, 1200, 9000); }
-    if (step >= 6 && !Demo.done.result) { Demo.done.result = true; each(doResult, 1500, 12000); }
-    if (step >= 8 && !Demo.done.note) { Demo.done.note = true; each(doNote, 1200, 9000); }
+    if (step >= 8 && !Demo.done.result) { Demo.done.result = true; each(doResult, 1500, 12000); }
+    if (step >= 10 && !Demo.done.note) { Demo.done.note = true; each(doNote, 1200, 9000); }
   };
 
   /** 데모 시작. 이미 열린 수업이 있으면 그 수업에 붙는다. */
@@ -177,6 +202,7 @@
           if (Demo.onChange) Demo.onChange();
           // 늦게 들어온 봇도 지금 단계에 맞는 일을 하도록
           if (bot && Demo.done.vote) setTimeout(function () { doVote(bot); }, rnd(300, 2500));
+          if (bot && Demo.done.plan) setTimeout(function () { doPlan(bot); }, rnd(500, 3500));
           if (bot && Demo.done.rank) setTimeout(function () { doRank(bot); }, rnd(400, 3000));
           if (bot && Demo.done.result) setTimeout(function () { doResult(bot); }, rnd(500, 4000));
           if (bot && Demo.done.note) setTimeout(function () { doNote(bot); }, rnd(500, 3500));

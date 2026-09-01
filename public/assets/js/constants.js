@@ -51,7 +51,7 @@
     { id: 10, kor: '메이사',     trad: '자수 첫째 별(觜宿一)',   mag:  3.4, px: { x: 1054, y:  951 } }
   ];
 
-  /* 단계 4 장면 C — 학생이 고르는 예상 */
+  /* 단계 5-3 — 학생이 고르는 예상 */
   var PREDICTIONS = [
     { key: 'bright', label: '더 밝은 별이라서' },
     { key: 'big',    label: '더 큰 별이라서' },
@@ -59,7 +59,7 @@
     { key: 'import', label: '더 중요한 별이라서' }
   ];
 
-  /* 단계 8 — 순서대로 띄우는 정리 문구 */
+  /* 단계 10 — 순서대로 띄우는 정리 문구 */
   var CONCLUSIONS = [
     '밝은 별일수록 크게 새겨져 있었습니다.',
     '조선은 숫자 대신 <b>크기</b>로 별의 밝기를 기록한 것입니다.',
@@ -69,14 +69,16 @@
 
   /* 단계 표시줄 라벨 */
   var STEP_LABELS = [
-    { n: 1, short: '시작',   long: '인트로' },
-    { n: 2, short: '지도',   long: '천상열차분야지도란?' },
-    { n: 3, short: '확대',   long: '한 곳만 골라 확대' },
-    { n: 4, short: '비교',   long: '두 지도 비교' },
-    { n: 5, short: '등급',   long: '겉보기 등급 배우기' },
-    { n: 6, short: '측정',   long: '측정하기' },
-    { n: 7, short: '그래프', long: '결과 확인' },
-    { n: 8, short: '결론',   long: '무엇을 알아냈나' }
+    { n: 1,  short: '시작',     long: '인트로',            period: 1 },
+    { n: 2,  short: '고천문학', long: '고천문학이란',      period: 1 },
+    { n: 3,  short: '지도',     long: '천상열차분야지도',  period: 1 },
+    { n: 4,  short: '확대',     long: '한 곳만 골라 확대', period: 1 },
+    { n: 5,  short: '비교',     long: '두 지도와 가설',    period: 1 },
+    { n: 6,  short: '월하정인', long: '옛 그림 속 달',     period: 2, first: true },
+    { n: 7,  short: '등급',     long: '겉보기 등급',       period: 2 },
+    { n: 8,  short: '측정',     long: '직접 재기',         period: 2 },
+    { n: 9,  short: '그래프',   long: '결과 확인',         period: 2 },
+    { n: 10, short: '결론',     long: '무엇을 알아냈나',   period: 2 }
   ];
 
   /* ---------- 편의 함수 ---------- */

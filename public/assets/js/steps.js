@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Night Code 1395 — 8단계 수업 진행 controller
+   Night Code 1395 — 10단계(2차시) 수업 진행 controller
    교사가 화면을 순서대로 넘기면 그것이 곧 수업이 되도록 만든다.
    ========================================================================== */
 (function (global) {
@@ -8,8 +8,13 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   /* 단계별 소단계 수 */
-  var SUBS = { 1: 2, 2: 6, 3: 1, 4: 4, 5: 7, 6: 2, 7: 3, 8: 1 };
-  var LAST = 8;
+  var SUBS = { 1: 2, 2: 3, 3: 6, 4: 1, 5: 6, 6: 1, 7: 7, 8: 2, 9: 3, 10: 1 };
+  var LAST = 10;
+
+  /* 심화 화면 — [다음]/[이전] 으로는 건너뛰고, 교사가 눌러야 들어간다.
+     성취기준 해설이 수식 도입을 배제하므로 포그슨 규칙을 여기로 돌렸다. */
+  var DEEP = { 7: [6] };
+  function isDeep(n, sub) { return (DEEP[n] || []).indexOf(sub) >= 0; }
 
   var Steps = { step: 1, sub: 1, built: {} };
 
@@ -39,9 +44,16 @@
     // 단계 표시줄
     var bar = $('stepbar');
     STEP_LABELS.forEach(function (s) {
+      // 1차시와 2차시 사이에 선을 하나 넣는다
+      if (s.first) {
+        var gap = el('span', 'sb-split', bar);
+        gap.setAttribute('aria-hidden', 'true');
+        el('span', 'sb-split-txt', gap, '2차시');
+      }
       var b = el('button', 'sb-item', bar);
       b.type = 'button';
       b.dataset.step = s.n;
+      b.dataset.period = s.period;
       b.title = s.n + '. ' + s.long;
       el('span', 'sb-num', b, String(s.n));
       el('span', 'sb-label', b, s.short);
@@ -54,16 +66,19 @@
     // 친구가 새로 올리면 보고 있는 화면을 그 자리에서 갱신한다
     if (global.Live) {
       Live.onWork = function () {
-        if (Steps.step === 5 && Steps.sub === 6) renderRankTally();
-        if (Steps.step === 6 && Steps.sub === 2) renderMeasureProgress();
-        if (Steps.step === 7 && Steps.sub === 3) {
+        if (Steps.step === 5 && Steps.sub === 3) renderPlanBox();
+        if ((Steps.step === 5 && Steps.sub === 4) ||
+            (Steps.step === 7 && Steps.sub === 7)) renderRankTally();
+        if (Steps.step === 6) renderRecap();
+        if (Steps.step === 8 && Steps.sub === 2) renderMeasureProgress();
+        if (Steps.step === 9 && Steps.sub === 3) {
           renderScope();
           if (Steps.scopeClass && Steps.chart2) {
             Steps.chart2.opts.classPts = classPoints();
             Steps.chart2.setClassOn(true);
           }
         }
-        if (Steps.step === 8 && !$('conclusionReveal').hidden) renderNotes();
+        if (Steps.step === 10 && !$('conclusionReveal').hidden) renderNotes();
       };
     }
 
@@ -153,13 +168,23 @@
   };
 
   Steps.next = function () {
-    if (Steps.sub < (SUBS[Steps.step] || 1)) Steps.go(Steps.step, Steps.sub + 1);
-    else if (Steps.step < LAST) Steps.go(Steps.step + 1, 1);
+    var n = Steps.step, sub = Steps.sub;
+    do {
+      if (sub < (SUBS[n] || 1)) sub++;
+      else if (n < LAST) { n++; sub = 1; }
+      else return;
+    } while (isDeep(n, sub));      // 심화는 건너뛴다
+    Steps.go(n, sub);
   };
 
   Steps.prev = function () {
-    if (Steps.sub > 1) Steps.go(Steps.step, Steps.sub - 1);
-    else if (Steps.step > 1) Steps.go(Steps.step - 1, SUBS[Steps.step - 1] || 1);
+    var n = Steps.step, sub = Steps.sub;
+    do {
+      if (sub > 1) sub--;
+      else if (n > 1) { n--; sub = SUBS[n] || 1; }
+      else return;
+    } while (isDeep(n, sub));
+    Steps.go(n, sub);
   };
 
   /* ==========================================================================
@@ -170,12 +195,14 @@
     switch (n) {
       case 1: build1(sub); break;
       case 2: build2(sub); break;
-      case 3: build3(); break;
-      case 4: build4(sub); break;
+      case 3: build3(sub); break;
+      case 4: build4(); break;
       case 5: build5(sub); break;
-      case 6: build6(sub); break;
+      case 6: build6(); break;
       case 7: build7(sub); break;
-      case 8: build8(); break;
+      case 8: build8(sub); break;
+      case 9: build9(sub); break;
+      case 10: build10(); break;
     }
   };
 
@@ -198,7 +225,339 @@
     stage.classList.add('play');
   }
 
-  /* ---------- 단계 2. 지도 소개 ---------- */
+  /* ==========================================================================
+     단계 2. 고천문학
+     ========================================================================== */
+
+  /** 고천문학이 다루는 자료들 */
+  var GA_ITEMS = [
+    { icon: 'map',   name: '옛 천문도',        what: '돌이나 종이에 그려 둔 별지도' },
+    { icon: 'sun',   name: '일식·월식 기록',   what: '언제 해와 달이 가려졌는지 적어 둔 글' },
+    { icon: 'brush', name: '옛 그림 속 하늘',  what: '그림에 그려 넣은 달과 별' },
+    { icon: 'name',  name: '별자리 이름',      what: '그 시대 사람들이 별을 부르던 말' }
+  ];
+
+  /** 자료 종류마다 작은 그림을 코드로 그린다 */
+  function gaIcon(kind) {
+    var g = svg('svg', null, { viewBox: '0 0 48 48', class: 'ga-icon', 'aria-hidden': 'true' });
+    var C = 'var(--accent)';
+    if (kind === 'map') {
+      svg('circle', g, { cx: 24, cy: 24, r: 15, fill: 'none', stroke: C, 'stroke-width': 2 });
+      [[18, 18], [30, 20], [24, 30], [33, 29], [15, 28]].forEach(function (p) {
+        svg('circle', g, { cx: p[0], cy: p[1], r: 2, fill: C });
+      });
+    } else if (kind === 'sun') {
+      svg('circle', g, { cx: 24, cy: 24, r: 11, fill: 'none', stroke: C, 'stroke-width': 2 });
+      svg('path', g, { d: 'M13 24a11 11 0 0 1 22 0z', fill: C, opacity: .55 });
+    } else if (kind === 'brush') {
+      svg('path', g, { d: 'M14 34c6-2 9-6 12-12s6-9 8-8-1 5-6 11-9 8-14 9z',
+        fill: 'none', stroke: C, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+      svg('circle', g, { cx: 33, cy: 15, r: 2.5, fill: C });
+    } else {
+      svg('path', g, { d: 'M24 10l3.6 7.4 8 1.2-5.8 5.7 1.4 8-7.2-3.8-7.2 3.8 1.4-8-5.8-5.7 8-1.2z',
+        fill: 'none', stroke: C, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    }
+    return g;
+  }
+
+  function build2(sub) {
+    if (!Steps.built[2]) {
+      Steps.built[2] = true;
+      var grid = $('gaGrid');
+      GA_ITEMS.forEach(function (it) {
+        var card = el('div', 'ga-card', grid);
+        card.appendChild(gaIcon(it.icon));
+        el('b', 'ga-name', card, it.name);
+        el('span', 'ga-what', card, it.what);
+      });
+      wireVideo('btnAstroVideo', 'astroVideoBox', 'astroVideoNone', 'videoAstro',
+                '고천문학자 소개 영상');
+    }
+    if (sub === 3) showVideoState('btnAstroVideo', 'astroVideoNone', 'videoAstro');
+  }
+
+  /* ==========================================================================
+     영상 — 누르기 전에는 부르지 않는다.
+     주소는 교사가 설정에서 넣는다(비어 있으면 안내만 띄운다).
+     ========================================================================== */
+
+  /** 유튜브 주소에서 영상 id 만 뽑는다 */
+  function ytId(url) {
+    var s = String(url || '').trim();
+    if (!s) return '';
+    var m = s.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{6,20})/);
+    if (m) return m[1];
+    if (/^[A-Za-z0-9_-]{6,20}$/.test(s)) return s;   // id 만 적어도 받아 준다
+    return '';
+  }
+
+  function showVideoState(btnId, noneId, key) {
+    var id = ytId(Config.get('media.' + key, ''));
+    var btn = $(btnId), none = $(noneId);
+    if (!btn || !none) return;
+    btn.hidden = !id;
+    none.hidden = !!id;
+  }
+
+  function wireVideo(btnId, boxId, noneId, key, title) {
+    var btn = $(btnId);
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var id = ytId(Config.get('media.' + key, ''));
+      if (!id) return;
+      var box = $(boxId);
+      box.innerHTML = '';
+      var fr = document.createElement('iframe');
+      fr.src = 'https://www.youtube-nocookie.com/embed/' + id + '?rel=0&modestbranding=1';
+      fr.title = title;
+      fr.loading = 'lazy';
+      fr.allow = 'accelerometer; encrypted-media; picture-in-picture; fullscreen';
+      fr.allowFullscreen = true;
+      fr.referrerPolicy = 'strict-origin-when-cross-origin';
+      box.appendChild(fr);
+    });
+    showVideoState(btnId, noneId, key);
+  }
+
+  /* ==========================================================================
+     단계 5-3. 가설 세우기
+     ========================================================================== */
+
+  function buildHypo() {
+    var why = $('hypoWhy'), how = $('hypoHow');
+    why.value = State.data.hypoWhy || '';
+    how.value = State.data.hypoHow || '';
+    why.addEventListener('input', function () { State.data.hypoWhy = why.value; State.save(); });
+    how.addEventListener('input', function () { State.data.hypoHow = how.value; State.save(); });
+    [why, how].forEach(function (inp) {
+      inp.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') $('btnHypoSend').click();
+      });
+    });
+
+    $('btnHypoSend').addEventListener('click', function () {
+      var m = $('hypoMsg');
+      if (!State.data.prediction) {
+        m.hidden = false; m.className = 'hypo-msg is-bad';
+        m.textContent = '먼저 위에서 예상을 하나 골라 주세요.';
+        return;
+      }
+      State.data.hypoSent = true;
+      State.save();
+      $('predictAfter').hidden = false;
+      if (global.Live && Live.ready && Live.role === 'guest') {
+        Live.sendPlan(State.data.hypoWhy, State.data.hypoHow, function (err) {
+          m.hidden = false;
+          m.className = 'hypo-msg ' + (err ? 'is-bad' : 'is-ok');
+          m.textContent = err ? '보내지 못했습니다. 내 가설은 그대로 남아 있습니다.' : '가설을 냈습니다!';
+        });
+      } else {
+        m.hidden = false; m.className = 'hypo-msg is-ok';
+        m.textContent = '가설을 냈습니다!';
+      }
+    });
+  }
+
+  /** 교사 화면에만 — 학생들이 적은 확인 방법 */
+  function renderPlanBox() {
+    var box = $('planBox');
+    if (!box) return;
+    var isHost = global.Live && Live.role === 'host' && Live.code;
+    box.hidden = !isHost;
+    if (!isHost) return;
+    var plans = ((global.Live && Live.work && Live.work.plans) || [])
+      .filter(function (p) { return p.how; });
+    var list = $('planList');
+    list.innerHTML = '';
+    if (!plans.length) {
+      el('p', 'muted tiny', list, '아직 올라온 방법이 없습니다.');
+      return;
+    }
+    plans.forEach(function (p) {
+      var row = el('div', 'plan-row', list);
+      el('span', 'plan-nick', row, p.nick || '익명');
+      el('span', 'plan-how', row, p.how);
+    });
+  }
+
+  /** 1차시 마무리에 내가 세운 가설을 다시 보여 준다 */
+  function renderMyHypo() {
+    var host = $('myHypoBody');
+    if (!host) return;
+    host.innerHTML = '';
+    var label = State.predictionLabel();
+    if (!label && !State.data.hypoWhy && !State.data.hypoHow) {
+      el('p', 'muted', host, '이번 시간에 가설을 내지 않았습니다. 단계 5로 돌아가면 낼 수 있습니다.');
+      return;
+    }
+    var rows = [
+      ['예상', label || '(고르지 않음)'],
+      ['그렇게 생각한 까닭', State.data.hypoWhy || '(쓰지 않음)'],
+      ['확인할 방법', State.data.hypoHow || '(쓰지 않음)']
+    ];
+    rows.forEach(function (r) {
+      var row = el('div', 'mine-row', host);
+      el('span', 'mine-key', row, r[0]);
+      el('span', 'mine-val', row, r[1]);
+    });
+  }
+
+  /* ==========================================================================
+     단계 6. 월하정인 — 2차시 도입
+     ========================================================================== */
+
+  var MOON_CHOICES = [
+    { key: 'no',    label: '떠 있을 수 없다' },
+    { key: 'yes',   label: '떠 있을 수 있다' },
+    { key: 'dunno', label: '잘 모르겠다' }
+  ];
+
+  /** 초승달·그믐달을 코드로 그려 나란히 놓는다 */
+  function moonShape(dir, caption) {
+    var wrap = el('div', 'ms-item', null);
+    var g = svg('svg', wrap, { viewBox: '0 0 80 80', class: 'ms-svg', 'aria-hidden': 'true' });
+    svg('circle', g, { cx: 40, cy: 40, r: 30, fill: '#0b1330' });
+    // 큰 원에서 살짝 어긋난 원을 빼면 초승달 모양이 남는다
+    var id = 'mcut' + dir;
+    var defs = svg('defs', g, {});
+    var mask = svg('mask', defs, { id: id });
+    svg('circle', mask, { cx: 40, cy: 40, r: 30, fill: '#fff' });
+    svg('circle', mask, { cx: 40 + (dir === 'left' ? 13 : -13), cy: 40, r: 27, fill: '#000' });
+    svg('circle', g, { cx: 40, cy: 40, r: 30, fill: 'var(--accent)', mask: 'url(#' + id + ')' });
+    el('span', 'ms-cap', wrap, caption);
+    return wrap;
+  }
+
+  function build6() {
+    if (!Steps.built[6]) {
+      Steps.built[6] = true;
+
+      var shapes = $('moonShapes');
+      shapes.appendChild(moonShape('left', '초승달 — 오른쪽이 밝다'));
+      shapes.appendChild(moonShape('right', '그믐달 — 왼쪽이 밝다'));
+
+      var host = $('moonBtns');
+      MOON_CHOICES.forEach(function (c) {
+        var b = el('button', 'predict-btn', host);
+        b.type = 'button';
+        b.dataset.key = c.key;
+        el('span', 'pb-label', b, c.label);
+        b.addEventListener('click', function () {
+          State.data.moonGuess = c.key;
+          State.save();
+          markMoon();
+        });
+      });
+      var why = $('moonWhy');
+      why.value = State.data.moonWhy || '';
+      why.addEventListener('input', function () { State.data.moonWhy = why.value; State.save(); });
+
+      wireVideo('btnMoonVideo', 'moonVideoBox', 'moonVideoNone', 'videoMoon', '월하정인 관련 영상');
+
+      // 그림은 교사가 넣는다. 없으면 안내만 띄운다.
+      var img = $('moonImg');
+      img.addEventListener('error', function () {
+        img.style.display = 'none';
+        $('moonImgNone').hidden = false;
+      });
+      var src = Config.get('media.moonImage', 'assets/moon.jpg');
+      img.removeAttribute('data-src');
+      img.src = src;
+    }
+    markMoon();
+    renderRecap();
+    showVideoState('btnMoonVideo', 'moonVideoNone', 'videoMoon');
+  }
+
+  function markMoon() {
+    var bs = $('moonBtns').querySelectorAll('.predict-btn');
+    for (var i = 0; i < bs.length; i++) {
+      var on = bs[i].dataset.key === State.data.moonGuess;
+      bs[i].classList.toggle('is-picked', on);
+      var mark = bs[i].querySelector('.pb-mark');
+      if (on && !mark) el('span', 'pb-mark', bs[i], '✓ 내가 고른 것');
+      if (!on && mark) mark.remove();
+    }
+  }
+
+  /** 2차시 첫 화면의 지난 시간 되짚기 */
+  function renderRecap() {
+    var t = $('recapTally');
+    if (!t) return;
+    t.innerHTML = '';
+    var counts = (global.Live && Live.tally && Live.tally.counts) || {};
+    var max = 1;
+    PREDICTIONS.forEach(function (p) { max = Math.max(max, counts[p.key] || 0); });
+    PREDICTIONS.forEach(function (p) {
+      var row = el('div', 'tally-row', t);
+      el('span', 'tally-name', row, p.label);
+      var bar = el('div', 'tally-bar', row);
+      el('div', 'tally-fill', bar).style.width = ((counts[p.key] || 0) / max * 100) + '%';
+      if (State.data.prediction === p.key) row.classList.add('is-mine');
+      el('span', 'tally-num', row, (counts[p.key] || 0) + '명');
+    });
+
+    var host = $('recapPlans');
+    host.innerHTML = '';
+    var plans = ((global.Live && Live.work && Live.work.plans) || [])
+      .filter(function (p) { return p.how; }).slice(0, 4);
+    if (!plans.length && State.data.hypoHow) plans = [{ nick: '나', how: State.data.hypoHow }];
+    if (!plans.length) { el('p', 'muted tiny', host, '지난 시간에 적어 둔 방법이 없습니다.'); return; }
+    plans.forEach(function (p) {
+      var row = el('div', 'plan-row', host);
+      el('span', 'plan-nick', row, p.nick || '익명');
+      el('span', 'plan-how', row, p.how);
+    });
+  }
+
+  /* ==========================================================================
+     단계 7-5. 등급을 바꿔 보며 익히기
+     ========================================================================== */
+
+  function buildMagPlay() {
+    var range = $('mpRange');
+    if (!range) return;
+    var sky = $('mpSky');
+
+    // 심화 화면은 순서에서 건너뛰므로, 여기서만 들어갈 수 있다
+    var deep = $('btnDeepMag');
+    if (deep) deep.addEventListener('click', function () { Steps.go(7, 6); });
+
+    // 배경 별 몇 개는 고정으로 깔아 둔다(비교 대상)
+    for (var i = 0; i < 26; i++) {
+      var d = el('span', 'mp-bg', sky);
+      d.style.left = (4 + Math.random() * 92) + '%';
+      d.style.top = (8 + Math.random() * 84) + '%';
+      var r = 1 + Math.random() * 2;
+      d.style.width = d.style.height = r + 'px';
+      d.style.opacity = 0.25 + Math.random() * 0.4;
+    }
+    var star = el('span', 'mp-star', sky);
+
+    function paint() {
+      var mag = Number(range.value) / 10;
+      $('mpValue').textContent = fmtMag(mag);   // 마이너스는 −(U+2212) 로
+      // 등급 -1.5(밝음) ~ 6.0(겨우 보임) 을 크기와 밝기로 옮긴다
+      var t = Math.max(0, Math.min(1, (6.0 - mag) / 7.5));
+      var size = 4 + t * 46;
+      star.style.width = star.style.height = size + 'px';
+      star.style.opacity = (0.18 + t * 0.82).toFixed(2);
+      star.style.boxShadow = '0 0 ' + (size * 1.5) + 'px ' + (size * 0.5) + 'px rgba(190,215,255,' + (t * 0.5).toFixed(2) + ')';
+
+      var word = mag <= -1 ? '아주 밝은 별' : mag < 1 ? '밝은 별'
+                : mag < 3 ? '보통' : mag < 5 ? '어두운 별' : '겨우 보이는 별';
+      $('mpWord').textContent = word;
+      $('mpHint').textContent = mag <= 0
+        ? '0등급보다 밝으면 숫자가 마이너스로 내려갑니다.'
+        : mag > 6
+          ? '6등급을 넘으면 맨눈으로는 보이지 않습니다.'
+          : '숫자가 작아질수록 별이 밝아집니다.';
+    }
+    range.addEventListener('input', paint);
+    paint();
+  }
+
+  /* ---------- 단계 3. 지도 소개 ---------- */
   /* 이름을 한 글자씩 뜯어 보여 준다 */
   var NAME_PARTS = [
     { han: '天象', kor: '천상', mean: '하늘의 모습' },
@@ -243,9 +602,9 @@
     { num: '122.8 × 200.9', unit: 'cm', what: '돌 한 장의 크기' }
   ];
 
-  function build2(sub) {
-    if (!Steps.built[2]) {
-      Steps.built[2] = true;
+  function build3(sub) {
+    if (!Steps.built[3]) {
+      Steps.built[3] = true;
       // 카드 진행 점
       var dots = $('s2Dots');
       for (var i = 1; i <= SUBS[2]; i++) {
@@ -333,7 +692,7 @@
     rect.style.height = (reg.h * 100) + '%';
   };
 
-  function build3() {
+  function build4() {
     var inner = $('zsInner'), orion = $('zsOrion');
     var reg = Config.get('zoomRegion', { x: 0.4, y: 0.5, w: 0.2, h: 0.2 });
     Steps.refreshZoomRect();
@@ -347,8 +706,8 @@
     $('s3After').hidden = true;
     $('s3Lead').classList.remove('dim');
 
-    if (!Steps.built[3]) {
-      Steps.built[3] = true;
+    if (!Steps.built[4]) {
+      Steps.built[4] = true;
       $('btnZoomIn').addEventListener('click', function () {
         var r = Config.get('zoomRegion', reg);
         var cx = (r.x + r.w / 2) * 100, cy = (r.y + r.h / 2) * 100;
@@ -378,9 +737,14 @@
     return Math.max(96, Math.min(150, Math.round(window.innerWidth * 0.26)));
   }
 
-  function build4(sub) {
-    if (!Steps.built[4]) {
-      Steps.built[4] = true;
+  function build5(sub) {
+    if (sub === 3) { renderPlanBox(); renderTally(); }
+    if (sub === 4) { renderRank(); renderRankTally(); }
+    if (sub === 6) renderMyHypo();
+    if (!Steps.built[5]) {
+      Steps.built[5] = true;
+      buildRankGame();
+      buildHypo();
 
       // 장면 A / B 의 지도 (같은 크롭이라 같은 자리가 나온다)
       putImage($('s4aImg'), IMAGES.color, '종이에 그린 별지도(채색본)');
@@ -720,17 +1084,16 @@
   }
 
   /* ---------- 단계 5. 겉보기 등급 ---------- */
-  function build5(sub) {
-    if (sub === 6) { renderRank(); renderRankTally(); }
+  function build7(sub) {
     if (sub === 7) buildMagTable();      // 내가 낸 순서를 표에 표시해야 하므로 다시 그린다
-    if (!Steps.built[5]) {
-      Steps.built[5] = true;
+    if (!Steps.built[7]) {
+      Steps.built[7] = true;
+      buildMagPlay();
       $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝음', '어두움'));
       buildMagHistory();
       $('pogsonChart').appendChild(buildPogson());
       buildMagTable();
       $('magOurStars').appendChild(buildOurStars());
-      buildRankGame();
       buildQuiz();
     }
   }
@@ -910,7 +1273,6 @@
       rankMsg('');
       renderRank();
     });
-    $('btnRankReveal').addEventListener('click', function () { Steps.go(5, 7); });
   }
 
   function rankMsg(text, kind) {
@@ -997,12 +1359,16 @@
    * 가로가 순위(1~7), 세로가 천체다. 반이 잘 맞혔으면 대각선이 밝게 켜진다.
    */
   function renderRankTally() {
-    var host = $('rankTally');
-    if (!host) return;
+    // 1차시(5-4)와 2차시(7-7) 두 곳에 같은 표를 건다
+    var hosts = [$('rankTally'), $('rankTally7')].filter(Boolean);
+    if (!hosts.length) return;
     var isHost = global.Live && Live.role === 'host' && Live.code;
     var ranks = (global.Live && Live.work && Live.work.ranks) || [];
-    host.hidden = !isHost;
+    hosts.forEach(function (h) { h.hidden = !isHost; });
     if (!isHost) return;
+    hosts.forEach(fillRankTally);
+
+    function fillRankTally(host) {
 
     var bodies = rankBodies(), n = bodies.length;
     host.innerHTML = '';
@@ -1038,6 +1404,7 @@
     });
     el('p', 'muted tiny', host,
       '테두리가 있는 칸이 실제 순위입니다. 그 줄이 진할수록 반이 잘 맞힌 것입니다.');
+    }
   }
 
   /** 오늘 재는 별 10개가 눈금 어디쯤에 있는지 */
@@ -1098,9 +1465,14 @@
   var QUIZ = [
     { q: '0등급과 3등급 중 더 밝은 별은?', a: '0등급', opts: ['0등급', '3등급'],
       why: '숫자가 작을수록 밝습니다. 0이 3보다 작으니 0등급이 더 밝습니다.' },
+    { q: '2등급과 5등급 중 더 어두운 별은?', a: '5등급', opts: ['2등급', '5등급'],
+      why: '숫자가 클수록 어둡습니다. 5가 2보다 크니 5등급이 더 어둡습니다.' },
     { q: '−1.5등급인 시리우스와 1등급인 별 중 더 밝은 별은?', a: '시리우스(−1.5등급)',
       opts: ['시리우스(−1.5등급)', '1등급인 별'],
-      why: '마이너스까지 내려가면 더 밝습니다. −1.5는 1보다 작으니 시리우스가 더 밝습니다.' }
+      why: '마이너스까지 내려가면 더 밝습니다. −1.5는 1보다 작으니 시리우스가 더 밝습니다.' },
+    { q: '−4.8등급인 금성과 −1.5등급인 시리우스 중 더 밝은 것은?', a: '금성(−4.8등급)',
+      opts: ['금성(−4.8등급)', '시리우스(−1.5등급)'],
+      why: '마이너스끼리도 숫자가 더 작은 쪽이 밝습니다. −4.8이 −1.5보다 작으니 금성이 더 밝습니다.' }
   ];
 
   function buildQuiz() {
@@ -1129,9 +1501,9 @@
   }
 
   /* ---------- 단계 6. 측정 ---------- */
-  function build6(sub) {
-    if (!Steps.built[6]) {
-      Steps.built[6] = true;
+  function build8(sub) {
+    if (!Steps.built[8]) {
+      Steps.built[8] = true;
       $('ruleCardHost').appendChild(Guide.buildRuleCard());
 
       Steps.map = new MapView($('mapHost'), {
@@ -1225,9 +1597,9 @@
     }));
   }
 
-  function build7(sub) {
-    if (!Steps.built[7]) {
-      Steps.built[7] = true;
+  function build9(sub) {
+    if (!Steps.built[9]) {
+      Steps.built[9] = true;
       $('btnTrend').addEventListener('click', function () {
         if (Steps.chart2) Steps.chart2.showTrend();
         $('trendNote').hidden = false;
@@ -1309,9 +1681,9 @@
   }
 
   /* ---------- 단계 8. 결론 ---------- */
-  function build8() {
-    if (!Steps.built[8]) {
-      Steps.built[8] = true;
+  function build10() {
+    if (!Steps.built[10]) {
+      Steps.built[10] = true;
       var input = $('conclusionInput');
       input.value = State.data.conclusion || '';
       input.addEventListener('input', function () {
@@ -1408,6 +1780,17 @@
     host.innerHTML = '';
     var mine = State.predictionLabel();
 
+    // 1차시에 세운 가설을 통째로 되짚는다
+    if (State.data.hypoHow) {
+      var h = el('div', 'lb-row lb-plan', host);
+      el('span', 'lb-key', h, '내가 말한 확인 방법');
+      el('span', 'lb-val', h, State.data.hypoHow);
+    }
+    if (State.data.hypoWhy) {
+      var w = el('div', 'lb-row', host);
+      el('span', 'lb-key', w, '그렇게 생각한 까닭');
+      el('span', 'lb-val', w, State.data.hypoWhy);
+    }
     var a = el('div', 'lb-row', host);
     el('span', 'lb-key', a, '내 예상');
     el('span', 'lb-val', a, mine || '(고르지 않음)');

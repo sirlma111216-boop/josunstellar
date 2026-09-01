@@ -15,9 +15,14 @@
       v: DATA_VERSION,
       step: 1,
       sub: {},              // { 4: 2, 5: 3 } 단계별 소단계
-      prediction: null,     // 단계 4 장면 C 에서 고른 예상 key
+      prediction: null,     // 단계 5-3 에서 고른 예상 key
       measures: {},         // { 별id: [지름1, 지름2, ...] } 원본 이미지 픽셀
-      quiz: {},             // 단계 5 퀴즈 정답 여부
+      quiz: {},             // 단계 7 퀴즈 정답 여부
+      hypoWhy: '',          // 왜 그렇게 생각했나 (단계 5-3)
+      hypoHow: '',          // 확인할 방법 (단계 5-3)
+      hypoSent: false,      // 가설을 냈는가
+      moonGuess: null,      // 월하정인 예상 (단계 6)
+      moonWhy: '',          // 그 까닭
       rank: [],             // 밝기 순서 맞히기에 낸 답
       conclusion: '',       // 학생이 쓴 결론
       name: '',           // 아래 넷과 함께 이 기기와 인쇄물에만 쓴다(서버로 안 감)
@@ -25,7 +30,7 @@
       grade: '',
       klass: '',
       no: '',
-      seenAnswerS4: false   // 단계 4 [답 보기] 를 눌렀는가
+      seenAnswerS4: false   // 단계 5 [답 보기] 를 눌렀는가
     };
   }
 

@@ -9,7 +9,7 @@
 (function (global) {
   'use strict';
 
-  var CONFIG_VERSION = 3;
+  var CONFIG_VERSION = 4;
 
   /* ---------- localStorage 얇은 래퍼 (사파리 프라이빗 모드 대비) ---------- */
   var Store = {
@@ -69,13 +69,22 @@
         full:  { file: IMAGES.full.src,  width: IMAGES.full.w,  height: IMAGES.full.h }
       },
 
-      /* 단계 3에서 전체 지도 중 확대해 들어갈 영역 (chart_full.jpg 정규화 좌표)
+      /* 단계 4에서 전체 지도 중 확대해 들어갈 영역 (chart_full.jpg 정규화 좌표)
          ※ 눈으로 확인하지 않은 어림값이다. 교사가 캘리브레이션에서 맞춘 뒤
             confirmed 를 true 로 바꾼다. */
       zoomRegion: { x: 0.468, y: 0.558, w: 0.213, h: 0.201, confirmed: false },
 
-      /* 단계 4에서 나란히 확대해 보여줄 별 3개 (핀 번호) */
+      /* 단계 5에서 나란히 확대해 보여줄 별 3개 (핀 번호) */
       trioIds: [1, 5, 10],
+
+      /* 교사가 넣는 수업 자료. 영상은 유튜브 주소나 id 를 그대로 넣으면 된다.
+         비어 있으면 그 화면에 안내만 뜨고 재생 버튼은 감춘다. */
+      media: {
+        videoAstro: '',                 // 단계 2 · 고천문학자 소개
+        videoMap: '52jrmGFCUNQ',        // 단계 5 · 천상열차분야지도 소개
+        videoMoon: '',                  // 단계 6 · 월하정인
+        moonImage: 'assets/moon.jpg'    // 단계 6 · 신윤복 월하정인 그림
+      },
 
       /* 각석본 → 채색본 좌표 변환 (닮음변환).
          두 지도는 같은 영역을 담았지만 크롭이 달라 채색본이 약 9% 작고 322px 위에 있다.
@@ -109,6 +118,7 @@
     delete copy.pins;
     delete copy.sky;
     delete copy.image;
+    delete copy.trioIds;   /* 별 번호를 1~10 으로 다시 매겨서, 옛 번호는 못 쓴다 */
     copy.version = CONFIG_VERSION;
     copy._migrated = true;
     return copy;
