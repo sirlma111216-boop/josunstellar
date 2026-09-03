@@ -50,7 +50,7 @@
 /assets/grade.jpg
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
-/assets/hipa.webp
+/assets/hipa2.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 /assets/moon.webp
@@ -59,7 +59,7 @@
 /assets/pthol.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
-/assets/star.webp
+/assets/star2.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 # 코드는 매번 확인 — 화면(HTML)과 어긋나지 않도록

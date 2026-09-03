@@ -328,7 +328,7 @@ public/                    Workers Assets 가 그대로 내보내는 화면
     chart_stone.jpg        각석 실물 사진 1600 × 1048
     bill.webp              만원권 뒷면 사진
     2-2 2-3 2-5.webp       단계 3 이야기 카드 삽화(교사 제작)
-    grade.jpg star.webp hipa.webp  단계 7 등급 설명 그림
+    grade.jpg star2.webp hipa2.webp  단계 7 등급 설명 그림 (2 는 그림을 갈아 끼우며 붙인 캐시 무효화 표시)
     Athens.webp pthol.webp   단계 7-3 「아테네 학당」 전체와 부분 확대
     moon.webp              단계 6 「월하정인」 그림
     bgm.mp3                배경음악(교사 제작) — 기본 꺼짐
