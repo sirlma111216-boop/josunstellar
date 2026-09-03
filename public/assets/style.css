@@ -1166,6 +1166,94 @@ body.admin-open{ padding-bottom:60dvh; }
 .spot-btn.is-picked::before{ border-color:var(--accent); background:var(--accent); }
 .sb-label{ font-size:.95rem; }
 
+
+/* ==========================================================================
+   단계 7 — 인물과 그림
+   ========================================================================== */
+
+/* 사진 위에 글자가 올라갈 때 읽히도록 어두운 막을 깐다 */
+.fig-scrim{ position:relative; }
+.fig-scrim img{ display:block; }
+.fig-scrim figcaption{
+  position:absolute; left:0; right:0; bottom:0; margin:0;
+  padding:2.2rem .9rem .7rem;
+  color:#fff; text-shadow:0 1px 3px #000c;
+  background:linear-gradient(to top, #000000cc 0%, #00000088 45%, transparent 100%);
+  border-radius:0 0 var(--radius) var(--radius);
+}
+
+/* 그림 위에 얹는 표시. 위치는 그림마다 아래에서 따로 잡는다. */
+.pin-spot{
+  position:absolute; width:2.4rem; height:2.4rem; margin:-1.2rem 0 0 -1.2rem;
+  border:2px solid var(--accent); border-radius:50%;
+  box-shadow:0 0 0 2px #000a, 0 0 14px var(--accent);
+  pointer-events:none; z-index:2;
+  animation:spotPulse 2.4s ease-in-out infinite;
+}
+@keyframes spotPulse{
+  0%,100%{ transform:scale(1);    opacity:.95; }
+  50%    { transform:scale(1.18); opacity:.55; }
+}
+@media (prefers-reduced-motion:reduce){ .pin-spot{ animation:none; } }
+
+.hipa-fig{ position:relative; }
+.pin-hipa{ left:82%; top:62%; }          /* 얼굴 옆에 새겨진 작은 별 */
+
+.spot-note{ font-size:.9rem; color:var(--ink-dim); margin:.5rem 0 0; }
+
+/* 접었다 펴는 이야기 카드 — 기본은 접힘. 교사가 시간 봐 가며 편다. */
+.tale{
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); margin:1rem 0; overflow:hidden;
+}
+.tale > summary{
+  cursor:pointer; list-style:none; padding:.85rem 1rem;
+  font-weight:700; color:var(--accent); min-height:var(--touch);
+  display:flex; align-items:center; gap:.5rem;
+}
+.tale > summary::-webkit-details-marker{ display:none; }
+.tale > summary::before{ content:'▸'; transition:transform .15s; }
+.tale[open] > summary::before{ transform:rotate(90deg); }
+.tale > summary:hover{ background:color-mix(in srgb, var(--accent) 9%, transparent); }
+.tale > summary:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+.tale-body{ padding:0 1rem 1rem; }
+.tale-body p{ font-size:.92rem; line-height:1.65; margin:0 0 .7rem; }
+.tale-body p:last-child{ margin-bottom:0; }
+
+/* 아테네 학당 — 전체와 확대를 한 자리에서 맞바꾼다 */
+.art{ margin:.8rem 0; }
+.art-view{ position:relative; margin:0; }
+.art-view[hidden]{ display:none; }
+.art-view img{ display:block; width:100%; height:auto; border-radius:var(--radius); }
+.art-view figcaption{ font-size:.8rem; color:var(--ink-dim); margin-top:.4rem; }
+
+/* 누를 수 있는 자리 — 오른쪽 아래 학자 무리 */
+.art-hot{
+  position:absolute; left:85.5%; top:60%;
+  width:3.4rem; height:3.4rem; margin:-1.7rem 0 0 -1.7rem;
+  background:none; border:0; padding:0; cursor:zoom-in; z-index:2;
+}
+.art-ring{
+  position:absolute; inset:0; border-radius:50%;
+  border:3px solid var(--accent);
+  box-shadow:0 0 0 2px #000a, 0 0 16px var(--accent);
+  animation:spotPulse 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion:reduce){ .art-ring{ animation:none; } }
+.art-hot:focus-visible{ outline:2px solid #fff; outline-offset:3px; border-radius:50%; }
+
+/* 확대본 위의 표시 — 실제 그림에서 잰 자리 */
+.pin-sky { left:19%; top:46%; }          /* 금색 점이 박힌 파란 공(천구) */
+.pin-ptol{ left:76%; top:75%; width:3.2rem; height:3.2rem;
+           margin:-1.6rem 0 0 -1.6rem; }  /* 등을 보인 프톨레마이오스 */
+
+.art-back{ margin:.5rem 0 0; }
+
+@media print{
+  .tale{ break-inside:avoid; }
+  .pin-spot, .art-ring{ animation:none; }
+}
+
 @media print{
   .plan-box, .recap, .magplay, .moon-shapes, .sb-split{ display:none !important; }
 }

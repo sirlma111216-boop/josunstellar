@@ -1246,6 +1246,7 @@
       buildMagPlay();
       $('magScale').appendChild(buildMagScale([1, 2, 3, 4, 5, 6], '밝음', '어두움'));
       buildMagHistory();
+      buildArt();
       $('pogsonChart').appendChild(buildPogson());
       buildMagTable();
       $('magOurStars').appendChild(buildOurStars());
@@ -1272,6 +1273,26 @@
     return s;
   }
 
+
+  /** 아테네 학당 — 전체와 확대를 한 화면에서 맞바꾼다 (새 화면을 만들지 않는다) */
+  function buildArt() {
+    var box = $('artBox');
+    if (!box) return;
+    var wide = box.querySelector('[data-view="wide"]');
+    var close = box.querySelector('[data-view="close"]');
+    var back = $('btnArtWide');
+
+    function show(which) {
+      var isClose = which === 'close';
+      wide.hidden = isClose;
+      close.hidden = !isClose;
+      back.hidden = !isClose;
+      // 접힌 카드 안이라 늦게 보인다. 그때 그림을 받아 온다.
+      if (global.App && App.lazyLoadVisible) App.lazyLoadVisible();
+    }
+    $('btnArtZoom').addEventListener('click', function () { show('close'); });
+    back.addEventListener('click', function () { show('wide'); });
+  }
 
   /* ---------- 단계 7 자료 ---------- */
 

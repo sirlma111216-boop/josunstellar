@@ -26,6 +26,9 @@
 /assets/2-5.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
+/assets/Athens.webp
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
 /assets/bgm.mp3
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
@@ -51,6 +54,9 @@
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 /assets/moon.webp
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/pthol.webp
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
 /assets/star.webp

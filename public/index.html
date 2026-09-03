@@ -716,7 +716,7 @@
 <div class="sub" data-sub="2" hidden>
     <h3 class="sub-title">1. 별은 밝기가 다릅니다</h3>
     <p class="step-lead">밤하늘을 보면 아주 밝은 별도 있고, 겨우 보이는 별도 있습니다.</p>
-    <figure class="fig fig-wide">
+    <figure class="fig fig-wide fig-scrim">
       <img class="lazy-img" data-src="assets/star.webp" id="brightDemo"
            alt="실제로 찍은 밤하늘 사진. 아주 밝게 빛나는 별부터 겨우 보이는 작은 별까지 밝기가 제각각이다.">
       <figcaption>실제로 찍은 밤하늘. 한 사진 안에서도 별마다 밝기가 다릅니다</figcaption>
@@ -732,9 +732,10 @@
 
     <div class="hipa-row">
       <figure class="fig hipa-fig">
+        <span class="pin-spot pin-hipa" aria-hidden="true"></span>
         <img class="lazy-img" data-src="assets/hipa.webp"
-             alt="히파르코스를 그린 옛 판화. 관측 기구를 손에 들고 앉아 있고, 뒤로 해와 별이 보인다.">
-        <figcaption>후대에 그려진 히파르코스. 손에 든 것은 별의 자리를 재던 기구입니다.</figcaption>
+             alt="히파르코스를 옆모습으로 새긴 판화. 수염을 기른 남자의 얼굴 옆에 작은 별이 하나 새겨져 있다.">
+        <figcaption>히파르코스 (1844년에 그려진 상상도)</figcaption>
       </figure>
       <div class="fact-row">
         <div class="fact-card">
@@ -748,9 +749,20 @@
       </div>
     </div>
 
-    <p class="muted">그가 어떻게 생겼는지는 아무도 모릅니다.
-       남아 있는 그림은 모두 <b>한참 뒤에 상상해서 그린 것</b>입니다.
-       그래도 그가 남긴 <b>등급</b>은 2100년이 지난 지금까지 그대로 쓰입니다.</p>
+    <p class="spot-note">얼굴 옆에 <b>작은 별</b>이 하나 새겨져 있습니다 —
+       등급을 만든 사람이라는 표식입니다.</p>
+
+    <details class="tale">
+      <summary>이 얼굴, 사실은…</summary>
+      <div class="tale-body">
+        <p>2천 년 전 사람이라 <b>히파르코스의 진짜 얼굴은 아무도 모릅니다.</b>
+           이 그림은 그를 새겼다는 보석을 보고 <b>1844년에</b> 그린 것입니다.</p>
+        <p>그런데 그 보석 자체가 19세기에 만들어진 <b>가짜</b>였습니다.
+           고대 유물인 척 팔린 물건이었지요.</p>
+        <p class="accent-line">그러니까 이 얼굴은 가짜 보석을 보고 그린 상상도입니다.
+           얼굴은 사라졌지만, 그가 만든 <b>등급</b>은 2천 년을 건너 오늘 우리가 씁니다.</p>
+      </div>
+    </details>
 
     <div id="magScale" class="mag-scale"></div>
 
@@ -759,6 +771,50 @@
        2100년이 지난 지금도 우리는 이 방식을 씁니다.</p>
 
     <div id="magHistory" class="mag-history"></div>
+
+    <details class="tale">
+      <summary>그 등급이 어떻게 2천 년을 건너왔을까</summary>
+      <div class="tale-body">
+        <p>500여 년 전 라파엘로가 그린 그림입니다. 옛 학자들이 한자리에 모여 있습니다.
+           <b>표시된 곳을 눌러</b> 크게 봅시다.</p>
+
+        <div class="art" id="artBox">
+          <figure class="art-view" data-view="wide">
+            <button type="button" class="art-hot" id="btnArtZoom"
+                    aria-label="오른쪽 아래 부분을 크게 보기">
+              <span class="art-ring" aria-hidden="true"></span>
+            </button>
+            <img class="lazy-img" data-src="assets/Athens.webp"
+                 alt="라파엘로의 아테네 학당. 여러 옛 학자들이 큰 건물 안에 모여 있다.">
+            <figcaption>라파엘로 「아테네 학당」(1509–1511)</figcaption>
+          </figure>
+
+          <figure class="art-view" data-view="close" hidden>
+            <span class="pin-spot pin-sky" aria-hidden="true"></span>
+            <span class="pin-spot pin-ptol" aria-hidden="true"></span>
+            <img class="lazy-img" data-src="assets/pthol.webp"
+                 alt="아테네 학당의 오른쪽 아래 부분. 한 사람이 금색 점이 박힌 파란 공을 들고 있고,
+                      그 앞에 등을 보인 사람이 땅을 그린 공을 들고 있다.">
+            <figcaption>같은 그림의 오른쪽 아래 — 등을 보인 사람이 프톨레마이오스입니다</figcaption>
+          </figure>
+
+          <p class="art-back">
+            <button type="button" class="btn-link" id="btnArtWide" hidden>◂ 전체 그림으로</button>
+          </p>
+        </div>
+
+        <p><b>금색 점이 촘촘히 박힌 파란 공</b>이 보이나요? 저건 지구가 아니라
+           <b>하늘을 공 모양으로 나타낸 것</b>입니다. 점 하나하나가 별입니다.
+           옛사람들은 하늘을 커다란 공으로 여기고, 그 안쪽에 별이 붙어 있다고 생각했습니다.</p>
+        <p>등을 보이고 선 <b>프톨레마이오스</b>가 든 것은 그 옆의 <b>땅을 그린 공</b>입니다.
+           하늘 하나, 땅 하나가 나란히 놓인 셈이지요.</p>
+        <p>프톨레마이오스는 별 <b>1,000개가 넘는 목록</b>을 만들면서
+           히파르코스가 매긴 <b>등급을 함께 적어</b> 후대에 남겼습니다.
+           그 덕분에 2천 년 전의 등급이 오늘까지 전해졌습니다.</p>
+        <p class="accent-line">서양은 하늘을 공에 별을 박아 나타냈고, 조선은 돌에 새겨 나타냈습니다.
+           방법은 달라도 하려던 일은 같았습니다 — <b>별의 자리와 밝기를 기록하는 것.</b></p>
+      </div>
+    </details>
 
     <div class="link-box">
       <p><b>여기서 잠깐.</b> 히파르코스에게도, 1395년 조선의 천문학자에게도

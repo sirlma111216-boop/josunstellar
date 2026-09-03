@@ -8,8 +8,12 @@
   var APP = {
     NAME: 'Night Code 1395',
     CREDIT:
-      '천상열차분야지도 각석 이미지: 국가유산 디지털 서비스 / ' +
-      '별자리 이름 대조: 국립중앙박물관 소장 채색본(공공누리 제1유형) / ' +
+      '각석 이미지: 국가유산청 국가유산 디지털 서비스(공공누리 제1유형) / ' +
+      '채색본·월하정인: 국립중앙박물관(공공누리 제1유형) / ' +
+      '히파르코스: 「Hipparchos」(1844), William Henry Smyth 판화 — 퍼블릭 도메인, Wikimedia Commons / ' +
+      '아테네 학당(전체·부분): 라파엘로 산치오 「아테네 학당」(1509–1511), 바티칸 사도궁 서명의 방 — ' +
+      '퍼블릭 도메인, Wikimedia Commons / ' +
+      '밤하늘 사진: Unsplash (Ryan Hutton), Unsplash License / ' +
       '배경음악: 교사 직접 제작 / 교사 제작 학습 도구 · 등급 자료는 근사값',
     STORAGE_PREFIX: 'byeoljigi1395.'
   };

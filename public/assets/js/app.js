@@ -149,7 +149,7 @@
       im.removeAttribute('data-src');
       (function (node) {
         node.addEventListener('error', function () {
-          var box = node.closest('.fig, .zoomstage');
+          var box = node.closest('.fig, .zoomstage, .art-view');
           if (box && !box.querySelector('.map-missing')) {
             var m = missingBox(box, node.src.split('/').slice(-2).join('/'));
             m.classList.add('mm-overlay');
