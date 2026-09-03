@@ -1182,22 +1182,10 @@ body.admin-open{ padding-bottom:60dvh; }
   border-radius:0 0 var(--radius) var(--radius);
 }
 
-/* 그림 위에 얹는 표시. 위치는 그림마다 아래에서 따로 잡는다. */
-.pin-spot{
-  position:absolute; width:2.4rem; height:2.4rem; margin:-1.2rem 0 0 -1.2rem;
-  border:2px solid var(--accent); border-radius:50%;
-  box-shadow:0 0 0 2px #000a, 0 0 14px var(--accent);
-  pointer-events:none; z-index:2;
-  animation:spotPulse 2.4s ease-in-out infinite;
-}
 @keyframes spotPulse{
   0%,100%{ transform:scale(1);    opacity:.95; }
   50%    { transform:scale(1.18); opacity:.55; }
 }
-@media (prefers-reduced-motion:reduce){ .pin-spot{ animation:none; } }
-
-.hipa-fig{ position:relative; }
-.pin-hipa{ left:82%; top:62%; }          /* 얼굴 옆에 새겨진 작은 별 */
 
 .spot-note{ font-size:.9rem; color:var(--ink-dim); margin:.5rem 0 0; }
 
@@ -1242,16 +1230,11 @@ body.admin-open{ padding-bottom:60dvh; }
 @media (prefers-reduced-motion:reduce){ .art-ring{ animation:none; } }
 .art-hot:focus-visible{ outline:2px solid #fff; outline-offset:3px; border-radius:50%; }
 
-/* 확대본 위의 표시 — 실제 그림에서 잰 자리 */
-.pin-sky { left:19%; top:46%; }          /* 금색 점이 박힌 파란 공(천구) */
-.pin-ptol{ left:76%; top:75%; width:3.2rem; height:3.2rem;
-           margin:-1.6rem 0 0 -1.6rem; }  /* 등을 보인 프톨레마이오스 */
-
 .art-back{ margin:.5rem 0 0; }
 
 @media print{
   .tale{ break-inside:avoid; }
-  .pin-spot, .art-ring{ animation:none; }
+  .art-ring{ animation:none; }
 }
 
 @media print{
