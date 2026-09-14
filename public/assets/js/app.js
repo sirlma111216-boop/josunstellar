@@ -186,6 +186,24 @@
     });
   }
 
+  /** 이용약관 · 개인정보처리방침 — 같은 열고닫기 패턴을 두 번 쓴다 */
+  function initLegal() {
+    function wire(modalId, openBtnId, closeBtnId) {
+      var back = $(modalId), open = $(openBtnId), close = $(closeBtnId);
+      if (!back || !open || !close) return;
+      function show() { back.hidden = false; close.focus(); }
+      function hide() { back.hidden = true; open.focus(); }
+      open.addEventListener('click', show);
+      close.addEventListener('click', hide);
+      back.addEventListener('click', function (ev) { if (ev.target === back) hide(); });
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && !back.hidden) hide();
+      });
+    }
+    wire('termsModal', 'btnTerms', 'btnTermsClose');
+    wire('privacyModal', 'btnPrivacy', 'btnPrivacyClose');
+  }
+
   /* ---------- 캘리브레이션이 쓰는 창구 ---------- */
   var UI = {
     toast: App.toast,
@@ -214,11 +232,11 @@
   function boot() {
     document.title = APP.NAME;
     $('appName').textContent = APP.NAME;
-    $('appFooter').textContent = APP.CREDIT;
 
     initFontSize();
     initBgm();
     initHelp();
+    initLegal();
     State.load();
     if (global.Live) Live.restore();   // 새로고침·QR 로 들어와도 수업에 다시 붙는다
 
