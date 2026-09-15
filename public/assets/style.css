@@ -1280,6 +1280,49 @@ body.admin-open{ padding-bottom:60dvh; }
 
 .art-back{ margin:.5rem 0 0; }
 
+
+/* ==========================================================================
+   단계 10 — 발표자 뽑기 사다리 타기
+   ========================================================================== */
+.ladder-names{
+  display:flex; flex-wrap:wrap; gap:.4rem; margin:.7rem 0 .3rem;
+}
+.ladder-chip{
+  background:var(--bg-2); border:1px solid var(--line); border-radius:999px;
+  padding:.3rem .75rem; font-size:.85rem;
+}
+
+.ladder-stage{
+  background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius);
+  padding:.8rem; margin-top:1rem; min-height:8rem;
+  display:flex; align-items:center; justify-content:center;
+}
+.ladder-svg{ width:100%; height:auto; display:block; max-height:70vh; }
+.ladder-wait{ color:var(--ink-dim); font-size:.95rem; text-align:center; margin:0; }
+
+.ladder-rail{
+  stroke:var(--line); stroke-width:.6; fill:none;
+}
+.ladder-rung{ opacity:0; transition:opacity .2s ease; }
+.ladder-rung.is-in{ opacity:1; }
+.ladder-trace{
+  stroke:var(--accent); stroke-width:1.6; fill:none;
+  stroke-linecap:round; stroke-linejoin:round;
+  filter:drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 70%, transparent));
+}
+.ladder-trace.is-done{ stroke-dasharray:none; }
+.ladder-label{
+  font-size:3.6px; fill:var(--ink-dim); text-anchor:middle;
+  font-family:inherit;
+}
+.ladder-label-top{ transition:fill .2s, font-weight .2s; }
+.ladder-label-top.is-winner{ fill:var(--accent); font-weight:700; }
+.ladder-label-bottom{ fill:var(--ink-dim); }
+.ladder-label-bottom.is-winner{ fill:var(--accent); font-weight:700; }
+
+.ladder-result{ margin-top:1rem; text-align:center; }
+.ladder-result .btn-link{ margin-top:.6rem; }
+
 @media print{
   .tale{ break-inside:avoid; }
   .art-ring{ animation:none; }

@@ -1002,6 +1002,49 @@
     <button type="button" class="btn btn-primary" id="btnShowAll">모두의 결론 보기</button>
   </div>
 
+  <!-- 발표자 뽑기 사다리 — 코드로 참여 중인 학급 전체가 닉네임만으로 참가한다 -->
+  <div class="card ladder-card" id="ladderCard">
+    <h3 class="card-title">발표자 뽑기 · 사다리 타기</h3>
+    <p class="muted tiny" id="ladderNoLive">
+      시작 화면에서 수업 코드로 참여해야 사다리 타기를 쓸 수 있습니다.
+    </p>
+
+    <div id="ladderBody" hidden>
+      <p class="muted">닉네임을 넣고 참가하세요. 선생님이 시작하면 사다리를 탑니다.</p>
+
+      <div class="ladder-join">
+        <div class="field-block" id="ladderJoinForm">
+          <span>내 닉네임</span>
+          <input type="text" id="ladderNickInput" maxlength="12" autocomplete="off" placeholder="예: 북극성">
+          <div class="abtns">
+            <button type="button" class="btn btn-primary" id="btnLadderJoin">참가하기</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm" id="btnLadderLeave" hidden>참가 취소</button>
+
+        <div class="ladder-names" id="ladderNames"></div>
+        <p class="muted tiny" id="ladderCount">아직 참가자가 없습니다.</p>
+
+        <div class="step-cta" id="ladderHostStart" hidden>
+          <button type="button" class="btn btn-big btn-primary" id="btnLadderStart" disabled>
+            사다리 타기 시작
+          </button>
+        </div>
+      </div>
+
+      <div class="ladder-stage" id="ladderStage" hidden>
+        <div id="ladderSvgHost"></div>
+        <p class="ladder-wait" id="ladderWait" hidden>사다리를 타는 중입니다…</p>
+      </div>
+
+      <div class="verdict ladder-result" id="ladderResultBox" hidden>
+        <p class="verdict-cap">오늘의 발표자는</p>
+        <p class="verdict-line" id="ladderWinnerName">—</p>
+        <button type="button" class="btn-link" id="btnLadderReset">다시 뽑기</button>
+      </div>
+    </div>
+  </div>
+
   <div id="conclusionReveal" hidden>
     <div class="reveal-lines" id="revealLines"></div>
 
@@ -1336,6 +1379,7 @@
 <script src="assets/js/mapview.js"></script>
 <script src="assets/js/measure.js"></script>
 <script src="assets/js/chart.js"></script>
+<script src="assets/js/ladder.js"></script>
 <script src="assets/js/steps.js"></script>
 <script src="assets/js/report.js"></script>
 <script src="assets/js/app.js"></script>

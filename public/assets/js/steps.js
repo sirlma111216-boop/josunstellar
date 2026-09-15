@@ -82,6 +82,7 @@
           }
         }
         if (Steps.step === 10 && !$('conclusionReveal').hidden) renderNotes();
+        if (Steps.step === 10 && global.Ladder) Ladder.render();
       };
     }
 
@@ -1910,6 +1911,7 @@
 
   /* ---------- 단계 10. 결론 ---------- */
   function build10() {
+    if (global.Ladder) Ladder.build();
     if (!Steps.built[10]) {
       Steps.built[10] = true;
       var input = $('conclusionInput');
@@ -1934,6 +1936,7 @@
       $('btnReport').addEventListener('click', function () { Report.printReport(); });
     }
     if (!$('conclusionReveal').hidden) { renderLookback(); renderNotes(); }
+    if (global.Ladder) Ladder.render();
   }
 
   function revealLines() {

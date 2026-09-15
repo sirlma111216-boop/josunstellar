@@ -66,6 +66,50 @@ function cleanText(v, max) {
 /** 순위 하나에 담을 수 있는 항목 수 */
 const RANK_MAX = 12;
 
+/** 발표자 뽑기 사다리에 들어올 수 있는 최대 인원 */
+const LADDER_MAX = 16;
+
+/**
+ * n명짜리 사다리를 하나 만든다. rungs 는 줄마다 "왼쪽 칸 번호" 배열이다
+ * (그 번호와 바로 오른쪽 칸이 그 줄에서 이어진다). 같은 줄에서 바로 옆칸끼리
+ * 겹쳐 이으면 어느 쪽으로 갈렸는지 알 수 없으므로, 한 칸 건너서만 놓는다.
+ * 도착 칸은 무작위로 하나 정하고, 거기로 떨어지는 출발 칸을 미리 계산해 둔다
+ * — 교사 화면은 이 결과를 그대로 그리기만 하면 되고, 다시 계산할 필요가 없다.
+ */
+function buildLadder(n) {
+  const rows = Math.max(6, n * 2);
+  const rungs = [];
+  for (let r = 0; r < rows; r++) {
+    const row = [];
+    let last = -2;
+    for (let g = 0; g < n - 1; g++) {
+      if (g === last + 1) continue;
+      if (Math.random() < 0.35) { row.push(g); last = g; }
+    }
+    rungs.push(row);
+  }
+  // 운 나쁘면 가로줄이 하나도 안 생긴다(2명일 때 특히 잦다) — 그럼 그냥 일직선이라
+  // 사다리를 타는 재미가 없으므로, 최소 한 번은 건너뛰게 강제한다.
+  if (n > 1 && rungs.every((row) => row.length === 0)) {
+    const r = Math.floor(Math.random() * rows);
+    rungs[r].push(Math.floor(Math.random() * (n - 1)));
+  }
+  const finalPos = [];
+  for (let c = 0; c < n; c++) {
+    let pos = c;
+    for (const row of rungs) {
+      for (const g of row) {
+        if (pos === g) pos = g + 1;
+        else if (pos === g + 1) pos = g;
+      }
+    }
+    finalPos.push(pos);
+  }
+  const winnerBottom = Math.floor(Math.random() * n);
+  const winner = finalPos.indexOf(winnerBottom);
+  return { rungs, winner };
+}
+
 /** 올라온 순위를 짧은 이름표 배열로만 받는다 */
 function cleanRank(v) {
   if (!Array.isArray(v)) return [];
@@ -109,8 +153,8 @@ export class ClassSession extends DurableObject {
       const saved = await this.ctx.storage.get('state');
       const fresh = saved && (Date.now() - (saved.updatedAt || 0)) < TTL_MS;
       this.state = fresh
-        ? { members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {}, spots: {}, ...saved }   // 예전 판에 없던 칸
-        : { createdAt: Date.now(), updatedAt: Date.now(), votes: {}, spots: {},
+        ? { members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {}, spots: {}, ladder: null, ...saved }   // 예전 판에 없던 칸
+        : { createdAt: Date.now(), updatedAt: Date.now(), votes: {}, spots: {}, ladder: null,
             members: {}, stage: null, results: {}, notes: {}, ranks: {}, plans: {} };
     })();
     await this.loading;
@@ -195,7 +239,16 @@ export class ClassSession extends DurableObject {
     for (const key of Object.values(this.state.spots || {})) {
       spots[key] = (spots[key] || 0) + 1;
     }
-    return { pts, people, notes, ranks, plans, spots };
+    // 발표자 뽑기 사다리 — 참가자 닉네임만 내보내고 기기 토큰은 담지 않는다
+    const L = this.state.ladder;
+    const ladder = L ? {
+      slots: L.slots.map((s) => s.nick),
+      started: L.started,
+      revealed: L.revealed,
+      rungs: L.started ? L.rungs : null,
+      winner: L.started ? L.winner : null,
+    } : null;
+    return { pts, people, notes, ranks, plans, spots, ladder };
   }
 
   /** 학생·교사 화면으로 내려보내는 한 덩어리 */
@@ -307,6 +360,9 @@ export class ClassSession extends DurableObject {
             delete this.state.ranks[token];
             delete this.state.plans[token];
             if (this.state.spots) delete this.state.spots[token];
+            if (this.state.ladder && !this.state.ladder.started) {
+              this.state.ladder.slots = this.state.ladder.slots.filter((x) => x.token !== token);
+            }
             await this.save();
           }
           ws.send(ack(msg.i, { ok: true }));
@@ -363,12 +419,70 @@ export class ClassSession extends DurableObject {
           break;
         }
 
+        case 'ladderJoin': {
+          // 발표자 뽑기 사다리에 내 닉네임으로 한 자리를 만든다(다시 보내면 이름만 바꾼다)
+          const token = String(msg.d?.token || '').slice(0, 40);
+          const nick = cleanNick(msg.d?.nick);
+          if (!token || !nick) { ws.send(nack(msg.i, '닉네임을 넣어 주세요.')); break; }
+          if (!this.state.ladder) this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winner: null };
+          const L = this.state.ladder;
+          if (L.started) { ws.send(nack(msg.i, '이미 사다리를 타기 시작했습니다.')); break; }
+          const at = L.slots.findIndex((x) => x.token === token);
+          if (at >= 0) { L.slots[at].nick = nick; }
+          else {
+            if (L.slots.length >= LADDER_MAX) { ws.send(nack(msg.i, '자리가 다 찼습니다.')); break; }
+            L.slots.push({ token, nick });
+          }
+          await this.save();
+          ws.send(ack(msg.i, this.classWork()));
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'ladderLeave': {
+          // 시작 전이면 내 자리를 뺀다(잘못 눌렀을 때)
+          const token = String(msg.d?.token || '').slice(0, 40);
+          if (this.state.ladder && !this.state.ladder.started) {
+            this.state.ladder.slots = this.state.ladder.slots.filter((x) => x.token !== token);
+            await this.save();
+          }
+          ws.send(ack(msg.i, this.classWork()));
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'ladderStart': {
+          // 교사가 시작을 누르면 그 순간의 참가자로 사다리를 확정한다(이후엔 못 바꾼다)
+          const L = this.state.ladder;
+          if (!L || L.slots.length < 2) { ws.send(nack(msg.i, '참가자가 2명 이상 있어야 시작할 수 있습니다.')); break; }
+          if (L.started) { ws.send(ack(msg.i, this.classWork())); break; }
+          const built = buildLadder(L.slots.length);
+          L.started = true;
+          L.revealed = false;
+          L.rungs = built.rungs;
+          L.winner = built.winner;
+          await this.save();
+          ws.send(ack(msg.i, this.classWork()));
+          this.scheduleClassBroadcast();
+          break;
+        }
+
+        case 'ladderReveal': {
+          // 교사 화면의 애니메이션이 끝났다 — 이제 학생 화면에도 결과를 보여 준다
+          if (this.state.ladder && this.state.ladder.started) this.state.ladder.revealed = true;
+          await this.save();
+          ws.send(ack(msg.i, this.classWork()));
+          this.scheduleClassBroadcast();
+          break;
+        }
+
         case 'reset': {
           // 교사가 다음 활동을 위해 비운다.
           // what 을 주면 그것만, 안 주면 표만 비운다(참여자 명단은 늘 남는다).
           const what = String(msg.d?.what || 'votes');
           if (what === 'votes' || what === 'all') { this.state.votes = {}; this.state.spots = {}; }
           if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; this.state.ranks = {}; this.state.plans = {}; }
+          if (what === 'ladder' || what === 'all') { this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winner: null }; }
           // 데모봇만 걷어낸다. 교사 화면이 새로고침되어 leave 를 못 보냈을 때를 위해 둔다.
           if (what === 'demo') {
             for (const t of Object.keys(this.state.members)) {
