@@ -1308,6 +1308,8 @@ body.admin-open{ padding-bottom:60dvh; }
   padding:.8rem; margin-top:1rem; min-height:8rem;
   display:flex; align-items:center; justify-content:center;
 }
+/* 감싸는 div 가 flex 항목이라 폭을 안 주면 SVG 의 기본 크기(300px)로 오그라든다 */
+#ladderSvgHost{ width:100%; }
 .ladder-svg{ width:100%; height:auto; display:block; max-height:70vh; }
 .ladder-wait{ color:var(--ink-dim); font-size:.95rem; text-align:center; margin:0; }
 
@@ -1323,7 +1325,7 @@ body.admin-open{ padding-bottom:60dvh; }
 }
 .ladder-trace.is-done{ stroke-dasharray:none; }
 .ladder-label{
-  font-size:3.6px; fill:var(--ink-dim); text-anchor:middle;
+  font-size:4.2px; fill:var(--ink-dim); text-anchor:middle;
   font-family:inherit;
 }
 .ladder-label-top{ transition:fill .2s, font-weight .2s; }

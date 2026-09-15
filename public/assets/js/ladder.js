@@ -112,7 +112,7 @@
   /* ---------- 사다리 그리기 ---------- */
   // 세로줄 사이 간격(뷰박스 단위). 인원이 늘어도 이 간격은 그대로 두고
   // 가로 폭을 늘려서, 이름표가 서로 겹치지 않고 사다리가 옆으로 넓어지게 한다.
-  var COL_UNIT = 14;
+  var COL_UNIT = 18;
   var GEOM = { top: 14, bottom: 86 };
 
   function vbWidth(n) { return Math.max(100, n * COL_UNIT); }
