@@ -133,6 +133,7 @@ code{ background:#00000066; padding:.1em .4em; border-radius:6px; color:var(--ac
   border-left:3px solid var(--accent); padding-left:.6rem; margin:.6rem 0;
 }
 .step-cta{ display:flex; justify-content:center; gap:.6rem; margin:1rem 0; flex-wrap:wrap; }
+.step-cta[hidden]{ display:none; }
 .sub[hidden]{ display:none; }
 
 .btn-skip{
@@ -926,6 +927,7 @@ body.admin-open{ padding-bottom:60dvh; }
 
 /* 한 줄 입력칸 — 이름표를 위로 */
 .field-block{ display:block; margin:0 0 .6rem; }
+.field-block[hidden]{ display:none; }
 .field-block > span{ display:block; font-size:.85rem; color:var(--ink-dim); margin-bottom:.3rem; }
 .field-block input{
   width:100%; min-height:var(--touch);

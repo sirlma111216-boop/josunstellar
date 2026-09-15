@@ -40,16 +40,13 @@
     Ladder.built = true;
 
     $('btnLadderJoin').addEventListener('click', function () {
-      var v = $('ladderNickInput').value.trim();
-      if (!v) { $('ladderNickInput').focus(); return; }
-      Live.sendLadderJoin(v, function (err) {
+      var nick = (global.Live && Live.nick) || '';
+      if (!nick) { App.toast('먼저 닉네임으로 수업에 참여해 주세요.'); return; }
+      Live.sendLadderJoin(nick, function (err) {
         if (err) { App.toast(err); return; }
         Ladder.mine = true;
         Ladder.render();
       });
-    });
-    $('ladderNickInput').addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter') $('btnLadderJoin').click();
     });
     $('btnLadderLeave').addEventListener('click', function () {
       Live.sendLadderLeave(function (err) {
@@ -86,6 +83,7 @@
 
     var started = !!(L && L.started);
     $('ladderJoinForm').hidden = isHost || started || Ladder.mine;
+    $('ladderMyNick').textContent = (global.Live && Live.nick) || '—';
     $('btnLadderLeave').hidden = isHost || started || !Ladder.mine;
 
     $('ladderHostStart').hidden = !isHost || started;
