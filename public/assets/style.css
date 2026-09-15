@@ -1294,6 +1294,15 @@ body.admin-open{ padding-bottom:60dvh; }
   padding:.3rem .75rem; font-size:.85rem;
 }
 
+.ladder-start-row{ align-items:center; }
+.ladder-count-pick{
+  display:flex; align-items:center; gap:.5rem;
+  background:var(--bg-2); border:1px solid var(--line); border-radius:999px;
+  padding:.3rem .5rem .3rem 1rem;
+}
+.ladder-count-pick span{ font-size:.85rem; color:var(--ink-dim); }
+.ladder-count-pick b{ min-width:1.4em; text-align:center; font-size:1.1rem; }
+
 .ladder-stage{
   background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius);
   padding:.8rem; margin-top:1rem; min-height:8rem;

@@ -1010,7 +1010,7 @@
     </p>
 
     <div id="ladderBody" hidden>
-      <p class="muted">닉네임을 넣고 참가하세요. 선생님이 시작하면 사다리를 탑니다.</p>
+      <p class="muted">참가하기를 누르면 명단에 오릅니다. 선생님이 시작하면 사다리를 탑니다.</p>
 
       <div class="ladder-join">
         <div class="field-block" id="ladderJoinForm">
@@ -1024,7 +1024,13 @@
         <div class="ladder-names" id="ladderNames"></div>
         <p class="muted tiny" id="ladderCount">아직 참가자가 없습니다.</p>
 
-        <div class="step-cta" id="ladderHostStart" hidden>
+        <div class="step-cta ladder-start-row" id="ladderHostStart" hidden>
+          <div class="ladder-count-pick">
+            <span>발표자 인원</span>
+            <button type="button" class="btn-round" id="btnLadderCountDown" aria-label="한 명 줄이기">−</button>
+            <b id="ladderWinCount">1</b>
+            <button type="button" class="btn-round" id="btnLadderCountUp" aria-label="한 명 늘리기">＋</button>
+          </div>
           <button type="button" class="btn btn-big btn-primary" id="btnLadderStart" disabled>
             사다리 타기 시작
           </button>
@@ -1037,7 +1043,7 @@
       </div>
 
       <div class="verdict ladder-result" id="ladderResultBox" hidden>
-        <p class="verdict-cap">오늘의 발표자는</p>
+        <p class="verdict-cap" id="ladderResultCap">오늘의 발표자는</p>
         <p class="verdict-line" id="ladderWinnerName">—</p>
         <button type="button" class="btn-link" id="btnLadderReset">다시 뽑기</button>
       </div>

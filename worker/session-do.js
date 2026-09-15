@@ -66,17 +66,21 @@ function cleanText(v, max) {
 /** 순위 하나에 담을 수 있는 항목 수 */
 const RANK_MAX = 12;
 
-/** 발표자 뽑기 사다리에 들어올 수 있는 최대 인원 */
-const LADDER_MAX = 16;
+/** 발표자 뽑기 사다리에 들어올 수 있는 최대 인원 — 한 반 전체가 들어와도 넉넉하도록 */
+const LADDER_MAX = 40;
+
+/** 한 번에 뽑을 수 있는 발표자 수의 상한 — 색을 구분해 보여줄 수 있는 만큼만 */
+const LADDER_WINNERS_MAX = 4;
 
 /**
- * n명짜리 사다리를 하나 만든다. rungs 는 줄마다 "왼쪽 칸 번호" 배열이다
- * (그 번호와 바로 오른쪽 칸이 그 줄에서 이어진다). 같은 줄에서 바로 옆칸끼리
- * 겹쳐 이으면 어느 쪽으로 갈렸는지 알 수 없으므로, 한 칸 건너서만 놓는다.
- * 도착 칸은 무작위로 하나 정하고, 거기로 떨어지는 출발 칸을 미리 계산해 둔다
- * — 교사 화면은 이 결과를 그대로 그리기만 하면 되고, 다시 계산할 필요가 없다.
+ * n명짜리 사다리를 하나 만들고, 그중 k명을 발표자로 뽑는다. rungs 는 줄마다
+ * "왼쪽 칸 번호" 배열이다(그 번호와 바로 오른쪽 칸이 그 줄에서 이어진다).
+ * 같은 줄에서 바로 옆칸끼리 겹쳐 이으면 어느 쪽으로 갈렸는지 알 수 없으므로,
+ * 한 칸 건너서만 놓는다. 도착 칸을 서로 다르게 k개 무작위로 정하고, 거기로
+ * 떨어지는 출발 칸을 미리 계산해 둔다 — 교사 화면은 이 결과를 그대로 그리기만
+ * 하면 되고, 다시 계산할 필요가 없다.
  */
-function buildLadder(n) {
+function buildLadder(n, k) {
   const rows = Math.max(6, n * 2);
   const rungs = [];
   for (let r = 0; r < rows; r++) {
@@ -105,9 +109,16 @@ function buildLadder(n) {
     }
     finalPos.push(pos);
   }
-  const winnerBottom = Math.floor(Math.random() * n);
-  const winner = finalPos.indexOf(winnerBottom);
-  return { rungs, winner };
+  // 서로 다른 도착 칸을 k개 뽑고(같은 사람이 두 번 뽑히지 않도록), 거기로
+  // 떨어지는 출발 칸을 찾는다 — finalPos 는 한 사람씩 겹치지 않는 짝이므로
+  // indexOf 로 바로 찾을 수 있다.
+  const pool = Array.from({ length: n }, (_, i) => i);
+  const bottoms = [];
+  for (let i = 0; i < k && pool.length; i++) {
+    bottoms.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  }
+  const winners = bottoms.map((b) => finalPos.indexOf(b));
+  return { rungs, winners };
 }
 
 /** 올라온 순위를 짧은 이름표 배열로만 받는다 */
@@ -246,7 +257,7 @@ export class ClassSession extends DurableObject {
       started: L.started,
       revealed: L.revealed,
       rungs: L.started ? L.rungs : null,
-      winner: L.started ? L.winner : null,
+      winners: L.started ? L.winners : null,
     } : null;
     return { pts, people, notes, ranks, plans, spots, ladder };
   }
@@ -424,7 +435,7 @@ export class ClassSession extends DurableObject {
           const token = String(msg.d?.token || '').slice(0, 40);
           const nick = cleanNick(msg.d?.nick);
           if (!token || !nick) { ws.send(nack(msg.i, '닉네임을 넣어 주세요.')); break; }
-          if (!this.state.ladder) this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winner: null };
+          if (!this.state.ladder) this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winners: null };
           const L = this.state.ladder;
           if (L.started) { ws.send(nack(msg.i, '이미 사다리를 타기 시작했습니다.')); break; }
           const at = L.slots.findIndex((x) => x.token === token);
@@ -456,11 +467,14 @@ export class ClassSession extends DurableObject {
           const L = this.state.ladder;
           if (!L || L.slots.length < 2) { ws.send(nack(msg.i, '참가자가 2명 이상 있어야 시작할 수 있습니다.')); break; }
           if (L.started) { ws.send(ack(msg.i, this.classWork())); break; }
-          const built = buildLadder(L.slots.length);
+          // 뽑을 인원 — 참가자보다 적어야 뽑는 의미가 있으므로 항상 한 자리는 남긴다
+          const maxCount = Math.max(1, Math.min(LADDER_WINNERS_MAX, L.slots.length - 1));
+          const count = Math.max(1, Math.min(maxCount, Number(msg.d?.count) || 1));
+          const built = buildLadder(L.slots.length, count);
           L.started = true;
           L.revealed = false;
           L.rungs = built.rungs;
-          L.winner = built.winner;
+          L.winners = built.winners;
           await this.save();
           ws.send(ack(msg.i, this.classWork()));
           this.scheduleClassBroadcast();
@@ -482,7 +496,7 @@ export class ClassSession extends DurableObject {
           const what = String(msg.d?.what || 'votes');
           if (what === 'votes' || what === 'all') { this.state.votes = {}; this.state.spots = {}; }
           if (what === 'work' || what === 'all') { this.state.results = {}; this.state.notes = {}; this.state.ranks = {}; this.state.plans = {}; }
-          if (what === 'ladder' || what === 'all') { this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winner: null }; }
+          if (what === 'ladder' || what === 'all') { this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winners: null }; }
           // 데모봇만 걷어낸다. 교사 화면이 새로고침되어 leave 를 못 보냈을 때를 위해 둔다.
           if (what === 'demo') {
             for (const t of Object.keys(this.state.members)) {
@@ -499,7 +513,7 @@ export class ClassSession extends DurableObject {
             // 섞여 있으면 부분만 걷어낼 수 없다(이미 확정된 가로줄·당첨 칸이 통째로
             // 어긋난다). 그럴 땐 판 전체를 새로 시작한다.
             if (this.state.ladder && this.state.ladder.slots.some((x) => x.token.indexOf(DEMO_PREFIX) === 0)) {
-              this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winner: null };
+              this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winners: null };
             }
           }
           await this.save();

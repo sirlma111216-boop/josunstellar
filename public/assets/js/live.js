@@ -333,10 +333,10 @@
     });
   };
 
-  /** 교사: 지금 모인 인원으로 사다리를 확정한다(그 뒤로는 못 바꾼다) */
-  Live.sendLadderStart = function (done) {
+  /** 교사: 지금 모인 인원으로 사다리를 확정한다(그 뒤로는 못 바꾼다). count 는 뽑을 발표자 수. */
+  Live.sendLadderStart = function (count, done) {
     if (!Live.ready || Live.role !== 'host') { if (done) done('연결되지 않았습니다.'); return; }
-    Live.send('ladderStart', {}, function (err, d) {
+    Live.send('ladderStart', { count: count }, function (err, d) {
       if (!err && d) { Live.work = takeWork(d); notify(); }
       if (done) done(err || null);
     });
