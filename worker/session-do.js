@@ -495,6 +495,12 @@ export class ClassSession extends DurableObject {
               delete this.state.ranks[t];
               delete this.state.plans[t];
             }
+            // 사다리는 토큰별 사전이 아니라 하나짜리 공유 상태라, 데모봇이 한 명이라도
+            // 섞여 있으면 부분만 걷어낼 수 없다(이미 확정된 가로줄·당첨 칸이 통째로
+            // 어긋난다). 그럴 땐 판 전체를 새로 시작한다.
+            if (this.state.ladder && this.state.ladder.slots.some((x) => x.token.indexOf(DEMO_PREFIX) === 0)) {
+              this.state.ladder = { slots: [], started: false, revealed: false, rungs: null, winner: null };
+            }
           }
           await this.save();
           ws.send(ack(msg.i, this.snap()));
