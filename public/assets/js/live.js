@@ -315,7 +315,7 @@
     });
   };
 
-  /** 발표자 뽑기 사다리 — 내 닉네임으로 참가한다(다시 부르면 이름만 바뀐다) */
+  /** 발표자 뽑기(구슬 레이스) — 내 닉네임으로 참가한다(다시 부르면 이름만 바뀐다) */
   Live.sendLadderJoin = function (nick, done) {
     if (!Live.ready || Live.role !== 'guest') { if (done) done('연결되지 않았습니다.'); return; }
     Live.send('ladderJoin', { token: token(), nick: nick }, function (err, d) {
@@ -333,19 +333,19 @@
     });
   };
 
-  /** 교사: 지금 모인 인원으로 사다리를 확정한다(그 뒤로는 못 바꾼다). count 는 뽑을 발표자 수. */
-  Live.sendLadderStart = function (count, done) {
+  /** 교사: 지금 모인 인원으로 명단을 확정한다(그 뒤로는 못 바꾼다) */
+  Live.sendLadderStart = function (done) {
     if (!Live.ready || Live.role !== 'host') { if (done) done('연결되지 않았습니다.'); return; }
-    Live.send('ladderStart', { count: count }, function (err, d) {
+    Live.send('ladderStart', {}, function (err, d) {
       if (!err && d) { Live.work = takeWork(d); notify(); }
       if (done) done(err || null);
     });
   };
 
-  /** 교사: 화면 애니메이션이 끝났다 — 학생 화면에도 결과를 보여 준다 */
-  Live.sendLadderReveal = function (done) {
+  /** 교사: 레이스가 끝났다 — 도착한 사람의 명단 번호를 올려 학생 화면에도 보여 준다 */
+  Live.sendLadderReveal = function (winners, done) {
     if (!Live.ready || Live.role !== 'host') { if (done) done('연결되지 않았습니다.'); return; }
-    Live.send('ladderReveal', {}, function (err, d) {
+    Live.send('ladderReveal', { winners: winners }, function (err, d) {
       if (!err && d) { Live.work = takeWork(d); notify(); }
       if (done) done(err || null);
     });

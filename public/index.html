@@ -1002,50 +1002,47 @@
     <button type="button" class="btn btn-primary" id="btnShowAll">모두의 결론 보기</button>
   </div>
 
-  <!-- 발표자 뽑기 사다리 — 코드로 참여 중인 학급 전체가 닉네임만으로 참가한다 -->
-  <div class="card ladder-card" id="ladderCard">
-    <h3 class="card-title">발표자 뽑기 · 사다리 타기</h3>
-    <p class="muted tiny" id="ladderNoLive">
-      시작 화면에서 수업 코드로 참여해야 사다리 타기를 쓸 수 있습니다.
+  <!-- 발표자 뽑기 · 구슬 레이스 — 코드로 참여 중인 학급 전체가 닉네임만으로 참가한다.
+       레이스 자체는 따로 배포된 활동 앱을 iframe 으로 가져다 교사 화면(프로젝터)에서만 돌리고,
+       도착 순서만 우리 서버에 올려 학생 화면에도 발표자를 띄운다. -->
+  <div class="card race-card" id="raceCard">
+    <h3 class="card-title">발표자 뽑기 · 구슬 레이스</h3>
+    <p class="muted tiny" id="raceNoLive">
+      시작 화면에서 수업 코드로 참여해야 구슬 레이스를 쓸 수 있습니다.
     </p>
 
-    <div id="ladderBody" hidden>
-      <p class="muted">참가하기를 누르면 명단에 오릅니다. 선생님이 시작하면 사다리를 탑니다.</p>
+    <div id="raceBody" hidden>
+      <p class="muted">참가하기를 누르면 명단에 오릅니다. 선생님이 시작하면 회전 관문을 가장 먼저 통과한 두 명이 발표자입니다.</p>
 
-      <div class="ladder-join">
-        <div class="field-block" id="ladderJoinForm">
-          <p class="ladder-join-hint">닉네임 <b id="ladderMyNick">—</b>(으)로 참가합니다.</p>
+      <div class="race-join">
+        <div class="field-block" id="raceJoinForm">
+          <p class="race-join-hint">닉네임 <b id="raceMyNick">—</b>(으)로 참가합니다.</p>
           <div class="abtns">
-            <button type="button" class="btn btn-primary" id="btnLadderJoin">참가하기</button>
+            <button type="button" class="btn btn-primary" id="btnRaceJoin">참가하기</button>
           </div>
         </div>
-        <button type="button" class="btn btn-sm" id="btnLadderLeave" hidden>참가 취소</button>
+        <button type="button" class="btn btn-sm" id="btnRaceLeave" hidden>참가 취소</button>
 
-        <div class="ladder-names" id="ladderNames"></div>
-        <p class="muted tiny" id="ladderCount">아직 참가자가 없습니다.</p>
+        <div class="race-names" id="raceNames"></div>
+        <p class="muted tiny" id="raceCount">아직 참가자가 없습니다.</p>
 
-        <div class="step-cta ladder-start-row" id="ladderHostStart" hidden>
-          <div class="ladder-count-pick">
-            <span>발표자 인원</span>
-            <button type="button" class="btn-round" id="btnLadderCountDown" aria-label="한 명 줄이기">−</button>
-            <b id="ladderWinCount">1</b>
-            <button type="button" class="btn-round" id="btnLadderCountUp" aria-label="한 명 늘리기">＋</button>
-          </div>
-          <button type="button" class="btn btn-big btn-primary" id="btnLadderStart" disabled>
-            사다리 타기 시작
+        <div class="step-cta" id="raceHostStart" hidden>
+          <button type="button" class="btn btn-big btn-primary" id="btnRaceStart" disabled>
+            레이스 시작
           </button>
         </div>
       </div>
 
-      <div class="ladder-stage" id="ladderStage" hidden>
-        <div id="ladderSvgHost"></div>
-        <p class="ladder-wait" id="ladderWait" hidden>사다리를 타는 중입니다…</p>
-      </div>
+      <!-- 교사 화면: 활동 앱 iframe 이 이 안에 생긴다. 높이를 CSS 로 실제로 준다. -->
+      <div class="race-stage" id="raceStage" hidden></div>
+      <p class="race-error" id="raceError" hidden role="alert"></p>
+      <!-- 학생 화면: 레이스는 교사 화면에서만 돌고, 여기엔 기다리라는 말만 -->
+      <p class="race-wait" id="raceWait" hidden>선생님 화면에서 구슬 레이스가 진행 중입니다…</p>
 
-      <div class="verdict ladder-result" id="ladderResultBox" hidden>
-        <p class="verdict-cap" id="ladderResultCap">오늘의 발표자는</p>
-        <p class="verdict-line" id="ladderWinnerName">—</p>
-        <button type="button" class="btn-link" id="btnLadderReset">다시 뽑기</button>
+      <div class="verdict race-result" id="raceResultBox" hidden>
+        <p class="verdict-cap">오늘의 발표자는</p>
+        <p class="verdict-line" id="raceWinnerName">—</p>
+        <button type="button" class="btn-link" id="btnRaceReset">다시 뽑기</button>
       </div>
     </div>
   </div>
@@ -1384,7 +1381,7 @@
 <script src="assets/js/mapview.js"></script>
 <script src="assets/js/measure.js"></script>
 <script src="assets/js/chart.js"></script>
-<script src="assets/js/ladder.js"></script>
+<script src="assets/js/race.js"></script>
 <script src="assets/js/steps.js"></script>
 <script src="assets/js/report.js"></script>
 <script src="assets/js/app.js"></script>

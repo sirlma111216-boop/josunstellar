@@ -8,7 +8,7 @@
      단계 5-5 → 밝기 순서 맞히기
      단계 6-1 → 그림에서 이상한 점 고르기
      단계 8   → 잰 값 올리기 (한 별씩)
-     단계 10  → 결론 쓰기, 발표자 뽑기 사다리에 참가
+     단계 10  → 결론 쓰기, 발표자 뽑기 구슬 레이스에 참가
    사람마다 속도가 달라 하나씩 도착하는 모습까지 그대로 보인다.
 
    [멈추기] 를 누르면 봇이 남긴 것(명단·표·측정값·결론)을 모두 지우고 빠진다.
@@ -174,7 +174,7 @@
   function doRank(bot) { if (!bot.did.rank) { bot.did.rank = true; send(bot, 'rank', { token: bot.token, order: bot.rank }); } }
   function doNote(bot) { if (!bot.did.note) { bot.did.note = true; send(bot, 'note', { token: bot.token, text: bot.note }); } }
 
-  /** 발표자 뽑기 사다리에 내 닉네임으로 참가한다. 시작 뒤에 들어와도 서버가 알아서 거절한다. */
+  /** 발표자 뽑기(구슬 레이스)에 내 닉네임으로 참가한다. 시작 뒤에 들어와도 서버가 알아서 거절한다. */
   function doLadder(bot) { if (!bot.did.ladder) { bot.did.ladder = true; send(bot, 'ladderJoin', { token: bot.token, nick: bot.nick }); } }
 
   /**
