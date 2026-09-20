@@ -177,6 +177,13 @@
   /** 발표자 뽑기(구슬 레이스)에 내 닉네임으로 참가한다. 시작 뒤에 들어와도 서버가 알아서 거절한다. */
   function doLadder(bot) { if (!bot.did.ladder) { bot.did.ladder = true; send(bot, 'ladderJoin', { token: bot.token, nick: bot.nick }); } }
 
+  /** 교사가 [다시 뽑기]를 눌러 명단이 비면, 봇들이 다시 하나씩 참가한다 */
+  Demo.rejoinLadder = function () {
+    if (!Demo.running) return;
+    Demo.bots.forEach(function (bot) { bot.did.ladder = false; });
+    each(doLadder, 500, 4000);
+  };
+
   /**
    * 교사가 화면을 넘길 때마다 불린다.
    * 건너뛰어 들어와도 빈 화면이 되지 않도록, 앞 단계에서 했어야 할 일은 몰아서 시킨다.

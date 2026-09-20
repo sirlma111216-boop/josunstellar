@@ -190,7 +190,11 @@
       Race.sentFor = null;
       Race.mine = false;
       if (Race.handle) Race.handle.resetRound().catch(function (e) { showError(e.message); });
-      Live.send('reset', { what: 'ladder' }, function () { Race.render(); });
+      Live.send('reset', { what: 'ladder' }, function () {
+        Race.render();
+        // 데모 중이면 봇들이 새 판에도 다시 참가한다
+        if (global.Demo && Demo.running) Demo.rejoinLadder();
+      });
     });
   };
 
