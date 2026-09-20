@@ -66,8 +66,8 @@ function cleanText(v, max) {
 /** 순위 하나에 담을 수 있는 항목 수 */
 const RANK_MAX = 12;
 
-/** 발표자 뽑기(구슬 레이스)에 들어올 수 있는 최대 인원 — 한 반 전체가 들어와도 넉넉하도록 */
-const LADDER_MAX = 40;
+/** 발표자 뽑기(구슬 레이스)에 들어올 수 있는 최대 인원 — 활동 앱이 한 판에 받는 상한(100명)과 맞춘다 */
+const LADDER_MAX = 100;
 
 /** 한 판에서 뽑는 발표자 수 상한 */
 const LADDER_WINNERS_MAX = 4;

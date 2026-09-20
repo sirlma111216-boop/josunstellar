@@ -1033,8 +1033,12 @@
         </div>
       </div>
 
-      <!-- 교사 화면: 활동 앱 iframe 이 이 안에 생긴다. 높이를 CSS 로 실제로 준다. -->
-      <div class="race-stage" id="raceStage" hidden></div>
+      <!-- 교사 화면: 활동 앱 iframe 이 이 안에 생긴다. 높이를 CSS 로 실제로 준다.
+           전체 화면 단추는 프로젝터에 크게 띄우려고 둔다(Esc 로 나온다). -->
+      <div class="race-stage-wrap" id="raceStageWrap" hidden>
+        <div class="race-stage" id="raceStage"></div>
+        <button type="button" class="btn btn-sm race-full" id="btnRaceFull" aria-label="전체 화면으로 보기">⛶ 전체 화면</button>
+      </div>
       <p class="race-error" id="raceError" hidden role="alert"></p>
       <!-- 학생 화면: 레이스는 교사 화면에서만 돌고, 여기엔 기다리라는 말만 -->
       <p class="race-wait" id="raceWait" hidden>선생님 화면에서 구슬 레이스가 진행 중입니다…</p>

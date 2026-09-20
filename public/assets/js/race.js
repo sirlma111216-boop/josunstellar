@@ -59,7 +59,7 @@
   function ensureMounted(L) {
     if (Race.handle) return;
     var stage = $('raceStage');
-    stage.hidden = false;
+    $('raceStageWrap').hidden = false;
     loadSdk().then(function (mod) {
       if (Race.handle) return;
       var race = mod.createMarbleRace({
@@ -98,7 +98,7 @@
     Race.ready = false;
     Race.racingFor = null;
     $('raceStage').innerHTML = '';
-    $('raceStage').hidden = true;
+    $('raceStageWrap').hidden = true;
   }
 
   /* ---------- 한 판 ---------- */
@@ -158,6 +158,31 @@
         if (err) { App.toast(err); $('btnRaceStart').disabled = false; return; }
         Race.render();   // 서버가 확정한 명단으로 레이스를 시작한다
       });
+    });
+    // 전체 화면: 브라우저 전체 화면 API 를 먼저 쓰고, 안 되면(일부 내장 브라우저·iOS)
+    // 창 안을 꽉 채우는 「큰 화면」으로 대신한다. 둘 다 같은 단추·Esc 로 되돌린다.
+    function setBig(on) {
+      $('raceStageWrap').classList.toggle('is-big', on);
+      document.body.classList.toggle('race-big', on);
+      $('btnRaceFull').textContent = on ? '✕ 원래 크기' : '⛶ 전체 화면';
+    }
+    function fullLabel() {
+      var on = !!document.fullscreenElement;
+      $('btnRaceFull').textContent = on ? '✕ 전체 화면 끝' : '⛶ 전체 화면';
+    }
+    $('btnRaceFull').addEventListener('click', function () {
+      var wrap = $('raceStageWrap');
+      if (document.fullscreenElement) { document.exitFullscreen(); return; }
+      if (wrap.classList.contains('is-big')) { setBig(false); return; }
+      if (!wrap.requestFullscreen) { setBig(true); return; }
+      var settled = false;
+      wrap.requestFullscreen().then(function () { settled = true; fullLabel(); }, function () { settled = true; setBig(true); });
+      // 약속이 아예 돌아오지 않는 환경이 있다 — 잠시 기다려 보고 큰 화면으로 넘어간다
+      setTimeout(function () { if (!settled && !document.fullscreenElement) setBig(true); }, 800);
+    });
+    document.addEventListener('fullscreenchange', fullLabel);
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && $('raceStageWrap').classList.contains('is-big')) setBig(false);
     });
     $('btnRaceReset').addEventListener('click', function () {
       if (!confirm('참가자를 모두 내리고 다시 뽑을까요?')) return;
@@ -219,7 +244,7 @@
         }
       }
     } else {
-      $('raceStage').hidden = true;
+      $('raceStageWrap').hidden = true;
     }
 
     if (!L || !L.started) {

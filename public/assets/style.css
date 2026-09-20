@@ -1300,7 +1300,26 @@ body.admin-open{ padding-bottom:60dvh; }
   border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
   margin-top:1rem; background:#080b14;
 }
-.race-stage[hidden]{ display:none; }
+.race-stage-wrap{ position:relative; margin-top:1rem; }
+.race-stage-wrap[hidden]{ display:none; }
+.race-stage-wrap .race-stage{ margin-top:0; }
+.race-full{
+  position:absolute; top:.6rem; right:.6rem; z-index:2;
+  background:rgba(8,11,20,.8); border:1px solid var(--line);
+}
+/* 전체 화면일 때는 iframe 이 화면을 다 쓴다 */
+.race-stage-wrap:fullscreen{ background:#080b14; margin:0; }
+.race-stage-wrap:fullscreen .race-stage{
+  height:100vh; min-height:0; border:0; border-radius:0;
+}
+/* 전체 화면 API 가 안 되는 곳에서는 창 안을 꽉 채운다 */
+.race-stage-wrap.is-big{
+  position:fixed; inset:0; z-index:300; margin:0; background:#080b14;
+}
+.race-stage-wrap.is-big .race-stage{
+  height:100vh; min-height:0; border:0; border-radius:0;
+}
+body.race-big{ overflow:hidden; }
 .race-error{
   margin:.6rem 0 0; padding:.6rem .8rem; border-radius:10px;
   background:color-mix(in srgb, var(--danger) 18%, transparent);
